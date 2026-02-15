@@ -1,15 +1,6 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-venv/
-.venv/
-env/
-.env
-
-# Medias folder
-medias/
-
-# OS
+node_modules
+dist
 .DS_Store
-Thumbs.db
+server/public
+vite.config.ts.*
+*.tar.gz

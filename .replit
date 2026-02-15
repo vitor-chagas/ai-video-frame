@@ -1,0 +1,46 @@
+modules = ["nodejs-20", "web", "python-3.11", "postgresql-16"]
+run = "npm run dev"
+hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
+
+[nix]
+channel = "stable-24_05"
+packages = ["ffmpeg", "gcc", "gcc-unwrapped", "python3", "zlib"]
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[env]
+PORT = "5000"
+
+[deployment]
+deploymentTarget = "autoscale"
+build = ["npm", "run", "build"]
+publicDir = "dist/public"
+run = ["node", "./dist/index.cjs"]
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start application"
+
+[[workflows.workflow]]
+name = "Start application"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
+waitForPort = 5000
+
+[agent]
+stack = "MOCKUP_JS"
+mockupState = "FULLSTACK"
+integrations = ["stripe:2.0.0", "javascript_log_in_with_replit:2.0.0"]
