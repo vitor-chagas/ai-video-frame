@@ -18,8 +18,17 @@ AVAILABLE_RATIOS = {
 }
 # ---------------------
 
-# Initialize MediaPipe Pose
-mp_pose = mp.solutions.pose
+# Initialize MediaPipe Pose with robust error checking
+try:
+    if not hasattr(mp, 'solutions'):
+        raise AttributeError("MediaPipe module loaded but 'solutions' attribute is missing. This usually indicates an incomplete installation.")
+    mp_pose = mp.solutions.pose
+except AttributeError as e:
+    print(f"MediaPipe Error: {e}")
+    print(f"MediaPipe Version: {getattr(mp, '__version__', 'unknown')}")
+    print(f"MediaPipe Path: {getattr(mp, '__file__', 'unknown')}")
+    sys.exit(1)
+
 pose = mp_pose.Pose(
     static_image_mode=False,
     model_complexity=0,
