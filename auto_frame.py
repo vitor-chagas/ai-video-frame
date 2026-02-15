@@ -27,12 +27,12 @@ pose = mp_pose.Pose(
     min_detection_confidence=0.5
 )
 
-def process_video(input_path, output_path, aspect_ratio=(9, 16)):
+def process_video(input_path, output_path, aspect_ratio=(9, 16), progress_callback=None):
     start_time = time.time()
     cap = cv2.VideoCapture(input_path)
     if not cap.isOpened():
         print(f"Error: Could not open video {input_path}")
-        return
+        return False
 
     # Get video properties
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -58,8 +58,8 @@ def process_video(input_path, output_path, aspect_ratio=(9, 16)):
     if target_height % 2 != 0:
         target_height -= 1
 
-    # Temporary video file (without audio)
-    temp_output = "temp_no_audio.mp4"
+    # Temporary video file (without audio) - Use a unique name to avoid conflicts
+    temp_output = f"temp_no_audio_{int(time.time())}.mp4"
     
     # Video writer setup
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
@@ -117,8 +117,10 @@ def process_video(input_path, output_path, aspect_ratio=(9, 16)):
 
         frame_count += 1
         if frame_count % 30 == 0:
-            progress = (frame_count / total_frames) * 100
-            print(f"Progress: {progress:.1f}% ({frame_count}/{total_frames})", end='\r')
+            progress = (frame_count / total_frames)
+            print(f"Progress: {progress*100:.1f}% ({frame_count}/{total_frames})", end='\r')
+            if progress_callback:
+                progress_callback(progress)
 
     cap.release()
     out.release()
@@ -144,12 +146,22 @@ def process_video(input_path, output_path, aspect_ratio=(9, 16)):
             '-shortest',
             output_path
         ]
-        subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        print(f"Running FFmpeg command: {' '.join(cmd)}")
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        
+        if result.returncode != 0:
+            print(f"FFmpeg Error (Return Code {result.returncode}):")
+            print(result.stderr)
+            # If ffmpeg fails, we still have the temp file, let's at least move it to output
+            os.rename(temp_output, output_path)
+            return False
+            
         print(f"Success! Saved with audio to: {output_path}")
-    except subprocess.CalledProcessError as e:
-        print(f"Error merging audio: {e}")
-        # If ffmpeg fails, we still have the temp file, let's at least move it to output
-        os.rename(temp_output, output_path)
+    except Exception as e:
+        print(f"Unexpected error merging audio: {e}")
+        if os.path.exists(temp_output):
+            os.rename(temp_output, output_path)
+        return False
     finally:
         if os.path.exists(temp_output):
             os.remove(temp_output)
@@ -184,6 +196,7 @@ def process_video(input_path, output_path, aspect_ratio=(9, 16)):
     print(f"Process Duration: {processing_time_str}")
     print(f"Efficiency:       {time_per_minute_str} per minute of video")
     print("="*30)
+    return True
 
 if __name__ == "__main__":
     target_ratio = AVAILABLE_RATIOS.get(SELECTED_RATIO, (9, 16))
