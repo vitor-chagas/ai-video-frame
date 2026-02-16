@@ -23,7 +23,7 @@ AutoFrame is a full-stack web application that serves as a frontend for a Python
 - `client/src/pages/home.tsx` - Landing page with pricing cards
 - `client/src/hooks/use-auth.ts` - Auth hook
 - `client/src/lib/api.ts` - API request utilities
-- `scripts/auto_frame.py` - Python video processing script
+- `python_scripts/auto_frame.py` - Python video processing script
 
 ## Design
 - "Soft Modern" aesthetic: cream (hsl(38,20%,97%)) + charcoal (hsl(24,10%,10%))

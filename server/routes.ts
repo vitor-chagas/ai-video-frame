@@ -218,7 +218,7 @@ export async function registerRoutes(
       const outputPath = path.join("uploads/output", outputFilename);
 
       const pythonProcess = spawn("python3", [
-        "scripts/auto_frame.py",
+        "python_scripts/auto_frame.py",
         "--input", video.originalPath,
         "--output", outputPath,
         "--ratio", video.aspectRatio,
