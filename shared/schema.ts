@@ -15,6 +15,7 @@ export const videos = pgTable("videos", {
   aspectRatio: text("aspect_ratio").notNull().default("9:16"),
   status: text("status").notNull().default("uploaded"),
   fileSize: integer("file_size").notNull(),
+  duration: integer("duration"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -34,6 +35,7 @@ export const insertVideoSchema = createInsertSchema(videos).pick({
   originalPath: true,
   aspectRatio: true,
   fileSize: true,
+  duration: true,
 });
 
 export const insertPaymentSchema = createInsertSchema(payments).pick({

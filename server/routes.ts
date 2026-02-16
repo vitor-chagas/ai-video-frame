@@ -5,10 +5,39 @@ import { authStorage } from "./auth/storage";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./auth";
 import multer from "multer";
 import path from "path";
-import { spawn } from "child_process";
+import { spawn, exec } from "child_process";
 import fs from "fs";
+import { promisify } from "util";
 
+const execAsync = promisify(exec);
 const videoProgress: Map<string, number> = new Map();
+
+async function getVideoDuration(filePath: string): Promise<number | null> {
+  try {
+    const { stdout } = await execAsync(
+      `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${filePath}"`
+    );
+    const duration = parseFloat(stdout.trim());
+    return isNaN(duration) ? null : Math.round(duration);
+  } catch (error) {
+    console.error("Error getting video duration:", error);
+    return null;
+  }
+}
+
+function calculateRequiredCredits(durationInSeconds: number | null): number {
+  if (durationInSeconds === null) return 1; // Fallback
+  
+  if (durationInSeconds <= 300) {
+    return 1;
+  }
+  
+  // 1 credit for first 5 mins, + 1 credit per each additional minute (or part thereof)
+  const additionalSeconds = durationInSeconds - 300;
+  const additionalCredits = Math.ceil(additionalSeconds / 60);
+  
+  return 1 + additionalCredits;
+}
 
 const upload = multer({
   dest: "uploads/input/",
@@ -47,12 +76,16 @@ export async function registerRoutes(
 
       const userId = getUserId(req)!;
       const aspectRatio = req.body.aspectRatio || "9:16";
+      
+      const duration = await getVideoDuration(file.path);
+      
       const video = await storage.createVideo({
         userId,
         originalFilename: file.originalname,
         originalPath: file.path,
         aspectRatio,
         fileSize: file.size,
+        duration,
       });
 
       return res.json(video);
@@ -195,10 +228,15 @@ export async function registerRoutes(
         return res.status(404).json({ message: "Video not found" });
       }
 
+      const requiredCredits = calculateRequiredCredits(video.duration);
+
       // Check if user has enough credits
       const user = await authStorage.getUser(userId);
-      if (!user || (user.credits || 0) < 1) {
-        return res.status(402).json({ message: "Insufficient credits" });
+      if (!user || (user.credits || 0) < requiredCredits) {
+        return res.status(402).json({ 
+          message: `Insufficient credits. This video requires ${requiredCredits} credits.`,
+          requiredCredits 
+        });
       }
 
       if (video.status === "processing") {
@@ -211,8 +249,8 @@ export async function registerRoutes(
 
       await storage.updateVideoStatus(video.id, "processing");
       
-      // Consume 1 credit
-      await authStorage.updateUserCredits(userId, -1);
+      // Consume required credits
+      await authStorage.updateUserCredits(userId, -requiredCredits);
 
       const ext = path.extname(video.originalFilename) || ".mp4";
       const outputFilename = `auto_${video.aspectRatio.replace(":", "_")}_${video.id}${ext}`;
