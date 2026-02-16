@@ -59,9 +59,21 @@ export default function Home() {
 
   const [isBuying, setIsBuying] = useState<string | null>(null);
 
+  const { user } = useAuth();
+
   const handleBuyCredits = async (plan: string) => {
     if (!isAuthenticated) {
       window.location.href = "/api/login";
+      return;
+    }
+
+    // Prevent duplicate subscriptions
+    if ((plan === "monthly" || plan === "yearly") && user?.stripeSubscriptionId) {
+      toast({
+        title: "Active Subscription",
+        description: "You already have an active subscription. Please manage it through the 'Manage Subscription' portal if you wish to change your plan.",
+        variant: "destructive",
+      });
       return;
     }
     

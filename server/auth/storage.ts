@@ -7,6 +7,7 @@ export interface IAuthStorage {
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   updateUserCredits(id: string, amount: number): Promise<User | undefined>;
+  updateUserStripeInfo(id: string, customerId: string, subscriptionId?: string): Promise<User | undefined>;
 }
 
 class AuthStorage implements IAuthStorage {
@@ -40,6 +41,23 @@ class AuthStorage implements IAuthStorage {
         credits: (user.credits || 0) + amount,
         updatedAt: new Date(),
       })
+      .where(eq(users.id, id))
+      .returning();
+    return updatedUser;
+  }
+
+  async updateUserStripeInfo(id: string, customerId: string, subscriptionId?: string): Promise<User | undefined> {
+    const updateData: any = {
+      stripeCustomerId: customerId,
+      updatedAt: new Date(),
+    };
+    if (subscriptionId) {
+      updateData.stripeSubscriptionId = subscriptionId;
+    }
+    
+    const [updatedUser] = await db
+      .update(users)
+      .set(updateData)
       .where(eq(users.id, id))
       .returning();
     return updatedUser;

@@ -1,6 +1,6 @@
 import { useCallback, useState, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
-import { Upload, FileVideo, X, Check, Lock, Loader2, Download, Coins } from "lucide-react";
+import { Upload, FileVideo, X, Check, Lock, Loader2, Download, Coins, Settings } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -203,6 +203,28 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
     }
   };
 
+  const [isPortalLoading, setIsPortalLoading] = useState(false);
+
+  const handleManageSubscription = async () => {
+    setIsPortalLoading(true);
+    try {
+      const result = await apiRequest("/api/payments/create-portal", {
+        method: "POST",
+      });
+      if (result.url) {
+        window.location.href = result.url;
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsPortalLoading(false);
+    }
+  };
+
   const resetState = () => {
     setFile(null);
     setUploadProgress(0);
@@ -220,7 +242,23 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
   return (
     <div className="w-full max-w-2xl mx-auto" data-video-id={videoId || ""}>
       {isAuthenticated && (
-        <div className="flex justify-end mb-4">
+        <div className="flex justify-end mb-4 gap-3">
+          {(user?.stripeCustomerId || user?.stripeSubscriptionId) && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleManageSubscription}
+              disabled={isPortalLoading}
+              className="h-9 px-4 rounded-full bg-white/50 backdrop-blur-sm border border-[hsl(38,10%,85%)] hover:bg-white text-[hsl(24,10%,10%)] text-xs font-medium transition-all"
+            >
+              {isPortalLoading ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" />
+              ) : (
+                <Settings className="h-3.5 w-3.5 mr-2" />
+              )}
+              Manage Subscription
+            </Button>
+          )}
           <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-[hsl(38,10%,85%)] px-4 py-2 rounded-full shadow-sm">
             <Coins className="h-4 w-4 text-[hsl(24,10%,10%)]" />
             <span className="text-sm font-bold text-[hsl(24,10%,10%)]">

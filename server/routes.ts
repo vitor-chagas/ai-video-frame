@@ -164,12 +164,17 @@ export async function registerRoutes(
       if (stripeSession.payment_status === "paid") {
         const credits = parseInt(stripeSession.metadata?.credits || "0");
         const metadataUserId = stripeSession.metadata?.userId;
+        const customerId = stripeSession.customer as string;
+        const subscriptionId = stripeSession.subscription as string | undefined;
 
         if (metadataUserId !== userId) {
           return res.status(403).json({ message: "Unauthorized" });
         }
 
         await authStorage.updateUserCredits(userId, credits);
+        if (customerId) {
+          await authStorage.updateUserStripeInfo(userId, customerId, subscriptionId);
+        }
         return res.json({ status: "completed", credits });
       } else {
         return res.json({ status: "pending" });
@@ -249,6 +254,35 @@ export async function registerRoutes(
       });
 
       return res.json({ message: "Processing started", videoId: video.id });
+    } catch (error: any) {
+      return res.status(500).json({ message: error.message });
+    }
+  });
+
+  // ---- STRIPE PORTAL ROUTE ----
+
+  app.post("/api/payments/create-portal", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = getUserId(req)!;
+      const user = await authStorage.getUser(userId);
+
+      if (!user || !user.stripeCustomerId) {
+        return res.status(400).json({ message: "No active subscription or customer found" });
+      }
+
+      if (!process.env.STRIPE_SECRET_KEY) {
+        return res.status(400).json({ message: "Stripe is not configured" });
+      }
+
+      const Stripe = (await import("stripe")).default;
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+      const session = await stripe.billingPortal.sessions.create({
+        customer: user.stripeCustomerId,
+        return_url: `${req.protocol}://${req.get("host")}/`,
+      });
+
+      return res.json({ url: session.url });
     } catch (error: any) {
       return res.status(500).json({ message: error.message });
     }
