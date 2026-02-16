@@ -2,7 +2,7 @@ import { Layout } from "@/components/layout";
 import { UploadBox } from "@/components/upload-box";
 import { HeroBackground } from "@/components/hero-background";
 import { motion } from "framer-motion";
-import { Check } from "lucide-react";
+import { Check, Info } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/api";
@@ -144,7 +144,14 @@ export default function Home() {
             <div className="group rounded-3xl p-8 bg-white border border-[hsl(38,10%,90%)] flex flex-col gap-4 hover:border-[hsl(24,10%,10%)] hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                <h3 className="text-xl font-serif font-bold group-hover:text-[hsl(24,10%,10%)] transition-colors">Pay as you go</h3>
                <div className="text-4xl font-bold font-serif">$2<span className="text-base font-sans font-normal text-muted-foreground">/credit</span></div>
-               <p className="text-muted-foreground text-sm">1 Credit = 1 Video (max 5 min).</p>
+               <div className="space-y-1">
+                  <p className="text-muted-foreground text-sm flex items-center gap-1.5">
+                    1 Credit = 1 Video (up to 5 min)
+                  </p>
+                  <p className="text-[11px] text-[hsl(24,10%,50%)] font-medium leading-tight">
+                    Videos longer than 5 min cost +1 credit per additional minute.
+                  </p>
+               </div>
                <ul className="space-y-3 mt-4 mb-8">
                   <li className="flex items-center gap-2 text-sm"><Check className="h-4 w-4 text-[hsl(24,10%,10%)]" /> Smart AI Framing</li>
                   <li className="flex items-center gap-2 text-sm"><Check className="h-4 w-4 text-[hsl(24,10%,10%)]" /> 4K Quality Export</li>
@@ -198,7 +205,7 @@ export default function Home() {
             </div>
         </motion.div>
         <p className="text-center text-[hsl(24,5%,50%)] text-sm mt-12">
-            *1 credit = 1 auto-framed video up to 5 minutes. Additional credits apply for longer videos.
+            *1 credit covers the first 5 minutes of a video. Each additional minute (or part thereof) costs 1 additional credit.
         </p>
       </div>
     </Layout>

@@ -19,7 +19,7 @@ import { uploadVideo, apiRequest } from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
 
 export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) {
-  const [file, setFile] = useState<{ name: string; size: number } | null>(null);
+  const [file, setFile] = useState<{ name: string; size: number; duration?: number | null } | null>(null);
   const [showPayment, setShowPayment] = useState(false);
   const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
   
@@ -38,7 +38,7 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
       (async () => {
         try {
           const video = await apiRequest(`/api/videos/${stripeVideoId}`);
-          setFile({ name: video.originalFilename, size: video.fileSize });
+          setFile({ name: video.originalFilename, size: video.fileSize, duration: video.duration });
           
           if (video.status === "completed") {
             setProcessingStatus("completed");
@@ -77,6 +77,7 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
         try {
            const videoData = await uploadVideo(droppedFile, aspectRatio);
            setVideoId(videoData.id);
+           setFile(prev => prev ? { ...prev, duration: videoData.duration } : null);
         } catch (error: any) {
            toast({ title: "Upload failed", description: error.message, variant: "destructive" });
         }
@@ -92,8 +93,18 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
     maxFiles: 1,
   });
 
+  const calculateRequiredCredits = (durationInSeconds: number | null | undefined): number => {
+    if (!durationInSeconds) return 1;
+    if (durationInSeconds <= 300) return 1;
+    const additionalSeconds = durationInSeconds - 300;
+    const additionalCredits = Math.ceil(additionalSeconds / 60);
+    return 1 + additionalCredits;
+  };
+
+  const requiredCredits = calculateRequiredCredits(file?.duration);
+
   const handleStartProcessing = async () => {
-    if ((user?.credits ?? 0) >= 1) {
+    if ((user?.credits ?? 0) >= requiredCredits) {
       handlePayment();
     } else {
       setShowPayment(true);
@@ -237,6 +248,13 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
     const ext = name.slice(name.lastIndexOf("."));
     const base = name.slice(0, maxLen - ext.length - 3);
     return `${base}...${ext}`;
+  };
+
+  const formatTime = (seconds: number | null | undefined) => {
+    if (seconds === null || seconds === undefined) return "";
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
   return (
@@ -443,9 +461,15 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                 </div>
                 <div className="min-w-0">
                   <h3 className="font-bold font-serif text-xl text-[hsl(24,10%,10%)] truncate" data-testid="text-filename" title={file.name}>{truncateFilename(file.name, 35)}</h3>
-                  <p className="text-sm text-muted-foreground font-medium" data-testid="text-filesize">
-                    {(file.size / (1024 * 1024)).toFixed(2)} MB
-                  </p>
+                  <div className="flex gap-2 text-sm text-muted-foreground font-medium">
+                    <span data-testid="text-filesize">{(file.size / (1024 * 1024)).toFixed(2)} MB</span>
+                    {file.duration && (
+                      <>
+                        <span>•</span>
+                        <span>{formatTime(file.duration)}</span>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
               <Button
@@ -508,7 +532,7 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                     className="bg-[hsl(24,10%,10%)] text-[hsl(38,20%,97%)] hover:bg-[hsl(24,10%,20%)] rounded-full px-10 h-14 text-lg font-medium shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
                     data-testid="button-start-processing"
                   >
-                    Use 1 Credit to Process
+                    Use {requiredCredits} {requiredCredits === 1 ? 'Credit' : 'Credits'} to Process
                   </Button>
                 </div>
               </div>
@@ -527,7 +551,9 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                  <p className="text-sm text-muted-foreground mt-1">AutoFrame to {aspectRatio}</p>
                </div>
                <div className="text-right">
-                 <div className="font-serif font-bold text-3xl text-[hsl(24,10%,10%)]">1 Credit</div>
+                 <div className="font-serif font-bold text-3xl text-[hsl(24,10%,10%)]">
+                   {requiredCredits} {requiredCredits === 1 ? 'Credit' : 'Credits'}
+                 </div>
                </div>
              </div>
 
@@ -551,7 +577,7 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
             <Button 
               className="w-full rounded-full h-14 text-lg font-medium bg-[hsl(24,10%,10%)] hover:bg-[hsl(24,10%,20%)] text-[hsl(38,20%,97%)] shadow-lg hover:shadow-xl transition-all duration-300"
               onClick={handlePayment}
-              disabled={isPaymentProcessing || (user?.credits ?? 0) < 1}
+              disabled={isPaymentProcessing || (user?.credits ?? 0) < requiredCredits}
               data-testid="button-pay"
             >
               {isPaymentProcessing ? (
@@ -559,9 +585,9 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   {processingStatus || "Processing..."}
                 </>
-              ) : (user?.credits ?? 0) >= 1 ? (
+              ) : (user?.credits ?? 0) >= requiredCredits ? (
                 <>
-                  <Check className="mr-2 h-4 w-4" /> Use 1 Credit
+                  <Check className="mr-2 h-4 w-4" /> Use {requiredCredits} {requiredCredits === 1 ? 'Credit' : 'Credits'}
                 </>
               ) : (
                 <>
@@ -570,10 +596,10 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
               )}
             </Button>
             
-            {(user?.credits ?? 0) < 1 && (
+            {(user?.credits ?? 0) < requiredCredits && (
               <div className="space-y-4">
                 <p className="text-center text-sm text-red-500 font-medium">
-                  You need at least 1 credit to process this video.
+                  You need at least {requiredCredits} {requiredCredits === 1 ? 'credit' : 'credits'} to process this video.
                 </p>
                 <Button 
                   variant="outline"
