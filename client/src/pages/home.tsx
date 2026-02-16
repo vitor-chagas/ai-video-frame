@@ -2,7 +2,7 @@ import { Layout } from "@/components/layout";
 import { UploadBox } from "@/components/upload-box";
 import { HeroBackground } from "@/components/hero-background";
 import { motion } from "framer-motion";
-import { Check, Info } from "lucide-react";
+import { Check, Info, Mail } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/api";
@@ -206,6 +206,30 @@ export default function Home() {
         <p className="text-center text-[hsl(24,5%,50%)] text-sm mt-12">
             *1 credit covers the first 5 minutes of a video. Each additional minute (or part thereof) costs 1 additional credit.
         </p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="w-full max-w-2xl mx-auto mt-32 text-center"
+        >
+          <div className="bg-white border border-[hsl(38,10%,90%)] rounded-3xl p-10 md:p-16 shadow-sm hover:shadow-md transition-shadow">
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-[hsl(24,10%,10%)] mb-4">
+              Have questions or feedback?
+            </h2>
+            <p className="text-[hsl(24,5%,40%)] mb-10 text-lg">
+              We're always looking to improve. Reach out if you have any feature requests, found a bug, or just want to say hi!
+            </p>
+            <a 
+              href="mailto:contact@aivideoframe.com?subject=Feedback for App Auto Framer"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-[hsl(24,10%,10%)] text-white font-medium hover:bg-[hsl(24,10%,20%)] transition-all transform hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <Mail className="h-5 w-5" />
+              Email Us
+            </a>
+          </div>
+        </motion.div>
       </div>
     </Layout>
   );
