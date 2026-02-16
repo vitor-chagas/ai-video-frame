@@ -44,11 +44,81 @@ export function registerAuthRoutes(app: Express): void {
 
       console.log(`[Auth] Sending magic link to ${email}: ${magicLink}`);
 
+      const baseUrl = process.env.RAILWAY_PUBLIC_DOMAIN 
+        ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` 
+        : `${protocol}://${host}`;
+
       const { data, error } = await resend.emails.send({
-        from: "AI Video Frame <contato@aivideoframe.com>",
+        from: "AI Video Frame <contact@aivideoframe.com>",
         to: email,
         subject: "Login to AI Video Frame",
-        html: `<p>Click the link below to login to your account. This link expires in 15 minutes.</p><p><a href="${magicLink}">${magicLink}</a></p>`,
+        html: `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login to AI Video Frame</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f9f6f1; color: #1a1512;">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f9f6f1;">
+    <tr>
+      <td align="center" style="padding: 40px 0 30px 0;">
+        <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse;">
+          <tr>
+            <td align="center" style="padding: 0 0 30px 0;">
+              <img src="${baseUrl}/logo.png" alt="AI Video Frame" width="180" style="display: block; border: 0;" />
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color: #ffffff; padding: 40px; border-radius: 24px; border: 1px solid #e8e2d9; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+              <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td style="padding: 0 0 20px 0;">
+                    <h1 style="margin: 0; font-family: 'Georgia', serif; font-size: 28px; line-height: 1.2; font-weight: bold; color: #1a1512;">
+                      Magic link for your login.
+                    </h1>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 0 0 30px 0; font-size: 16px; line-height: 1.6; color: #5c554f;">
+                    Click the button below to securely login to your AI Video Frame account. This link will expire in 15 minutes.
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center">
+                    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate;">
+                      <tr>
+                        <td align="center" style="border-radius: 100px; background-color: #1a1512;">
+                          <a href="${magicLink}" target="_blank" style="display: inline-block; padding: 16px 40px; font-size: 16px; font-weight: 600; color: #f9f6f1; text-decoration: none; border-radius: 100px;">
+                            Sign In to App
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 30px 0 0 0; font-size: 14px; line-height: 1.5; color: #8c857f; text-align: center;">
+                    If the button doesn't work, copy and paste this link into your browser:<br />
+                    <a href="${magicLink}" style="color: #1a1512; text-decoration: underline;">${magicLink}</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 30px 40px; text-align: center; font-size: 12px; color: #8c857f;">
+              &copy; 2026 AI Video Frame. All rights reserved.
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+        `,
       });
 
       if (error) {
