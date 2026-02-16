@@ -119,7 +119,7 @@ export default function Home() {
             Intelligent framing for your videos.
           </h1>
           <p className="text-lg md:text-xl text-[hsl(24,5%,40%)] max-w-xl mx-auto leading-relaxed">
-            Automatically crop landscape videos to vertical formats. 
+            Let AI automatically crop landscape videos to vertical formats. 
             Perfect for TikTok, Reels, and Shorts.
           </p>
         </motion.div>
@@ -186,7 +186,6 @@ export default function Home() {
             </div>
 
              <div className="group rounded-3xl p-8 bg-white border border-[hsl(38,10%,90%)] flex flex-col gap-4 hover:border-[hsl(24,10%,10%)] hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-               <div className="absolute top-0 right-0 bg-[hsl(38,10%,90%)] text-[hsl(24,10%,10%)] text-xs font-bold px-3 py-1 rounded-bl-xl rounded-tr-2xl">SAVE 10%</div>
                <h3 className="text-xl font-serif font-bold group-hover:text-[hsl(24,10%,10%)] transition-colors">Annual Pro</h3>
                <div className="text-4xl font-bold font-serif">$216<span className="text-base font-sans font-normal text-muted-foreground">/year</span></div>
                <p className="text-muted-foreground text-sm">264 Credits (22 per month).</p>
