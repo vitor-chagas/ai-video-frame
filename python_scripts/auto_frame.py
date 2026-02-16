@@ -77,11 +77,16 @@ def process_video(input_path, output_path, aspect_ratio=(9, 16), progress_callba
     # Temporary video file (without audio) - Use a unique name to avoid conflicts
     temp_output = f"temp_no_audio_{int(time.time())}.mp4"
     
-    # Video writer setup - Try avc1 (H.264) first, fallback to mp4v
-    # avc1 is much more robust for high resolutions
-    fourcc = cv2.VideoWriter_fourcc(*'avc1')
+    # Video writer setup - Try XVID first for efficiency, fallback to avc1 then mp4v
+    # XVID is faster and less CPU-intensive for high resolutions
+    fourcc = cv2.VideoWriter_fourcc(*'XVID')
     out = cv2.VideoWriter(temp_output, fourcc, fps, (target_width, target_height))
     
+    if not out.isOpened():
+        print("Warning: XVID codec failed, trying avc1")
+        fourcc = cv2.VideoWriter_fourcc(*'avc1')
+        out = cv2.VideoWriter(temp_output, fourcc, fps, (target_width, target_height))
+
     if not out.isOpened():
         print("Warning: avc1 codec failed, falling back to mp4v")
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
