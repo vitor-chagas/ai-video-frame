@@ -12,6 +12,51 @@ import { promisify } from "util";
 const execAsync = promisify(exec);
 const videoProgress: Map<string, number> = new Map();
 
+const CLEANUP_THRESHOLD_MS = 15 * 60 * 1000; // 15 minutes
+
+async function cleanupUserFiles(userId: string) {
+  try {
+    const videos = await storage.getVideosByUser(userId);
+    for (const video of videos) {
+      if (video.originalPath && fs.existsSync(video.originalPath)) {
+        fs.unlinkSync(video.originalPath);
+      }
+      if (video.processedPath && fs.existsSync(video.processedPath)) {
+        fs.unlinkSync(video.processedPath);
+      }
+      // Note: We keep the DB record but files are gone. 
+      // Optionally we could mark them as deleted in DB.
+    }
+  } catch (error) {
+    console.error("Error during user file cleanup:", error);
+  }
+}
+
+export async function cleanupExpiredVideos() {
+  try {
+    const now = new Date();
+    // In a real app, you'd query the DB for expired videos.
+    // For now, let's scan the uploads directory as a safety measure.
+    const directories = ["uploads/input", "uploads/output"];
+    for (const dir of directories) {
+      if (!fs.existsSync(dir)) continue;
+      const files = fs.readdirSync(dir);
+      for (const file of files) {
+        if (file === ".gitkeep" || file === ".DS_Store") continue;
+        const filePath = path.join(dir, file);
+        const stats = fs.statSync(filePath);
+        const age = now.getTime() - stats.mtime.getTime();
+        if (age > CLEANUP_THRESHOLD_MS) {
+          fs.unlinkSync(filePath);
+          console.log(`[Cleanup] Deleted expired file: ${filePath}`);
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error during scheduled cleanup:", error);
+  }
+}
+
 async function getVideoDuration(filePath: string): Promise<number | null> {
   try {
     const { stdout } = await execAsync(
@@ -75,6 +120,10 @@ export async function registerRoutes(
       }
 
       const userId = getUserId(req)!;
+      
+      // Cleanup previous files for this user before starting new ones
+      await cleanupUserFiles(userId);
+
       const aspectRatio = req.body.aspectRatio || "9:16";
       
       const duration = await getVideoDuration(file.path);
@@ -98,6 +147,35 @@ export async function registerRoutes(
     const userId = getUserId(req)!;
     const vids = await storage.getVideosByUser(userId);
     return res.json(vids);
+  });
+
+  app.get("/api/videos/latest", isAuthenticated, async (req: Request, res: Response) => {
+    const userId = getUserId(req)!;
+    const vids = await storage.getVideosByUser(userId);
+    if (vids.length === 0) return res.json(null);
+    
+    // Sort by createdAt desc
+    const latest = vids.sort((a, b) => 
+      new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+    )[0];
+
+    // Check if it's within 15 minutes and files still exist
+    const now = new Date();
+    const age = now.getTime() - new Date(latest.createdAt || 0).getTime();
+    
+    if (age > CLEANUP_THRESHOLD_MS) {
+      return res.json(null);
+    }
+
+    // Check if processed file exists if it's completed
+    if (latest.status === "completed" && latest.processedPath) {
+      if (!fs.existsSync(latest.processedPath)) {
+        return res.json(null);
+      }
+    }
+
+    const progress = videoProgress.get(latest.id) ?? 0;
+    return res.json({ ...latest, progress });
   });
 
   app.get("/api/videos/:id", isAuthenticated, async (req: Request, res: Response) => {

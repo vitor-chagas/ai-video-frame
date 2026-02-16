@@ -4,7 +4,7 @@ import { z } from "zod";
 import { sql } from "drizzle-orm";
 
 export * from "./models/auth";
-import { users } from "./models/auth";
+import { users, verificationTokens } from "./models/auth";
 
 export const videos = pgTable("videos", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

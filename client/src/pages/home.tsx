@@ -11,10 +11,11 @@ import { useAuth } from "@/hooks/use-auth";
 import { queryClient } from "@/lib/queryClient";
 
 export default function Home() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [persistedVideoId, setPersistedVideoId] = useState<string | null>(null);
+  const [isBuying, setIsBuying] = useState<string | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -57,13 +58,12 @@ export default function Home() {
     }
   }, []);
 
-  const [isBuying, setIsBuying] = useState<string | null>(null);
-
-  const { user } = useAuth();
-
   const handleBuyCredits = async (plan: string) => {
     if (!isAuthenticated) {
-      window.location.href = "/api/login";
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to buy credits.",
+      });
       return;
     }
 

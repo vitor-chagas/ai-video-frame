@@ -2,6 +2,7 @@ import { Link } from "wouter";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { LogOut, User } from "lucide-react";
+import { LoginDialog } from "./login-dialog";
 
 export function Layout({ children, className }: { children: React.ReactNode; className?: string }) {
   const { user, isAuthenticated, logout } = useAuth();
@@ -40,13 +41,14 @@ export function Layout({ children, className }: { children: React.ReactNode; cla
               </a>
             </>
           ) : (
-            <a
-              href="/api/login"
-              className="text-sm font-medium bg-[hsl(24,10%,10%)] text-[hsl(38,20%,97%)] px-5 py-2 rounded-full hover:bg-[hsl(24,10%,20%)] transition-colors"
-              data-testid="button-login"
-            >
-              Sign In
-            </a>
+            <LoginDialog>
+              <button
+                className="text-sm font-medium bg-[hsl(24,10%,10%)] text-[hsl(38,20%,97%)] px-5 py-2 rounded-full hover:bg-[hsl(24,10%,20%)] transition-colors"
+                data-testid="button-login"
+              >
+                Sign In
+              </button>
+            </LoginDialog>
           )}
         </nav>
       </header>
