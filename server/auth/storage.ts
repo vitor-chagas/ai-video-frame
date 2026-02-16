@@ -1,18 +1,27 @@
-import { users, type User, type UpsertUser } from "@shared/models/auth";
+import { users, verificationTokens, type User, type UpsertUser, type VerificationToken, type InsertVerificationToken } from "@shared/models/auth";
 import { db } from "../db";
-import { eq } from "drizzle-orm";
+import { eq, and, gt } from "drizzle-orm";
 
 // Interface for auth storage operations
 export interface IAuthStorage {
   getUser(id: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   updateUserCredits(id: string, amount: number): Promise<User | undefined>;
   updateUserStripeInfo(id: string, customerId: string, subscriptionId?: string): Promise<User | undefined>;
+  createVerificationToken(token: InsertVerificationToken): Promise<VerificationToken>;
+  getVerificationToken(token: string): Promise<VerificationToken | undefined>;
+  deleteVerificationToken(token: string): Promise<void>;
 }
 
 class AuthStorage implements IAuthStorage {
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
     return user;
   }
 
@@ -61,6 +70,28 @@ class AuthStorage implements IAuthStorage {
       .where(eq(users.id, id))
       .returning();
     return updatedUser;
+  }
+
+  async createVerificationToken(tokenData: InsertVerificationToken): Promise<VerificationToken> {
+    const [token] = await db.insert(verificationTokens).values(tokenData).returning();
+    return token;
+  }
+
+  async getVerificationToken(token: string): Promise<VerificationToken | undefined> {
+    const [tokenData] = await db
+      .select()
+      .from(verificationTokens)
+      .where(
+        and(
+          eq(verificationTokens.token, token),
+          gt(verificationTokens.expires, new Date())
+        )
+      );
+    return tokenData;
+  }
+
+  async deleteVerificationToken(token: string): Promise<void> {
+    await db.delete(verificationTokens).where(eq(verificationTokens.token, token));
   }
 }
 

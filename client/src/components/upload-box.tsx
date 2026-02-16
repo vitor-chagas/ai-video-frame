@@ -33,12 +33,14 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
   const { user, isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
+    // If we have a video from Stripe redirect, use it
     if (stripeVideoId) {
       setVideoId(stripeVideoId);
       (async () => {
         try {
           const video = await apiRequest(`/api/videos/${stripeVideoId}`);
           setFile({ name: video.originalFilename, size: video.fileSize, duration: video.duration });
+          setAspectRatio(video.aspectRatio || "9:16");
           
           if (video.status === "completed") {
             setProcessingStatus("completed");
@@ -51,11 +53,34 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
              setShowPayment(true);
           }
         } catch (err) {
-          console.error("Failed to load persisted video", err);
+          console.error("Failed to load stripe video", err);
+        }
+      })();
+    } else if (isAuthenticated) {
+      // Otherwise, check if there's any active video within the 15m window
+      (async () => {
+        try {
+          const video = await apiRequest("/api/videos/latest");
+          if (video) {
+            setVideoId(video.id);
+            setFile({ name: video.originalFilename, size: video.fileSize, duration: video.duration });
+            setAspectRatio(video.aspectRatio || "9:16");
+            
+            if (video.status === "completed") {
+              setProcessingStatus("completed");
+            } else if (video.status === "failed") {
+              setProcessingStatus("failed");
+            } else if (video.status === "processing") {
+              setProcessingStatus("processing");
+              pollVideoStatus(video.id);
+            }
+          }
+        } catch (err) {
+          console.error("Failed to fetch latest video", err);
         }
       })();
     }
-  }, [stripeVideoId]);
+  }, [stripeVideoId, isAuthenticated]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
@@ -328,7 +353,12 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
               </div>
               <div>
                 <h3 className="text-2xl font-serif font-bold text-[hsl(24,10%,10%)] mb-2">Your video is ready!</h3>
-                <p className="text-muted-foreground mb-6">Auto-framed to {aspectRatio} with AI subject tracking.</p>
+                <p className="text-muted-foreground mb-1">Auto-framed to {aspectRatio} with AI subject tracking.</p>
+                {file && (
+                  <p className="text-sm text-[hsl(24,5%,50%)] font-medium mb-6 italic">
+                    {file.name}
+                  </p>
+                )}
               </div>
               <div className="flex gap-4">
                 <Button 
