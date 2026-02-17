@@ -4,17 +4,22 @@
 - [x] sign in process with magic email link
 - [x] add domain to resend.
 - [x] buy a domain and email address.
+- [x] magic link email design, create a nicer email.
+- [x] fix the monthly and yealy subs.. it should give 12 credits on month and 144 yealy 
+- [x] change the repo and folder name to ai-video-frame 
+- [x] add webhooks in stripe.
+- [x] create a test supabase db and clean up prod db.
+- [x] check security
+- [x] check if all the tables as correct in the db abd if the ids are secure.
+- [x] add a limit of video lenght to the upload box.
+- [x] google authentication app branding design
+- [x] review and finilize the design of the website.
 
 
 ## TODO
-- [ ] test other llm modelts to process the video.
+- [ ] test other llm models to process the video.
 - [ ] test the time and the cost to process in a AWS instance with gpu.
-- [ ] check security
 - [ ] clean up the code.
-- [ ] define the best way to host this app
-- [ ] review and finilize the design of the website.
-- [ ] check if all the tables as correct in the db abd if the ids are secure.
 - [ ] create a api and sell it on rapidapi.
-- [ ] magic link email design, create a nicer email.
-- [ ] on google authentication screen it shows "app-auto-framer", make it a nicer name for the user.
-- [ ] picture in the email profile. https://www.youtube.com/watch?v=j3mCy5D5Y7Q
+- [ ] picture in the email profile. 
+- [ ] consider to change the google authentication app from my personal accout to the ai video frame gmail account.

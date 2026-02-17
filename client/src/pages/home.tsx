@@ -1,14 +1,22 @@
 import { Layout } from "@/components/layout";
 import { UploadBox } from "@/components/upload-box";
 import { HeroBackground } from "@/components/hero-background";
-import { motion } from "framer-motion";
-import { Check, Info, Mail } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Check, Info, Mail, Coins, Loader2, Lock } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { queryClient } from "@/lib/queryClient";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const { isAuthenticated, user } = useAuth();
@@ -16,6 +24,8 @@ export default function Home() {
   const { toast } = useToast();
   const [persistedVideoId, setPersistedVideoId] = useState<string | null>(null);
   const [isBuying, setIsBuying] = useState<string | null>(null);
+  const [customQuantity, setCustomQuantity] = useState(1);
+  const [showQuantityDialog, setShowQuantityDialog] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -80,11 +90,19 @@ export default function Home() {
     // Check if there's a video in the upload box to persist
     const uploadBoxVideoId = document.querySelector('[data-video-id]')?.getAttribute('data-video-id');
 
+    if (plan === "single") {
+      setShowQuantityDialog(true);
+    } else {
+      handleBuyCreditsAction(plan, uploadBoxVideoId || undefined);
+    }
+  };
+
+  const handleBuyCreditsAction = async (plan: string, returnVideoId?: string, quantity?: number) => {
     setIsBuying(plan);
     try {
       const result = await apiRequest("/api/payments/create-credits", {
         method: "POST",
-        body: JSON.stringify({ plan, returnVideoId: uploadBoxVideoId }),
+        body: JSON.stringify({ plan, returnVideoId, quantity }),
       });
 
       if (result.checkoutUrl) {
@@ -143,7 +161,7 @@ export default function Home() {
         >
             <div className="group rounded-3xl p-8 bg-white border border-[hsl(38,10%,90%)] flex flex-col gap-4 hover:border-[hsl(24,10%,10%)] hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                <h3 className="text-xl font-serif font-bold group-hover:text-[hsl(24,10%,10%)] transition-colors">Pay as you go</h3>
-               <div className="text-4xl font-bold font-serif">$2<span className="text-base font-sans font-normal text-muted-foreground">/credit</span></div>
+               <div className="text-4xl font-bold font-serif">$1.99<span className="text-base font-sans font-normal text-muted-foreground">/credit</span></div>
                <div className="space-y-1">
                   <p className="text-muted-foreground text-sm flex items-center gap-1.5">
                     1 Credit = 1 Video (up to 5 min)
@@ -162,19 +180,19 @@ export default function Home() {
                   onClick={() => handleBuyCredits("single")}
                   className="w-full py-3 rounded-full border border-[hsl(38,10%,85%)] font-medium hover:bg-[hsl(24,10%,10%)] hover:text-white transition-all mt-auto group-hover:border-[hsl(24,10%,10%)] disabled:opacity-50"
                >
-                  {isBuying === "single" ? "Loading..." : "Buy 1 Credit"}
+                  {isBuying === "single" ? "Loading..." : "Buy Credits"}
                </button>
             </div>
 
             <div className="group rounded-3xl p-8 bg-[hsl(24,10%,10%)] text-[hsl(38,20%,97%)] flex flex-col gap-4 relative transform md:-translate-y-4 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
                <div className="absolute top-0 right-0 bg-[hsl(38,20%,90%)] text-[hsl(24,10%,10%)] text-xs font-bold px-3 py-1 rounded-bl-xl rounded-tr-2xl">MOST POPULAR</div>
                <h3 className="text-xl font-serif font-bold">Monthly Creator</h3>
-               <div className="text-4xl font-bold font-serif">$20<span className="text-base font-sans font-normal text-[hsl(38,20%,80%)]">/month</span></div>
-               <p className="text-[hsl(38,20%,80%)] text-sm">22 Credits every month.</p>
+               <div className="text-4xl font-bold font-serif">$19.99<span className="text-base font-sans font-normal text-[hsl(38,20%,80%)]">/month</span></div>
+               <p className="text-[hsl(38,20%,80%)] text-sm">12 Credits every month.</p>
                <ul className="space-y-3 mt-4 mb-8">
                   <li className="flex items-center gap-2 text-sm"><Check className="h-4 w-4 text-[hsl(38,20%,97%)]" /> Save on every video</li>
                   <li className="flex items-center gap-2 text-sm"><Check className="h-4 w-4 text-[hsl(38,20%,97%)]" /> Priority Processing</li>
-                  <li className="flex items-center gap-2 text-sm"><Check className="h-4 w-4 text-[hsl(38,20%,97%)]" /> 22 Credits Included</li>
+                  <li className="flex items-center gap-2 text-sm"><Check className="h-4 w-4 text-[hsl(38,20%,97%)]" /> 12 Credits Included</li>
                </ul>
                <button 
                   disabled={isBuying !== null}
@@ -187,12 +205,12 @@ export default function Home() {
 
              <div className="group rounded-3xl p-8 bg-white border border-[hsl(38,10%,90%)] flex flex-col gap-4 hover:border-[hsl(24,10%,10%)] hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                <h3 className="text-xl font-serif font-bold group-hover:text-[hsl(24,10%,10%)] transition-colors">Annual Pro</h3>
-               <div className="text-4xl font-bold font-serif">$216<span className="text-base font-sans font-normal text-muted-foreground">/year</span></div>
-               <p className="text-muted-foreground text-sm">264 Credits (22 per month).</p>
+               <div className="text-4xl font-bold font-serif">$215.88<span className="text-base font-sans font-normal text-muted-foreground">/year</span></div>
+               <p className="text-muted-foreground text-sm">144 Credits (12 per month).</p>
                <ul className="space-y-3 mt-4 mb-8">
                   <li className="flex items-center gap-2 text-sm"><Check className="h-4 w-4 text-[hsl(24,10%,10%)]" /> Best value for pros</li>
                   <li className="flex items-center gap-2 text-sm"><Check className="h-4 w-4 text-[hsl(24,10%,10%)]" /> Priority Processing</li>
-                  <li className="flex items-center gap-2 text-sm"><Check className="h-4 w-4 text-[hsl(24,10%,10%)]" /> 264 Credits total</li>
+                  <li className="flex items-center gap-2 text-sm"><Check className="h-4 w-4 text-[hsl(24,10%,10%)]" /> 144 Credits total</li>
                </ul>
                <button 
                   disabled={isBuying !== null}
@@ -222,7 +240,7 @@ export default function Home() {
               We're always looking to improve. Reach out if you have any feature requests, found a bug, or just want to say hi!
             </p>
             <a 
-              href="mailto:contact@aivideoframe.com?subject=Feedback for App Auto Framer"
+              href="mailto:contact@aivideoframe.com?subject=Contact AI Video Frame"
               className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-[hsl(24,10%,10%)] text-white font-medium hover:bg-[hsl(24,10%,20%)] transition-all transform hover:scale-[1.02] active:scale-[0.98]"
             >
               <Mail className="h-5 w-5" />
@@ -231,6 +249,88 @@ export default function Home() {
           </div>
         </motion.div>
       </div>
+
+      <Dialog open={showQuantityDialog} onOpenChange={setShowQuantityDialog}>
+        <DialogContent className="sm:max-w-md rounded-3xl p-0 overflow-hidden border-0 shadow-2xl">
+          <div className="bg-white p-8 space-y-8">
+             <div className="flex items-center justify-between border-b border-dashed border-gray-200 pb-6">
+               <div>
+                 <h3 className="font-serif font-bold text-2xl text-[hsl(24,10%,10%)]">Select Quantity</h3>
+                 <p className="text-sm text-muted-foreground mt-1">Pay as you go credits</p>
+               </div>
+               <div className="text-right">
+                 <div className="font-serif font-bold text-3xl text-[hsl(24,10%,10%)]">
+                   $1.99<span className="text-sm font-sans font-normal text-muted-foreground">/ea</span>
+                 </div>
+               </div>
+             </div>
+
+             <DialogHeader className="sr-only">
+              <DialogTitle>Buy Credits</DialogTitle>
+              <DialogDescription>Select how many credits you want to purchase</DialogDescription>
+             </DialogHeader>
+
+              <div className="space-y-6">
+                <div className="flex flex-col gap-3">
+                  <label className="text-sm font-bold text-[hsl(24,10%,10%)] uppercase tracking-wider text-center">How many credits do you need?</label>
+                  <div className="flex items-center justify-center gap-4">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-12 w-12 rounded-xl bg-[hsl(38,20%,95%)] text-[hsl(24,10%,10%)] hover:bg-[hsl(38,20%,90%)]"
+                      onClick={() => setCustomQuantity(Math.max(1, customQuantity - 1))}
+                    >
+                      <span className="text-xl font-bold">-</span>
+                    </Button>
+                    <input 
+                      type="number" 
+                      min="1" 
+                      max="1000"
+                      value={customQuantity}
+                      onChange={(e) => setCustomQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                      className="w-32 h-16 text-3xl px-3 py-2 rounded-2xl border border-[hsl(38,10%,85%)] text-center font-bold focus:ring-2 focus:ring-[hsl(24,10%,10%)] focus:outline-none bg-[hsl(38,20%,98%)] text-[hsl(24,10%,10%)] shadow-inner"
+                    />
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-12 w-12 rounded-xl bg-[hsl(38,20%,95%)] text-[hsl(24,10%,10%)] hover:bg-[hsl(38,20%,90%)]"
+                      onClick={() => setCustomQuantity(customQuantity + 1)}
+                    >
+                      <span className="text-xl font-bold">+</span>
+                    </Button>
+                  </div>
+                  <p className="text-center text-sm font-medium text-muted-foreground">
+                    Total: <span className="text-[hsl(24,10%,10%)] font-bold text-lg">${(customQuantity * 1.99).toFixed(2)}</span>
+                  </p>
+                </div>
+
+                <div className="pt-4 space-y-3">
+                  <Button 
+                    className="w-full rounded-full h-14 text-lg font-medium bg-[hsl(24,10%,10%)] hover:bg-[hsl(24,10%,20%)] text-[hsl(38,20%,97%)] shadow-lg hover:shadow-xl transition-all duration-300"
+                    onClick={() => {
+                      setShowQuantityDialog(false);
+                      const uploadBoxVideoId = document.querySelector('[data-video-id]')?.getAttribute('data-video-id');
+                      handleBuyCreditsAction("single", uploadBoxVideoId || undefined, customQuantity);
+                    }}
+                    disabled={isBuying !== null}
+                  >
+                    {isBuying === "single" ? (
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    ) : (
+                      <Coins className="mr-2 h-5 w-5" />
+                    )}
+                    Purchase {customQuantity} {customQuantity === 1 ? 'Credit' : 'Credits'}
+                  </Button>
+                  
+                  <div className="flex items-center justify-center gap-2 text-xs font-medium text-muted-foreground bg-[hsl(38,20%,98%)] py-3 rounded-xl">
+                    <Lock className="h-3 w-3" />
+                    Secure Checkout by Stripe
+                  </div>
+                </div>
+              </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 }

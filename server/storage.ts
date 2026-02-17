@@ -11,6 +11,7 @@ export interface IStorage {
   getVideosByUser(userId: string): Promise<Video[]>;
   createVideo(video: InsertVideo): Promise<Video>;
   updateVideoStatus(id: string, status: string, processedPath?: string): Promise<Video | undefined>;
+  getAllProcessingVideos(): Promise<Video[]>;
 
   getPayment(id: string): Promise<Payment | undefined>;
   getPaymentByVideoId(videoId: string): Promise<Payment | undefined>;
@@ -38,6 +39,10 @@ export class DatabaseStorage implements IStorage {
     if (processedPath) updateData.processedPath = processedPath;
     const [video] = await db.update(videos).set(updateData).where(eq(videos.id, id)).returning();
     return video;
+  }
+
+  async getAllProcessingVideos(): Promise<Video[]> {
+    return await db.select().from(videos).where(eq(videos.status, "processing"));
   }
 
   async getPayment(id: string): Promise<Payment | undefined> {

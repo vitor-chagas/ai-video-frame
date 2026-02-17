@@ -17,11 +17,16 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { uploadVideo, apiRequest } from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
+import { LoginDialog } from "./login-dialog";
 
 export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) {
   const [file, setFile] = useState<{ name: string; size: number; duration?: number | null } | null>(null);
   const [showPayment, setShowPayment] = useState(false);
+  const [topUpQuantity, setTopUpQuantity] = useState(1);
+  const [isTopUpLoading, setIsTopUpLoading] = useState(false);
   const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
   
   const [aspectRatio, setAspectRatio] = useState("9:16");
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -87,23 +92,38 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
       const droppedFile = acceptedFiles[0];
       setFile({ name: droppedFile.name, size: droppedFile.size });
       setUploadProgress(0);
+      setIsUploading(true);
+      setIsValidating(false);
+      
       const interval = setInterval(() => {
         setUploadProgress((prev) => {
-          if (prev >= 100) {
+          if (prev >= 95) { // Stop at 95% until server responds
             clearInterval(interval);
-            return 100;
+            return 95;
           }
-          return prev + 10;
+          return prev + 5;
         });
-      }, 100);
+      }, 200);
 
       // Trigger actual upload
       (async () => {
         try {
            const videoData = await uploadVideo(droppedFile, aspectRatio);
-           setVideoId(videoData.id);
-           setFile(prev => prev ? { ...prev, duration: videoData.duration } : null);
+           setUploadProgress(100);
+           setIsUploading(false);
+           setIsValidating(true);
+           
+           // Small delay to show 100%
+           setTimeout(() => {
+             setVideoId(videoData.id);
+             setFile(prev => prev ? { ...prev, duration: videoData.duration } : null);
+             setIsValidating(false);
+           }, 500);
         } catch (error: any) {
+           setIsUploading(false);
+           setIsValidating(false);
+           setFile(null);
+           setUploadProgress(0);
            toast({ title: "Upload failed", description: error.message, variant: "destructive" });
         }
       })();
@@ -116,6 +136,7 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
       "video/*": [".mp4", ".mov", ".avi"],
     },
     maxFiles: 1,
+    maxSize: 2 * 1024 * 1024 * 1024,
   });
 
   const calculateRequiredCredits = (durationInSeconds: number | null | undefined): number => {
@@ -127,12 +148,50 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
   };
 
   const requiredCredits = calculateRequiredCredits(file?.duration);
+  const missingCredits = Math.max(0, requiredCredits - (user?.credits ?? 0));
+
+  useEffect(() => {
+    if (missingCredits > 0) {
+      setTopUpQuantity(missingCredits);
+    }
+  }, [missingCredits]);
 
   const handleStartProcessing = async () => {
     if ((user?.credits ?? 0) >= requiredCredits) {
       handlePayment();
     } else {
       setShowPayment(true);
+    }
+  };
+
+  const handleTopUp = async () => {
+    if (!videoId || topUpQuantity <= 0) return;
+    setIsTopUpLoading(true);
+    try {
+      const result = await apiRequest("/api/payments/create-credits", {
+        method: "POST",
+        body: JSON.stringify({ 
+          plan: "single", 
+          quantity: topUpQuantity,
+          returnVideoId: videoId 
+        }),
+      });
+
+      if (result.checkoutUrl) {
+        window.location.href = result.checkoutUrl;
+      } else if (result.simulated) {
+        toast({ title: "Credits added (Simulated)", description: `Successfully added ${missingCredits} credits.` });
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+        setShowPayment(false);
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsTopUpLoading(false);
     }
   };
 
@@ -208,35 +267,11 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
     }, 3000);
   };
 
-  const handleDownload = async () => {
+  const handleDownload = () => {
     if (!videoId) return;
-    try {
-      const response = await fetch(`/api/videos/${videoId}/download`, {
-        credentials: "include",
-      });
-      if (!response.ok) throw new Error("Download failed");
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      const safeName = file?.name
-        ? `autoframe_${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`
-        : "autoframe_video.mp4";
-      a.download = safeName;
-      a.style.display = "none";
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => {
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-      }, 1000);
-    } catch (err) {
-      toast({
-        title: "Download failed",
-        description: "Could not download the video. Please try again.",
-        variant: "destructive",
-      });
-    }
+    // Use direct window location for download to handle large files better than fetch/blob
+    // The server already sets the correct Content-Disposition header
+    window.location.href = `/api/videos/${videoId}/download`;
   };
 
   const [isPortalLoading, setIsPortalLoading] = useState(false);
@@ -325,16 +360,47 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
               <div className="w-full max-w-sm">
                 <h3 className="text-2xl font-serif font-bold text-[hsl(24,10%,10%)] mb-2">Processing your video</h3>
                 <p className="text-muted-foreground mb-4">Our AI is tracking subjects and auto-framing to {aspectRatio}.</p>
-                <div className="space-y-2">
+                <div className="space-y-4">
                   <div className="flex justify-between text-sm font-medium text-[hsl(24,10%,10%)]">
-                    <span>{processingProgress > 0 ? "AI analyzing frames..." : "Initializing..."}</span>
+                    <span className="flex items-center gap-2">
+                      {processingProgress === 100 && (
+                        <Loader2 className="h-3 w-3 animate-spin text-[hsl(24,10%,10%)]" />
+                      )}
+                      {processingProgress === 100 
+                        ? "Finalizing your video..." 
+                        : processingProgress > 0 
+                          ? "AI analyzing frames..." 
+                          : "Initializing..."}
+                    </span>
                     <span data-testid="text-processing-progress">{processingProgress}%</span>
                   </div>
-                  <Progress value={processingProgress} className="h-3 bg-[hsl(38,10%,90%)]" />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {processingProgress > 0
-                      ? "This can take several minutes for longer videos."
-                      : "Setting up AI pose detection..."}
+                  <div className="relative">
+                    <Progress 
+                      value={processingProgress} 
+                      className={`h-3 bg-[hsl(38,10%,90%)] transition-all duration-500 ${processingProgress === 100 ? "opacity-40" : ""}`} 
+                    />
+                    {processingProgress === 100 && (
+                      <div className="absolute inset-0 overflow-hidden rounded-full">
+                        <motion.div 
+                          className="h-full w-1/3 bg-gradient-to-r from-transparent via-[hsl(24,10%,10%)]/20 to-transparent"
+                          animate={{
+                            x: ["-100%", "300%"]
+                          }}
+                          transition={{
+                            duration: 1.5,
+                            repeat: Infinity,
+                            ease: "linear"
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-sm font-medium text-[hsl(24,10%,40%)] mt-1 animate-pulse">
+                    {processingProgress === 100
+                      ? "Merging audio and saving files. Almost there!"
+                      : processingProgress > 0
+                        ? "AI is tracking subjects and auto-framing..."
+                        : "Setting up AI pose detection..."}
                   </p>
                 </div>
               </div>
@@ -430,13 +496,14 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                   </p>
                 </div>
                 {!isLoading && (
-                  <Button 
-                    onClick={() => { window.location.href = "/api/login"; }}
-                    className="mt-2 rounded-full px-10 py-6 text-base bg-[hsl(24,10%,10%)] text-[hsl(38,20%,97%)] hover:bg-[hsl(24,10%,20%)] shadow-lg hover:shadow-xl transition-all"
-                    data-testid="button-signin"
-                  >
-                    Sign In
-                  </Button>
+                  <LoginDialog>
+                    <Button 
+                      className="mt-2 rounded-full px-10 py-6 text-base bg-[hsl(24,10%,10%)] text-[hsl(38,20%,97%)] hover:bg-[hsl(24,10%,20%)] shadow-lg hover:shadow-xl transition-all"
+                      data-testid="button-signin"
+                    >
+                      Sign In
+                    </Button>
+                  </LoginDialog>
                 )}
               </div>
             </div>
@@ -468,7 +535,7 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                     {isDragActive ? "Drop video here" : "Upload your video"}
                   </h3>
                   <p className="text-base text-muted-foreground max-w-sm mx-auto">
-                    Drag and drop your file here, or click to browse. MP4, MOV, or AVI up to 500MB.
+                    Drag and drop your file here, or click to browse. MP4, MOV, or AVI up to 2GB.
                   </p>
                 </div>
                 <Button variant="outline" className="mt-2 rounded-full px-8 py-6 text-base border-[hsl(38,10%,80%)] hover:bg-[hsl(38,20%,95%)] hover:border-[hsl(24,10%,10%)] transition-all" data-testid="button-browse">
@@ -559,10 +626,25 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                   <Button 
                     size="lg" 
                     onClick={handleStartProcessing}
-                    className="bg-[hsl(24,10%,10%)] text-[hsl(38,20%,97%)] hover:bg-[hsl(24,10%,20%)] rounded-full px-10 h-14 text-lg font-medium shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
+                    disabled={isValidating || !videoId || file?.duration === undefined}
+                    className="bg-[hsl(24,10%,10%)] text-[hsl(38,20%,97%)] hover:bg-[hsl(24,10%,20%)] rounded-full px-10 h-14 text-lg font-medium shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                     data-testid="button-start-processing"
                   >
-                    Use {requiredCredits} {requiredCredits === 1 ? 'Credit' : 'Credits'} to Process
+                    {isValidating ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Calculating Credits...
+                      </>
+                    ) : !videoId ? (
+                      "Waiting for Upload..."
+                    ) : file?.duration === undefined ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Analyzing Video...
+                      </>
+                    ) : (
+                      `Use ${requiredCredits} ${requiredCredits === 1 ? 'Credit' : 'Credits'} to Process`
+                    )}
                   </Button>
                 </div>
               </div>
@@ -627,19 +709,65 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
             </Button>
             
             {(user?.credits ?? 0) < requiredCredits && (
-              <div className="space-y-4">
+              <div className="space-y-4 pt-4 border-t border-dashed">
                 <p className="text-center text-sm text-red-500 font-medium">
-                  You need at least {requiredCredits} {requiredCredits === 1 ? 'credit' : 'credits'} to process this video.
+                  You need {missingCredits} more {missingCredits === 1 ? 'credit' : 'credits'} to process this video.
                 </p>
+                
+                <div className="flex flex-col gap-2 p-4 bg-[hsl(38,20%,97%)] rounded-2xl border border-[hsl(38,10%,90%)]">
+                  <label className="text-xs font-bold text-[hsl(24,10%,10%)] uppercase tracking-wider">Purchase Quantity</label>
+                  <div className="flex items-center gap-3">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8 rounded-lg bg-[hsl(38,20%,90%)] text-[hsl(24,10%,10%)] hover:bg-[hsl(38,20%,85%)] shrink-0"
+                      onClick={() => setTopUpQuantity(Math.max(1, topUpQuantity - 1))}
+                    >
+                      <span className="text-lg font-bold">-</span>
+                    </Button>
+                    <input 
+                      type="number" 
+                      min="1" 
+                      max="1000"
+                      value={topUpQuantity}
+                      onChange={(e) => setTopUpQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                      className="w-full min-w-[60px] px-2 py-1.5 rounded-xl border border-[hsl(38,10%,85%)] text-center font-bold text-[hsl(24,10%,10%)] focus:ring-2 focus:ring-[hsl(24,10%,10%)] focus:outline-none bg-white shadow-sm"
+                    />
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8 rounded-lg bg-[hsl(38,20%,90%)] text-[hsl(24,10%,10%)] hover:bg-[hsl(38,20%,85%)] shrink-0"
+                      onClick={() => setTopUpQuantity(topUpQuantity + 1)}
+                    >
+                      <span className="text-lg font-bold">+</span>
+                    </Button>
+                  </div>
+                  <p className="text-center text-xs font-bold text-[hsl(24,10%,10%)] mt-1">
+                    Total: ${(topUpQuantity * 1.99).toFixed(2)}
+                  </p>
+                </div>
+
                 <Button 
-                  variant="outline"
-                  className="w-full rounded-full h-12 border-[hsl(24,10%,10%)] text-[hsl(24,10%,10%)] hover:bg-[hsl(24,10%,10%)] hover:text-white transition-all"
+                  className="w-full rounded-full h-14 bg-[hsl(24,10%,10%)] hover:bg-[hsl(24,10%,20%)] text-[hsl(38,20%,97%)] shadow-lg hover:shadow-xl transition-all"
+                  onClick={handleTopUp}
+                  disabled={isTopUpLoading}
+                >
+                  {isTopUpLoading ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Coins className="mr-2 h-4 w-4" />
+                  )}
+                  Buy {topUpQuantity} {topUpQuantity === 1 ? 'Credit' : 'Credits'}
+                </Button>
+                <Button 
+                  variant="ghost"
+                  className="w-full rounded-full h-10 text-muted-foreground hover:text-[hsl(24,10%,10%)] transition-all text-xs"
                   onClick={() => {
                     setShowPayment(false);
                     document.getElementById("pricing-section")?.scrollIntoView({ behavior: "smooth" });
                   }}
                 >
-                  Buy Credits
+                  View Subscription Plans
                 </Button>
               </div>
             )}

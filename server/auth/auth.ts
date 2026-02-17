@@ -31,13 +31,14 @@ export function getSession() {
   return session({
     secret: process.env.SESSION_SECRET!,
     store: sessionStore,
-    resave: true, // Force session to be saved back to the session store
-    saveUninitialized: true, // Force a session that is "new" but not modified to be saved to the store
+    resave: false,
+    saveUninitialized: false,
     name: "sid",
     cookie: {
       httpOnly: true,
-      // Force secure to false for local debugging on HTTP
-      secure: false,
+      // Use secure cookies in production, but allow HTTP for local development.
+      // We check if we are on localhost to allow cookies over HTTP even in production mode.
+      secure: process.env.NODE_ENV === "production" && !process.env.AUTH_CALLBACK_URL?.includes("localhost"),
       maxAge: sessionTtl,
       sameSite: "lax",
     },
@@ -122,6 +123,7 @@ export async function setupAuth(app: Express) {
   let callbackURL = process.env.AUTH_CALLBACK_URL;
   
   if (!callbackURL) {
+    const port = process.env.PORT || "5001";
     if (process.env.NODE_ENV === "production") {
       // RAILWAY_PUBLIC_DOMAIN is a good fallback for Railway
       const domain = process.env.RAILWAY_PUBLIC_DOMAIN || process.env.APP_URL;
@@ -130,10 +132,10 @@ export async function setupAuth(app: Express) {
         callbackURL = `${protocol}${domain}/api/callback`;
       } else {
         // Last resort fallback
-        callbackURL = "http://localhost:5001/api/callback";
+        callbackURL = `http://localhost:${port}/api/callback`;
       }
     } else {
-      callbackURL = "http://localhost:5000/api/callback";
+      callbackURL = `http://localhost:${port}/api/callback`;
     }
   }
 

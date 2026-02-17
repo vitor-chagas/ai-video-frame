@@ -8,24 +8,29 @@ import path from "path";
 import { spawn, exec } from "child_process";
 import fs from "fs";
 import { promisify } from "util";
+import express from "express";
 
 const execAsync = promisify(exec);
 const videoProgress: Map<string, number> = new Map();
 
-const CLEANUP_THRESHOLD_MS = 15 * 60 * 1000; // 15 minutes
+const CLEANUP_THRESHOLD_MS = 60 * 60 * 1000; // 60 minutes
 
 async function cleanupUserFiles(userId: string) {
   try {
     const videos = await storage.getVideosByUser(userId);
     for (const video of videos) {
+      // NEVER delete files for a video that is currently being processed
+      if (video.status === "processing") {
+        console.log(`[Cleanup] Skipping active video ${video.id} for user ${userId}`);
+        continue;
+      }
+      
       if (video.originalPath && fs.existsSync(video.originalPath)) {
         fs.unlinkSync(video.originalPath);
       }
       if (video.processedPath && fs.existsSync(video.processedPath)) {
         fs.unlinkSync(video.processedPath);
       }
-      // Note: We keep the DB record but files are gone. 
-      // Optionally we could mark them as deleted in DB.
     }
   } catch (error) {
     console.error("Error during user file cleanup:", error);
@@ -35,15 +40,30 @@ async function cleanupUserFiles(userId: string) {
 export async function cleanupExpiredVideos() {
   try {
     const now = new Date();
-    // In a real app, you'd query the DB for expired videos.
-    // For now, let's scan the uploads directory as a safety measure.
     const directories = ["uploads/input", "uploads/output"];
+    
+    // Get all videos from storage to check their status
+    // This is safer than just looking at file age
+    const allVideos = await storage.getAllProcessingVideos();
+    const processingPaths = new Set(
+      allVideos
+        .map(v => v.originalPath)
+        .filter(Boolean) as string[]
+    );
+
     for (const dir of directories) {
       if (!fs.existsSync(dir)) continue;
       const files = fs.readdirSync(dir);
       for (const file of files) {
         if (file === ".gitkeep" || file === ".DS_Store") continue;
         const filePath = path.join(dir, file);
+        
+        // Skip if this file is currently being processed
+        if (processingPaths.has(filePath)) {
+          console.log(`[Cleanup] Protected active file: ${filePath}`);
+          continue;
+        }
+
         const stats = fs.statSync(filePath);
         const age = now.getTime() - stats.mtime.getTime();
         if (age > CLEANUP_THRESHOLD_MS) {
@@ -59,14 +79,25 @@ export async function cleanupExpiredVideos() {
 
 async function getVideoDuration(filePath: string): Promise<number | null> {
   try {
+    // -analyzeduration and -probesize help ffprobe finish faster on large files by looking at less of the file
     const { stdout } = await execAsync(
-      `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${filePath}"`
+      `ffprobe -v error -analyzeduration 1000000 -probesize 1000000 -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${filePath}"`
     );
     const duration = parseFloat(stdout.trim());
+    console.log(`[FFprobe] Duration for ${filePath}: ${duration}s`);
     return isNaN(duration) ? null : Math.round(duration);
   } catch (error) {
-    console.error("Error getting video duration:", error);
-    return null;
+    console.error("Error getting video duration with optimized command, trying fallback:", error);
+    try {
+      const { stdout } = await execAsync(
+        `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${filePath}"`
+      );
+      const duration = parseFloat(stdout.trim());
+      return isNaN(duration) ? null : Math.round(duration);
+    } catch (fallbackError) {
+      console.error("Error getting video duration with fallback command:", fallbackError);
+      return null;
+    }
   }
 }
 
@@ -86,7 +117,7 @@ function calculateRequiredCredits(durationInSeconds: number | null): number {
 
 const upload = multer({
   dest: "uploads/input/",
-  limits: { fileSize: 500 * 1024 * 1024 },
+  limits: { fileSize: 2 * 1024 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     const allowed = [".mp4", ".mov", ".avi"];
     const ext = path.extname(file.originalname).toLowerCase();
@@ -193,27 +224,26 @@ export async function registerRoutes(
 
   app.post("/api/payments/create-credits", isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const { plan, returnVideoId } = req.body;
+      const { plan, returnVideoId, quantity } = req.body;
       const userId = getUserId(req)!;
 
-      let amount = 0;
       let credits = 0;
-      let name = "";
+      let priceId = "";
       let mode: "payment" | "subscription" = "payment";
+      let stripeQuantity = 1;
 
       if (plan === "single") {
-        amount = 200; // $2.00
-        credits = 1;
-        name = "1 Credit - Pay As You Go";
+        credits = quantity || 1;
+        stripeQuantity = credits;
+        priceId = process.env.STRIPE_PRICE_SINGLE!;
+        mode = "payment";
       } else if (plan === "monthly") {
-        amount = 2000; // $20.00
-        credits = 22;
-        name = "Monthly Creator - 22 Credits";
+        credits = 12;
+        priceId = process.env.STRIPE_PRICE_MONTHLY!;
         mode = "subscription";
       } else if (plan === "yearly") {
-        amount = 21600; // $216.00
-        credits = 264;
-        name = "Annual Pro - 264 Credits";
+        credits = 144;
+        priceId = process.env.STRIPE_PRICE_YEARLY!;
         mode = "subscription";
       } else {
         return res.status(400).json({ message: "Invalid plan" });
@@ -225,6 +255,10 @@ export async function registerRoutes(
         return res.json({ simulated: true, status: "completed" });
       }
 
+      if (!priceId) {
+        return res.status(400).json({ message: `Stripe Price ID for plan '${plan}' is not configured` });
+      }
+
       const Stripe = (await import("stripe")).default;
       const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -232,13 +266,8 @@ export async function registerRoutes(
         payment_method_types: ["card"],
         line_items: [
           {
-            price_data: {
-              currency: "usd",
-              product_data: { name },
-              unit_amount: amount,
-              ...(mode === "subscription" ? { recurring: { interval: plan === "yearly" ? "year" : "month" } } : {}),
-            },
-            quantity: 1,
+            price: priceId,
+            quantity: stripeQuantity,
           },
         ],
         mode: mode,
@@ -272,6 +301,8 @@ export async function registerRoutes(
       const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
       const stripeSession = await stripe.checkout.sessions.retrieve(sessionId);
 
+      // Check if session has already been handled by webhook to avoid double credits
+      // The session object in Stripe keeps track of whether it was successful.
       if (stripeSession.payment_status === "paid") {
         const credits = parseInt(stripeSession.metadata?.credits || "0");
         const metadataUserId = stripeSession.metadata?.userId;
@@ -282,6 +313,9 @@ export async function registerRoutes(
           return res.status(403).json({ message: "Unauthorized" });
         }
 
+        // Note: For extra safety, you could check if credits were already added
+        // but since we update with += credits, we should be careful.
+        // However, in a standard redirect flow, this is the main way credits are added.
         await authStorage.updateUserCredits(userId, credits);
         if (customerId) {
           await authStorage.updateUserStripeInfo(userId, customerId, subscriptionId);
@@ -375,6 +409,46 @@ export async function registerRoutes(
     }
   });
 
+  // ---- STRIPE WEBHOOK ----
+
+  app.post("/api/webhooks/stripe", express.raw({ type: "application/json" }), async (req: Request, res: Response) => {
+    const sig = req.headers["stripe-signature"];
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+    if (!webhookSecret || !sig) {
+      return res.status(400).send("Webhook Error: Missing secret or signature");
+    }
+
+    let event;
+
+    try {
+      const Stripe = (await import("stripe")).default;
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+      event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+    } catch (err: any) {
+      console.error(`Webhook Error: ${err.message}`);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object as any;
+      const userId = session.metadata?.userId;
+      const credits = parseInt(session.metadata?.credits || "0");
+      const customerId = session.customer as string;
+      const subscriptionId = session.subscription as string | undefined;
+
+      if (userId && credits > 0) {
+        console.log(`[Webhook] Adding ${credits} credits to user ${userId}`);
+        await authStorage.updateUserCredits(userId, credits);
+        if (customerId) {
+          await authStorage.updateUserStripeInfo(userId, customerId, subscriptionId);
+        }
+      }
+    }
+
+    res.json({ received: true });
+  });
+
   // ---- STRIPE PORTAL ROUTE ----
 
   app.post("/api/payments/create-portal", isAuthenticated, async (req: Request, res: Response) => {
@@ -407,33 +481,74 @@ export async function registerRoutes(
   // ---- DOWNLOAD ROUTE ----
 
   app.get("/api/videos/:id/download", isAuthenticated, async (req: Request, res: Response) => {
-    const vid = req.params.id as string;
-    const userId = getUserId(req)!;
-    const video = await storage.getVideo(vid);
-    if (!video || video.userId !== userId) {
-      return res.status(404).json({ message: "Video not found" });
-    }
+    try {
+      const vid = req.params.id as string;
+      const userId = getUserId(req)!;
+      const video = await storage.getVideo(vid);
+      
+      if (!video || video.userId !== userId) {
+        return res.status(404).json({ message: "Video not found" });
+      }
 
-    if (video.status !== "completed" || !video.processedPath) {
-      return res.status(400).json({ message: "Video not ready for download" });
-    }
+      if (video.status !== "completed" || !video.processedPath) {
+        return res.status(400).json({ message: "Video not ready for download" });
+      }
 
-    const absolutePath = path.resolve(video.processedPath);
-    if (!fs.existsSync(absolutePath)) {
-      return res.status(404).json({ message: "Processed file not found" });
-    }
+      const absolutePath = path.resolve(video.processedPath);
+      if (!fs.existsSync(absolutePath)) {
+        return res.status(404).json({ message: "Processed file not found" });
+      }
 
-    const safeName = video.originalFilename
-      .replace(/[^a-zA-Z0-9._-]/g, "_")
-      .replace(/_+/g, "_")
-      .substring(0, 100);
-    const downloadName = `autoframe_${safeName}`;
-    const stat = fs.statSync(absolutePath);
-    res.setHeader("Content-Type", "application/octet-stream");
-    res.setHeader("Content-Length", stat.size);
-    res.setHeader("Content-Disposition", `attachment; filename="${downloadName}"`);
-    const fileStream = fs.createReadStream(absolutePath);
-    fileStream.pipe(res);
+      const stat = fs.statSync(absolutePath);
+      const safeName = video.originalFilename
+        .replace(/[^a-zA-Z0-9._-]/g, "_")
+        .replace(/_+/g, "_")
+        .substring(0, 100);
+      
+      // Handle the file extension correctly
+      const ext = path.extname(video.processedPath) || ".mp4";
+      const downloadName = `autoframe_${safeName}${safeName.endsWith(ext) ? '' : ext}`;
+
+      // Set explicit timeout for this request (1 hour)
+      req.setTimeout(3600000);
+      
+      res.writeHead(200, {
+        "Content-Type": "video/mp4",
+        "Content-Length": stat.size,
+        "Content-Disposition": `attachment; filename="${downloadName}"`,
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+        "X-Content-Type-Options": "nosniff",
+        "Content-Transfer-Encoding": "binary"
+      });
+
+      // Flush headers to establish connection early
+      res.flushHeaders();
+
+      const fileStream = fs.createReadStream(absolutePath);
+      
+      fileStream.on("error", (error) => {
+        console.error(`[Download] Stream error for video ${vid}:`, error);
+        if (!res.headersSent) {
+          res.status(500).send("Error streaming file");
+        } else {
+          res.end();
+        }
+      });
+
+      // Handle client disconnects
+      req.on("close", () => {
+        console.log(`[Download] Client closed connection for video ${vid}`);
+        fileStream.destroy();
+      });
+
+      fileStream.pipe(res);
+    } catch (error: any) {
+      console.error(`[Download] Error for video ${req.params.id}:`, error);
+      if (!res.headersSent) {
+        res.status(500).json({ message: error.message });
+      }
+    }
   });
 
   return httpServer;

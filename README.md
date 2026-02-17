@@ -1,4 +1,4 @@
-# Auto-Framer
+# AI Video Frame
 
 Automatically crop videos to different aspect ratios using MediaPipe Pose.
 
@@ -16,8 +16,15 @@ Automatically crop videos to different aspect ratios using MediaPipe Pose.
 ## Docker Setup
 1. Build the image and Run the container 
    ```bash
-   docker rm -f auto-framer || true && docker build -t auto-framer . && docker run -p 5001:5001 --name auto-framer --env-file .env auto-framer
+   docker rm -f ai-video-frame || true && docker build -t ai-video-frame . && docker run -p 5001:5001 --name ai-video-frame --env-file .env ai-video-frame
    ```
+
+
+## Stripe Configuration
+The app uses production Price IDs by default and sandbox prices as fallback. To use different prices (e.g., for **Sandbox** testing), set these variables in your `.env` file to the production env:
+
+- STRIPE_SECRET_KEY
+- STRIPE_PUBLISHABLE_KEY
 
 
 ## Requirements

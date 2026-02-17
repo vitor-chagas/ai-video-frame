@@ -12,6 +12,7 @@ process.on("unhandledRejection", (reason) => {
 });
 
 const app = express();
+app.set("trust proxy", 1);
 const httpServer = createServer(app);
 
 declare module "http" {
@@ -103,6 +104,15 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || "5000", 10);
+  
+  // Set global timeouts to handle large file downloads
+  // 1 hour timeout for long video transfers
+  httpServer.timeout = 3600000;
+  httpServer.keepAliveTimeout = 65000;
+  httpServer.headersTimeout = 66000;
+  // This ensures the response doesn't timeout while streaming large files
+  httpServer.requestTimeout = 3600000;
+
   httpServer.listen(
     {
       port,
