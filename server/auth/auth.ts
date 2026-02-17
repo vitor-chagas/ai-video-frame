@@ -36,9 +36,9 @@ export function getSession() {
     name: "sid",
     cookie: {
       httpOnly: true,
-      // Use secure cookies in production, but allow HTTP for local development.
-      // We check if we are on localhost to allow cookies over HTTP even in production mode.
-      secure: process.env.NODE_ENV === "production" && !process.env.AUTH_CALLBACK_URL?.includes("localhost"),
+      // Use secure cookies in production. Express will check the 'trust proxy' setting
+      // to determine if the connection is secure.
+      secure: process.env.NODE_ENV === "production",
       maxAge: sessionTtl,
       sameSite: "lax",
     },
@@ -68,6 +68,7 @@ async function upsertUser(claims: any) {
 }
 
 export async function setupAuth(app: Express) {
+  // Note: trust proxy is also set in server/index.ts for global effect
   app.set("trust proxy", 1);
   app.use(getSession());
   app.use(passport.initialize());
@@ -117,18 +118,18 @@ export async function setupAuth(app: Express) {
     }
   });
 
-  // Initialize strategy once and persist it. 
+  // Initialize strategy once and persist it.
   // Re-creating it inside routes causes OIDC state verification to fail.
-  // In production, we should try to derive the callback URL if not provided.
+  // We prioritize AUTH_CALLBACK_URL from environment variables.
   let callbackURL = process.env.AUTH_CALLBACK_URL;
-  
+
   if (!callbackURL) {
     const port = process.env.PORT || "5001";
     if (process.env.NODE_ENV === "production") {
-      // RAILWAY_PUBLIC_DOMAIN is a good fallback for Railway
+      // RAILWAY_PUBLIC_DOMAIN is a good fallback for Railway if explicit AUTH_CALLBACK_URL is missing
       const domain = process.env.RAILWAY_PUBLIC_DOMAIN || process.env.APP_URL;
       if (domain) {
-        const protocol = domain.startsWith('http') ? '' : 'https://';
+        const protocol = domain.startsWith("http") ? "" : "https://";
         callbackURL = `${protocol}${domain}/api/callback`;
       } else {
         // Last resort fallback
@@ -139,7 +140,7 @@ export async function setupAuth(app: Express) {
     }
   }
 
-  console.log(`[Auth] Using callback URL: ${callbackURL}`);
+  console.log(`[Auth] Initializing OIDC strategy with callback URL: ${callbackURL}`);
 
   const strategy = new Strategy(
     {

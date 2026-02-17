@@ -12,6 +12,7 @@ process.on("unhandledRejection", (reason) => {
 });
 
 const app = express();
+// Trust proxy MUST be set before any middleware (like session) to correctly handle HTTPS behind Railway's load balancer
 app.set("trust proxy", 1);
 const httpServer = createServer(app);
 
