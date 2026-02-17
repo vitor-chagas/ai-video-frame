@@ -23,3 +23,4 @@
 - [ ] create a api and sell it on rapidapi.
 - [ ] picture in the email profile. 
 - [ ] consider to change the google authentication app from my personal accout to the ai video frame gmail account.
+- [ ] delete historic of .env file from git history
