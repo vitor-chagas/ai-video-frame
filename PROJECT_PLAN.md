@@ -24,3 +24,4 @@
 - [ ] picture in the email profile. 
 - [ ] consider to change the google authentication app from my personal accout to the ai video frame gmail account.
 - [ ] delete historic of .env file from git history
+- [ ] create a log system for the server.
