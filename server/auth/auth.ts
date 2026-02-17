@@ -24,7 +24,9 @@ export function getSession() {
   const pgStore = connectPg(session);
   const sessionStore = new pgStore({
     conString: process.env.DATABASE_URL,
-    createTableIfMissing: true, // Changed to true to automatically create the session table
+    // Note: Automatic table creation might fail in some production environments
+    // due to missing SQL files in the bundle.
+    createTableIfMissing: true, 
     ttl: sessionTtl,
     tableName: "sessions",
   });
