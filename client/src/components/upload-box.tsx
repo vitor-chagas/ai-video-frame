@@ -743,7 +743,7 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                     </Button>
                   </div>
                   <p className="text-center text-xs font-bold text-[hsl(24,10%,10%)] mt-1">
-                    Total: ${(topUpQuantity * 1.99).toFixed(2)}
+                    Total: ${(topUpQuantity * 0.99).toFixed(2)}
                   </p>
                 </div>
 

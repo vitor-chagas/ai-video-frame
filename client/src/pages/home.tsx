@@ -161,7 +161,7 @@ export default function Home() {
         >
             <div className="group rounded-3xl p-8 bg-white border border-[hsl(38,10%,90%)] flex flex-col gap-4 hover:border-[hsl(24,10%,10%)] hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                <h3 className="text-xl font-serif font-bold group-hover:text-[hsl(24,10%,10%)] transition-colors">Pay as you go</h3>
-               <div className="text-4xl font-bold font-serif">$1.99<span className="text-base font-sans font-normal text-muted-foreground">/credit</span></div>
+               <div className="text-4xl font-bold font-serif">$0.99<span className="text-base font-sans font-normal text-muted-foreground">/credit</span></div>
                <div className="space-y-1">
                   <p className="text-muted-foreground text-sm flex items-center gap-1.5">
                     1 Credit = 1 Video (up to 5 min)
@@ -187,7 +187,7 @@ export default function Home() {
             <div className="group rounded-3xl p-8 bg-[hsl(24,10%,10%)] text-[hsl(38,20%,97%)] flex flex-col gap-4 relative transform md:-translate-y-4 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
                <div className="absolute top-0 right-0 bg-[hsl(38,20%,90%)] text-[hsl(24,10%,10%)] text-xs font-bold px-3 py-1 rounded-bl-xl rounded-tr-2xl">MOST POPULAR</div>
                <h3 className="text-xl font-serif font-bold">Monthly Creator</h3>
-               <div className="text-4xl font-bold font-serif">$19.99<span className="text-base font-sans font-normal text-[hsl(38,20%,80%)]">/month</span></div>
+               <div className="text-4xl font-bold font-serif">$9.99<span className="text-base font-sans font-normal text-[hsl(38,20%,80%)]">/month</span></div>
                <p className="text-[hsl(38,20%,80%)] text-sm">12 Credits every month.</p>
                <ul className="space-y-3 mt-4 mb-8">
                   <li className="flex items-center gap-2 text-sm"><Check className="h-4 w-4 text-[hsl(38,20%,97%)]" /> Save on every video</li>
@@ -205,7 +205,7 @@ export default function Home() {
 
              <div className="group rounded-3xl p-8 bg-white border border-[hsl(38,10%,90%)] flex flex-col gap-4 hover:border-[hsl(24,10%,10%)] hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                <h3 className="text-xl font-serif font-bold group-hover:text-[hsl(24,10%,10%)] transition-colors">Annual Pro</h3>
-               <div className="text-4xl font-bold font-serif">$215.88<span className="text-base font-sans font-normal text-muted-foreground">/year</span></div>
+               <div className="text-4xl font-bold font-serif">$107.88<span className="text-base font-sans font-normal text-muted-foreground">/year</span></div>
                <p className="text-muted-foreground text-sm">144 Credits (12 per month).</p>
                <ul className="space-y-3 mt-4 mb-8">
                   <li className="flex items-center gap-2 text-sm"><Check className="h-4 w-4 text-[hsl(24,10%,10%)]" /> Best value for pros</li>
@@ -259,9 +259,9 @@ export default function Home() {
                  <p className="text-sm text-muted-foreground mt-1">Pay as you go credits</p>
                </div>
                <div className="text-right">
-                 <div className="font-serif font-bold text-3xl text-[hsl(24,10%,10%)]">
-                   $1.99<span className="text-sm font-sans font-normal text-muted-foreground">/ea</span>
-                 </div>
+                  <div className="font-serif font-bold text-3xl text-[hsl(24,10%,10%)]">
+                    $0.99<span className="text-sm font-sans font-normal text-muted-foreground">/ea</span>
+                  </div>
                </div>
              </div>
 
@@ -300,7 +300,7 @@ export default function Home() {
                     </Button>
                   </div>
                   <p className="text-center text-sm font-medium text-muted-foreground">
-                    Total: <span className="text-[hsl(24,10%,10%)] font-bold text-lg">${(customQuantity * 1.99).toFixed(2)}</span>
+                    Total: <span className="text-[hsl(24,10%,10%)] font-bold text-lg">${(customQuantity * 0.99).toFixed(2)}</span>
                   </p>
                 </div>
 
