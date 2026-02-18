@@ -32,3 +32,4 @@ The app uses production Price IDs by default and sandbox prices as fallback. To 
 - FFmpeg installed on system
 - OIDC Provider (e.g., Google Cloud Console)
 - PostgreSQL database
+
