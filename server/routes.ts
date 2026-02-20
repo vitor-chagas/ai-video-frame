@@ -79,25 +79,27 @@ export async function cleanupExpiredVideos() {
 
 async function getVideoDuration(filePath: string): Promise<number | null> {
   try {
-    // -analyzeduration and -probesize help ffprobe finish faster on large files by looking at less of the file
+    // -v quiet -select_streams v:0 -show_entries stream=duration -of default=noprint_wrappers=1:nokey=1 
+    // is often faster than format=duration because it doesn't wait to parse the whole file if the stream header has it.
+    // We try multiple methods to be robust but fast.
     const { stdout } = await execAsync(
-      `ffprobe -v error -analyzeduration 1000000 -probesize 1000000 -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${filePath}"`
+      `ffprobe -v quiet -select_streams v:0 -show_entries stream=duration -of default=noprint_wrappers=1:nokey=1 "${filePath}"`
     );
-    const duration = parseFloat(stdout.trim());
+    let duration = parseFloat(stdout.trim());
+    
+    if (isNaN(duration)) {
+      // Fallback to format duration with optimized probesize
+      const { stdout: stdoutFormat } = await execAsync(
+        `ffprobe -v quiet -analyzeduration 1000000 -probesize 1000000 -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${filePath}"`
+      );
+      duration = parseFloat(stdoutFormat.trim());
+    }
+
     console.log(`[FFprobe] Duration for ${filePath}: ${duration}s`);
     return isNaN(duration) ? null : Math.round(duration);
   } catch (error) {
-    console.error("Error getting video duration with optimized command, trying fallback:", error);
-    try {
-      const { stdout } = await execAsync(
-        `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${filePath}"`
-      );
-      const duration = parseFloat(stdout.trim());
-      return isNaN(duration) ? null : Math.round(duration);
-    } catch (fallbackError) {
-      console.error("Error getting video duration with fallback command:", fallbackError);
-      return null;
-    }
+    console.error("Error getting video duration:", error);
+    return null;
   }
 }
 

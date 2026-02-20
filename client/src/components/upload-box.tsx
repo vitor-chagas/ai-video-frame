@@ -95,20 +95,16 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
       setIsUploading(true);
       setIsValidating(false);
       
-      const interval = setInterval(() => {
-        setUploadProgress((prev) => {
-          if (prev >= 95) { // Stop at 95% until server responds
-            clearInterval(interval);
-            return 95;
-          }
-          return prev + 5;
-        });
-      }, 200);
-
       // Trigger actual upload
       (async () => {
         try {
-           const videoData = await uploadVideo(droppedFile, aspectRatio);
+           const videoData = (await uploadVideo(droppedFile, aspectRatio, (percent) => {
+             setUploadProgress(percent);
+             if (percent === 100) {
+               setIsValidating(true);
+             }
+           })) as any;
+           
            setUploadProgress(100);
            setIsUploading(false);
            setIsValidating(true);
@@ -128,7 +124,7 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
         }
       })();
     }
-  }, [aspectRatio]);
+  }, [aspectRatio, toast]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -580,13 +576,18 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
               </Button>
             </div>
 
-            {uploadProgress < 100 ? (
+            {uploadProgress < 100 || isValidating ? (
               <div className="space-y-3 mb-6 bg-[hsl(38,20%,98%)] p-6 rounded-2xl border border-[hsl(38,10%,92%)]">
                 <div className="flex justify-between text-sm font-medium text-[hsl(24,10%,10%)]">
-                  <span>Preparing video...</span>
+                  <span>{isValidating ? "Analyzing video..." : "Uploading video..."}</span>
                   <span>{uploadProgress}%</span>
                 </div>
                 <Progress value={uploadProgress} className="h-3 bg-[hsl(38,10%,90%)]" />
+                {isValidating && (
+                  <p className="text-xs text-muted-foreground animate-pulse">
+                    Please wait while we analyze the video on our server...
+                  </p>
+                )}
               </div>
             ) : (
               <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
