@@ -14,10 +14,10 @@
 - [x] add a limit of video lenght to the upload box.
 - [x] google authentication app branding design
 - [x] review and finilize the design of the website.
+- [x] test other llm models to process the video.
 
 
 ## TODO
-- [ ] test other llm models to process the video.
 - [ ] test the time and the cost to process in a AWS instance with gpu.
 - [ ] clean up the code.
 - [ ] create a api and sell it on rapidapi.
@@ -26,3 +26,6 @@
 - [ ] delete historic of .env file from git history
 - [ ] create a log system for the server.
 - [ ] get a better logo... more clean and simple.
+- [ ] add aivideoframe email box to my email app.
+- [ ] add a reminder to when the domain is expiring.
+- [ ] write a blog post about the project.
