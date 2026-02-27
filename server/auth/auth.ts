@@ -69,6 +69,10 @@ async function upsertUser(claims: any) {
   });
 }
 
+export function getUserId(req: any): string | undefined {
+  return req.user?.claims?.sub || req.user?.id;
+}
+
 export async function setupAuth(app: Express) {
   // Note: trust proxy is also set in server/index.ts for global effect
   app.set("trust proxy", 1);
