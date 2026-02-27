@@ -174,13 +174,8 @@ def process_video(input_path, output_path, aspect_ratio=(9, 16), progress_callba
 
     # Merge audio using ffmpeg
     try:
-        # -i temp: the processed video
-        # -i input: the original video with audio
-        # -c:v copy: copy the already processed video stream
-        # -c:a aac: encode audio to AAC (safest)
-        # -map 0:v?: take video from first input (if exists)
-        # -map 1:a?: take audio from second input (if exists)
-        # -shortest: match the shortest stream duration
+        # Security: input_path and output_path are passed as a list to subprocess.run,
+        # which avoids shell injection as it doesn't use shell=True.
         cmd = [
             'ffmpeg', '-y',
             '-i', temp_output,
@@ -192,7 +187,6 @@ def process_video(input_path, output_path, aspect_ratio=(9, 16), progress_callba
             '-shortest',
             output_path
         ]
-        print(f"Running FFmpeg command: {' '.join(cmd)}")
         result = subprocess.run(cmd, capture_output=True, text=True)
         
         if result.returncode != 0:

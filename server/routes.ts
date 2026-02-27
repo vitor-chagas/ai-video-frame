@@ -5,12 +5,12 @@ import { authStorage } from "./auth/storage";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./auth";
 import multer from "multer";
 import path from "path";
-import { spawn, exec } from "child_process";
+import { spawn, execFile } from "child_process";
 import fs from "fs";
 import { promisify } from "util";
 import express from "express";
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 const videoProgress: Map<string, number> = new Map();
 
 const CLEANUP_THRESHOLD_MS = 60 * 60 * 1000; // 60 minutes
@@ -79,19 +79,26 @@ export async function cleanupExpiredVideos() {
 
 async function getVideoDuration(filePath: string): Promise<number | null> {
   try {
-    // -v quiet -select_streams v:0 -show_entries stream=duration -of default=noprint_wrappers=1:nokey=1 
-    // is often faster than format=duration because it doesn't wait to parse the whole file if the stream header has it.
-    // We try multiple methods to be robust but fast.
-    const { stdout } = await execAsync(
-      `ffprobe -v quiet -select_streams v:0 -show_entries stream=duration -of default=noprint_wrappers=1:nokey=1 "${filePath}"`
-    );
+    // Using execFile to prevent command injection
+    const { stdout } = await execFileAsync("ffprobe", [
+      "-v", "quiet",
+      "-select_streams", "v:0",
+      "-show_entries", "stream=duration",
+      "-of", "default=noprint_wrappers=1:nokey=1",
+      filePath
+    ]);
     let duration = parseFloat(stdout.trim());
     
     if (isNaN(duration)) {
       // Fallback to format duration with optimized probesize
-      const { stdout: stdoutFormat } = await execAsync(
-        `ffprobe -v quiet -analyzeduration 1000000 -probesize 1000000 -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${filePath}"`
-      );
+      const { stdout: stdoutFormat } = await execFileAsync("ffprobe", [
+        "-v", "quiet",
+        "-analyzeduration", "1000000",
+        "-probesize", "1000000",
+        "-show_entries", "format=duration",
+        "-of", "default=noprint_wrappers=1:nokey=1",
+        filePath
+      ]);
       duration = parseFloat(stdoutFormat.trim());
     }
 
@@ -157,13 +164,18 @@ export async function registerRoutes(
       // Cleanup previous files for this user before starting new ones
       await cleanupUserFiles(userId);
 
+      const allowedRatios = ["9:16", "1:1", "4:5", "16:9", "2:3"];
       const aspectRatio = req.body.aspectRatio || "9:16";
       
+      if (!allowedRatios.includes(aspectRatio)) {
+        return res.status(400).json({ message: "Invalid aspect ratio" });
+      }
+
       const duration = await getVideoDuration(file.path);
       
       const video = await storage.createVideo({
         userId,
-        originalFilename: file.originalname,
+        originalFilename: file.originalname.replace(/[^a-zA-Z0-9._-]/g, "_"),
         originalPath: file.path,
         aspectRatio,
         fileSize: file.size,
@@ -497,6 +509,12 @@ export async function registerRoutes(
       }
 
       const absolutePath = path.resolve(video.processedPath);
+      const outputDir = path.resolve("uploads/output");
+
+      if (!absolutePath.startsWith(outputDir)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
       if (!fs.existsSync(absolutePath)) {
         return res.status(404).json({ message: "Processed file not found" });
       }

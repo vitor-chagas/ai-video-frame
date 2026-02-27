@@ -1,6 +1,6 @@
 import { users, verificationTokens, type User, type UpsertUser, type VerificationToken, type InsertVerificationToken } from "@shared/models/auth";
 import { db } from "../db";
-import { eq, and, gt } from "drizzle-orm";
+import { eq, and, gt, sql } from "drizzle-orm";
 
 // Interface for auth storage operations
 export interface IAuthStorage {
@@ -41,13 +41,10 @@ class AuthStorage implements IAuthStorage {
   }
 
   async updateUserCredits(id: string, amount: number): Promise<User | undefined> {
-    const user = await this.getUser(id);
-    if (!user) return undefined;
-    
     const [updatedUser] = await db
       .update(users)
       .set({
-        credits: (user.credits || 0) + amount,
+        credits: sql`${users.credits} + ${amount}`,
         updatedAt: new Date(),
       })
       .where(eq(users.id, id))
