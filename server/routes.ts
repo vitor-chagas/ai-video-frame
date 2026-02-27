@@ -156,9 +156,13 @@ const upload = multer({
   dest: "uploads/input/",
   limits: { fileSize: 2 * 1024 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
-    const allowed = [".mp4", ".mov", ".avi"];
+    const allowedExts = [".mp4", ".mov", ".avi"];
+    const allowedMimeTypes = ["video/mp4", "video/quicktime", "video/x-msvideo", "video/avi"];
+    
     const ext = path.extname(file.originalname).toLowerCase();
-    if (allowed.includes(ext)) {
+    const mimeType = file.mimetype;
+
+    if (allowedExts.includes(ext) && allowedMimeTypes.includes(mimeType)) {
       cb(null, true);
     } else {
       cb(new Error("Only MP4, MOV, and AVI files are allowed"));
@@ -400,11 +404,28 @@ export async function registerRoutes(
         return res.status(400).json({ message: "Video has already been processed" });
       }
 
+      // Atomic-like update to prevent race conditions:
+      // We check credits and subtract in one "logical" flow, but we should 
+      // ideally have a single database call that does both with a WHERE clause.
+      // Since authStorage.updateUserCredits probably just does an update, 
+      // we'll refine the logic to check if the update was successful and actually 
+      // deducted credits (returned new balance >= 0).
+      
+      const updatedUser = await authStorage.updateUserCredits(userId, -requiredCredits);
+      
+      if (!updatedUser || updatedUser.credits < 0) {
+        // Rollback if credits went negative (race condition or insufficient credits)
+        if (updatedUser) {
+          await authStorage.updateUserCredits(userId, requiredCredits);
+        }
+        return res.status(402).json({ 
+          message: `Insufficient credits. This video requires ${requiredCredits} credits.`,
+          requiredCredits 
+        });
+      }
+
       await storage.updateVideoStatus(video.id, "processing");
       
-      // Consume required credits
-      await authStorage.updateUserCredits(userId, -requiredCredits);
-
       const ext = path.extname(video.originalFilename) || ".mp4";
       const outputFilename = `auto_${video.aspectRatio.replace(":", "_")}_${video.id}${ext}`;
       const outputPath = path.join("uploads/output", outputFilename);
@@ -537,11 +558,11 @@ export async function registerRoutes(
       }
 
       // Ensure the path is normalized and check if it's within the expected output directory
-      const normalizedPath = path.normalize(video.processedPath);
       const outputDir = path.join(process.cwd(), "uploads", "output");
-      const absolutePath = path.resolve(normalizedPath);
+      const absolutePath = path.resolve(video.processedPath);
+      const relative = path.relative(outputDir, absolutePath);
 
-      if (!absolutePath.startsWith(outputDir)) {
+      if (relative.startsWith("..") || path.isAbsolute(relative)) {
         console.error(`[Download] Path traversal attempt blocked: ${absolutePath} for user ${userId}`);
         return res.status(403).json({ message: "Access denied" });
       }

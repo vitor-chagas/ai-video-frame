@@ -3,9 +3,19 @@ import { authStorage } from "./storage";
 import { isAuthenticated } from "./auth";
 import { Resend } from "resend";
 import jwt from "jsonwebtoken";
-import { randomBytes } from "crypto";
+import { randomBytes, timingSafeEqual } from "crypto";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+import { rateLimit } from "express-rate-limit";
+
+const magicLinkLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // limit each IP to 5 requests per windowMs
+  message: { message: "Too many magic link requests, please try again after 15 minutes" },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // Register auth-specific routes
 export function registerAuthRoutes(app: Express): void {
@@ -22,7 +32,7 @@ export function registerAuthRoutes(app: Express): void {
   });
 
   // Request a magic link
-  app.post("/api/auth/magic-link", async (req, res) => {
+  app.post("/api/auth/magic-link", magicLinkLimiter, async (req, res) => {
     const { email } = req.body;
     if (!email || !email.includes("@")) {
       return res.status(400).json({ message: "Invalid email address" });
@@ -129,19 +139,31 @@ export function registerAuthRoutes(app: Express): void {
 
   // Verify magic link
   app.get("/api/auth/verify", async (req, res, next) => {
-    const { token } = req.query;
-    if (!token || typeof token !== "string") {
+    const { token: providedToken } = req.query;
+    if (!providedToken || typeof providedToken !== "string") {
       return res.status(400).send("Invalid or missing token");
     }
 
     try {
-      const verificationToken = await authStorage.getVerificationToken(token);
+      // We retrieve by token, which is a lookup. 
+      // To prevent timing attacks on the lookup itself if the DB uses a tree/index:
+      // In this specific case, getVerificationToken finds the exact record.
+      const verificationToken = await authStorage.getVerificationToken(providedToken);
+      
       if (!verificationToken) {
         return res.status(400).send("Invalid or expired token");
       }
 
+      // Timing-safe comparison
+      const providedBuffer = Buffer.from(providedToken);
+      const storedBuffer = Buffer.from(verificationToken.token);
+      
+      if (providedBuffer.length !== storedBuffer.length || !timingSafeEqual(providedBuffer, storedBuffer)) {
+        return res.status(400).send("Invalid or expired token");
+      }
+
       // Delete token after use
-      await authStorage.deleteVerificationToken(token);
+      await authStorage.deleteVerificationToken(providedToken);
 
       // Find or create user
       let user = await authStorage.getUserByEmail(verificationToken.identifier);

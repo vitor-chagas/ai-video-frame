@@ -64,7 +64,18 @@ app.use((req, res, next) => {
       if (capturedJsonResponse) {
         // Redact sensitive fields from logs
         const redactedResponse = { ...capturedJsonResponse };
-        const sensitiveKeys = ["access_token", "refresh_token", "password", "id_token", "session_secret"];
+        const sensitiveKeys = [
+          "access_token", 
+          "refresh_token", 
+          "password", 
+          "id_token", 
+          "session_secret", 
+          "token", 
+          "sessionId", 
+          "stripe-signature",
+          "checkoutUrl",
+          "url"
+        ];
         
         for (const key of sensitiveKeys) {
           if (key in redactedResponse) {
