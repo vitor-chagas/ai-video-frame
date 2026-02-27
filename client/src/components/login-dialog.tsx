@@ -50,6 +50,10 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
           <DialogDescription>
             Choose your preferred login method to continue.
           </DialogDescription>
+          <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-50 border border-green-100 text-green-700 text-xs font-semibold">
+            <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+            Get 1 free credit on your first login
+          </div>
         </DialogHeader>
         <div className="flex flex-col gap-4 py-4">
           <Button 

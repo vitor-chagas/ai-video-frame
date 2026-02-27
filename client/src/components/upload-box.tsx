@@ -488,7 +488,7 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                     {isLoading ? "Loading..." : "Sign in to get started"}
                   </h3>
                   <p className="text-base text-muted-foreground max-w-sm mx-auto">
-                    Sign in with your account to upload and process videos. Quick and easy.
+                    Sign in to upload and process videos. Your first video is <span className="text-[hsl(24,10%,10%)] font-bold">on us!</span>
                   </p>
                 </div>
                 {!isLoading && (

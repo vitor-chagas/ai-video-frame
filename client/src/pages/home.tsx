@@ -159,7 +159,10 @@ export default function Home() {
            transition={{ duration: 0.8 }}
            className="w-full max-w-5xl mx-auto grid md:grid-cols-3 gap-8 scroll-mt-20"
         >
-            <div className="group rounded-3xl p-8 bg-white border border-[hsl(38,10%,90%)] flex flex-col gap-4 hover:border-[hsl(24,10%,10%)] hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+            <div className="group rounded-3xl p-8 bg-white border border-[hsl(38,10%,90%)] flex flex-col gap-4 hover:border-[hsl(24,10%,10%)] hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden">
+               <div className="absolute -right-12 top-6 bg-green-500 text-white text-[10px] font-bold py-1 w-40 rotate-45 text-center shadow-sm">
+                 FIRST ONE FREE
+               </div>
                <h3 className="text-xl font-serif font-bold group-hover:text-[hsl(24,10%,10%)] transition-colors">Pay as you go</h3>
                <div className="text-4xl font-bold font-serif">$0.99<span className="text-base font-sans font-normal text-muted-foreground">/credit</span></div>
                <div className="space-y-1">
