@@ -98,12 +98,6 @@ export function registerAuthRoutes(app: Express): void {
                     </table>
                   </td>
                 </tr>
-                <tr>
-                  <td style="padding: 30px 0 0 0; font-size: 14px; line-height: 1.5; color: #8c857f; text-align: center;">
-                    If the button doesn't work, copy and paste this link into your browser:<br />
-                    <a href="${magicLink}" style="color: #1a1512; text-decoration: underline;">${magicLink}</a>
-                  </td>
-                </tr>
               </table>
             </td>
           </tr>
