@@ -156,21 +156,27 @@ export async function setupAuth(app: Express) {
 
   app.get("/api/login", (req, res, next) => {
     passport.authenticate("oidc", {
-      prompt: "login consent",
+      prompt: "select_account",
       scope: ["openid", "email", "profile"],
     })(req, res, next);
   });
 
   app.get("/api/callback", (req, res, next) => {
-    console.log(`[Auth] Callback triggered`);
+    console.log(`[Auth] Callback triggered. Query: ${JSON.stringify(req.query)}`);
     
     passport.authenticate("oidc", (err: any, user: any, info: any) => {
       if (err) {
         console.error("[Auth] Passport authenticate error:", err);
+        // If it's a state mismatch or similar, logging the session state might help
+        console.error("[Auth] Session during error:", JSON.stringify({
+          id: req.sessionID,
+          hasSession: !!req.session,
+          passport: (req.session as any)?.passport
+        }));
         return next(err);
       }
       if (!user) {
-        console.error("[Auth] No user found in callback:", info);
+        console.error("[Auth] No user found in callback. Info:", JSON.stringify(info));
         return res.redirect("/api/login");
       }
       req.login(user, (loginErr) => {
