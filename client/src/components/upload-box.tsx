@@ -38,6 +38,13 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
   const { user, isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
+    // Reset state if user logs out
+    if (!isAuthenticated && !isLoading) {
+      resetState();
+    }
+  }, [isAuthenticated, isLoading]);
+
+  useEffect(() => {
     // If we have a video from Stripe redirect, use it
     if (stripeVideoId) {
       setVideoId(stripeVideoId);
