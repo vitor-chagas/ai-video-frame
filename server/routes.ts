@@ -9,8 +9,36 @@ import { spawn, execFile } from "child_process";
 import fs from "fs";
 import { promisify } from "util";
 import express from "express";
+import { rateLimit } from "express-rate-limit";
 
 const execFileAsync = promisify(execFile);
+const unlinkAsync = promisify(fs.unlink);
+const readdirAsync = promisify(fs.readdir);
+const statAsync = promisify(fs.stat);
+
+// Rate limiters
+const uploadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // limit each IP to 10 uploads per windowMs
+  message: { message: "Too many uploads from this IP, please try again after 15 minutes" },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const processingLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { message: "Too many processing requests, please try again later" },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 const videoProgress: Map<string, number> = new Map();
 
 const CLEANUP_THRESHOLD_MS = 60 * 60 * 1000; // 60 minutes
@@ -26,10 +54,10 @@ async function cleanupUserFiles(userId: string) {
       }
       
       if (video.originalPath && fs.existsSync(video.originalPath)) {
-        fs.unlinkSync(video.originalPath);
+        await unlinkAsync(video.originalPath).catch(() => {});
       }
       if (video.processedPath && fs.existsSync(video.processedPath)) {
-        fs.unlinkSync(video.processedPath);
+        await unlinkAsync(video.processedPath).catch(() => {});
       }
     }
   } catch (error) {
@@ -53,7 +81,7 @@ export async function cleanupExpiredVideos() {
 
     for (const dir of directories) {
       if (!fs.existsSync(dir)) continue;
-      const files = fs.readdirSync(dir);
+      const files = await readdirAsync(dir);
       for (const file of files) {
         if (file === ".gitkeep" || file === ".DS_Store") continue;
         const filePath = path.join(dir, file);
@@ -64,10 +92,10 @@ export async function cleanupExpiredVideos() {
           continue;
         }
 
-        const stats = fs.statSync(filePath);
+        const stats = await statAsync(filePath);
         const age = now.getTime() - stats.mtime.getTime();
         if (age > CLEANUP_THRESHOLD_MS) {
-          fs.unlinkSync(filePath);
+          await unlinkAsync(filePath).catch(() => {});
           console.log(`[Cleanup] Deleted expired file: ${filePath}`);
         }
       }
@@ -152,7 +180,7 @@ export async function registerRoutes(
 
   // ---- VIDEO UPLOAD ROUTE ----
 
-  app.post("/api/videos/upload", isAuthenticated, upload.single("video"), async (req: Request, res: Response) => {
+  app.post("/api/videos/upload", isAuthenticated, uploadLimiter, upload.single("video"), async (req: Request, res: Response) => {
     try {
       const file = req.file;
       if (!file) {
@@ -344,7 +372,7 @@ export async function registerRoutes(
 
   // ---- VIDEO PROCESSING ROUTE ----
 
-  app.post("/api/videos/:id/process", isAuthenticated, async (req: Request, res: Response) => {
+  app.post("/api/videos/:id/process", isAuthenticated, processingLimiter, async (req: Request, res: Response) => {
     try {
       const videoId = req.params.id as string;
       const userId = getUserId(req)!;
@@ -508,10 +536,13 @@ export async function registerRoutes(
         return res.status(400).json({ message: "Video not ready for download" });
       }
 
-      const absolutePath = path.resolve(video.processedPath);
-      const outputDir = path.resolve("uploads/output");
+      // Ensure the path is normalized and check if it's within the expected output directory
+      const normalizedPath = path.normalize(video.processedPath);
+      const outputDir = path.join(process.cwd(), "uploads", "output");
+      const absolutePath = path.resolve(normalizedPath);
 
       if (!absolutePath.startsWith(outputDir)) {
+        console.error(`[Download] Path traversal attempt blocked: ${absolutePath} for user ${userId}`);
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -519,7 +550,7 @@ export async function registerRoutes(
         return res.status(404).json({ message: "Processed file not found" });
       }
 
-      const stat = fs.statSync(absolutePath);
+      const stat = await statAsync(absolutePath);
       const safeName = video.originalFilename
         .replace(/[^a-zA-Z0-9._-]/g, "_")
         .replace(/_+/g, "_")

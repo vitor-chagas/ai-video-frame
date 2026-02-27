@@ -34,3 +34,4 @@
 - [ ] clean up python code,, look for repetition.
 - [ ] confirm the repo is ready to go public
 - [ ] scrumble the project_plan.md from git history
+- [ ] look for securiy flaws
