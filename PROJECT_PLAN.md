@@ -15,7 +15,8 @@
 - [x] google authentication app branding design
 - [x] review and finilize the design of the website.
 - [x] test other llm models to process the video.
-
+- [x] add one free credit for every new login.
+- [x] get a better logo... more clean and simple.
 
 ## TODO
 - [ ] test the time and the cost to process in a AWS instance with gpu.
@@ -25,8 +26,7 @@
 - [ ] consider to change the google authentication app from my personal accout to the ai video frame gmail account.
 - [ ] delete historic of .env file from git history
 - [ ] create a log system for the server.
-- [ ] get a better logo... more clean and simple.
-- [ ] add aivideoframe email box to my email app.
 - [ ] add a reminder to when the domain is expiring.
 - [ ] write a blog post about the project.
-- [ ] add one free credit for every new login.
+- [ ] check and test vunerabilities with openclaw.
+- [ ] create unit and integration tests to the pipeline
