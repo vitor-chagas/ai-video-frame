@@ -67,20 +67,21 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
         try {
           const video = await apiRequest("/api/videos/latest");
           if (video) {
-            setVideoId(video.id);
-            setFile({ name: video.originalFilename, size: video.fileSize, duration: video.duration });
-            setAspectRatio(video.aspectRatio || "9:16");
-            
-            if (video.status === "completed") {
-              setProcessingStatus("completed");
-            } else if (video.status === "failed") {
-              setProcessingStatus("failed");
-            } else if (video.status === "processing") {
-              setProcessingStatus("processing");
-              pollVideoStatus(video.id);
-            } else if (video.status === "uploaded") {
-              // Video is uploaded but not yet processing
-              setUploadProgress(100);
+            // ONLY auto-restore processing or completed videos on normal refresh.
+            // If it's just 'uploaded', we reset unless we're in the Stripe redirect flow (handled above).
+            if (video.status === "processing" || video.status === "completed" || video.status === "failed") {
+              setVideoId(video.id);
+              setFile({ name: video.originalFilename, size: video.fileSize, duration: video.duration });
+              setAspectRatio(video.aspectRatio || "9:16");
+              
+              if (video.status === "completed") {
+                setProcessingStatus("completed");
+              } else if (video.status === "failed") {
+                setProcessingStatus("failed");
+              } else if (video.status === "processing") {
+                setProcessingStatus("processing");
+                pollVideoStatus(video.id);
+              }
             }
           }
         } catch (err) {
