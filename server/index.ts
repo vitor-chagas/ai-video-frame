@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express, { type Request, Response, NextFunction } from "express";
+import helmet from "helmet";
 import { registerRoutes, cleanupExpiredVideos } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
@@ -14,6 +15,8 @@ process.on("unhandledRejection", (reason) => {
 const app = express();
 // Trust proxy MUST be set before any middleware (like session) to correctly handle HTTPS behind Railway's load balancer
 app.set("trust proxy", 1);
+
+app.use(helmet());
 const httpServer = createServer(app);
 
 declare module "http" {
@@ -59,7 +62,17 @@ app.use((req, res, next) => {
     if (path.startsWith("/api")) {
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
       if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+        // Redact sensitive fields from logs
+        const redactedResponse = { ...capturedJsonResponse };
+        const sensitiveKeys = ["access_token", "refresh_token", "password", "id_token", "session_secret"];
+        
+        for (const key of sensitiveKeys) {
+          if (key in redactedResponse) {
+            redactedResponse[key] = "[REDACTED]";
+          }
+        }
+        
+        logLine += ` :: ${JSON.stringify(redactedResponse)}`;
       }
 
       log(logLine);
