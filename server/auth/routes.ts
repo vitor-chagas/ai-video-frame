@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { authStorage } from "./storage";
-import { isAuthenticated } from "./auth";
+import { isAuthenticated, getUserId } from "./auth";
+import { cleanupUserFiles } from "../routes";
 import { Resend } from "resend";
 import jwt from "jsonwebtoken";
 import { randomBytes, timingSafeEqual } from "crypto";
@@ -135,6 +136,20 @@ export function registerAuthRoutes(app: Express): void {
       console.error("[Auth] Magic link error:", error);
       res.status(500).json({ message: "An error occurred" });
     }
+  });
+
+  // Verify magic link
+  app.post("/api/auth/logout", async (req, res, next) => {
+    const userId = getUserId(req);
+    if (userId) {
+      // Cleanup unprocessed videos on logout to save storage
+      // and ensure clean state on next login
+      await cleanupUserFiles(userId, true);
+    }
+    req.logout((err) => {
+      if (err) return next(err);
+      res.json({ message: "Logged out successfully" });
+    });
   });
 
   // Verify magic link

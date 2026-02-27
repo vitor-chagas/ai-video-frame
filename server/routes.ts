@@ -43,13 +43,18 @@ const videoProgress: Map<string, number> = new Map();
 
 const CLEANUP_THRESHOLD_MS = 60 * 60 * 1000; // 60 minutes
 
-async function cleanupUserFiles(userId: string) {
+export async function cleanupUserFiles(userId: string, onlyUnprocessed: boolean = false) {
   try {
     const videos = await storage.getVideosByUser(userId);
     for (const video of videos) {
       // NEVER delete files for a video that is currently being processed
       if (video.status === "processing") {
         console.log(`[Cleanup] Skipping active video ${video.id} for user ${userId}`);
+        continue;
+      }
+
+      // If onlyUnprocessed is true, only cleanup videos that are JUST uploaded
+      if (onlyUnprocessed && video.status !== "uploaded") {
         continue;
       }
       
@@ -59,6 +64,11 @@ async function cleanupUserFiles(userId: string) {
       if (video.processedPath && fs.existsSync(video.processedPath)) {
         await unlinkAsync(video.processedPath).catch(() => {});
       }
+
+      // If we are cleaning up unprocessed ones specifically (like on logout), 
+      // we might want to mark them as failed or delete from DB, 
+      // but for now, just removing files is the primary goal to save space.
+      // The frontend logic for /latest will handle the missing files.
     }
   } catch (error) {
     console.error("Error during user file cleanup:", error);
@@ -244,9 +254,13 @@ export async function registerRoutes(
       return res.json(null);
     }
 
-    // Check if processed file exists if it's completed
-    if (latest.status === "completed" && latest.processedPath) {
-      if (!fs.existsSync(latest.processedPath)) {
+    // Verify file existence on disk
+    if (latest.status === "uploaded" || latest.status === "processing") {
+      if (!latest.originalPath || !fs.existsSync(latest.originalPath)) {
+        return res.json(null);
+      }
+    } else if (latest.status === "completed") {
+      if (!latest.processedPath || !fs.existsSync(latest.processedPath)) {
         return res.json(null);
       }
     }

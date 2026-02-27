@@ -78,6 +78,9 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
             } else if (video.status === "processing") {
               setProcessingStatus("processing");
               pollVideoStatus(video.id);
+            } else if (video.status === "uploaded") {
+              // Video is uploaded but not yet processing
+              setUploadProgress(100);
             }
           }
         } catch (err) {
