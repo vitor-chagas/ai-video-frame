@@ -265,6 +265,13 @@ export async function registerRoutes(
       }
     }
 
+    // IMPORTANT: Never return 'uploaded' as the 'latest' video for auto-restoration
+    // unless explicitly requested by ID. This prevents the "stuck at 0%" issue
+    // on normal refresh or login.
+    if (latest.status === "uploaded") {
+      return res.json(null);
+    }
+
     const progress = videoProgress.get(latest.id) ?? 0;
     return res.json({ ...latest, progress });
   });
