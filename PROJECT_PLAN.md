@@ -31,3 +31,5 @@
 - [ ] check and test vunerabilities with openclaw.
 - [ ] create unit and integration tests to the pipeline
 - [ ] page in different languages.
+- [ ] clean up python code,, look for repetition.
+- [ ] confirm the repo is ready to go public
