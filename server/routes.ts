@@ -272,24 +272,16 @@ export async function registerRoutes(
       }
     }
 
-    // IMPORTANT: Never return 'uploaded' as the 'latest' video for auto-restoration
-    // unless explicitly requested by ID. This prevents the "stuck at 0%" issue
-    // on normal refresh or login.
+    // AGGRESSIVE CLEANUP: Never return 'uploaded' videos - always delete them
+    // This prevents the "stuck at 0%" issue on page refresh or login
     if (latest.status === "uploaded") {
-      // If it's just 'uploaded' and hasn't started processing, we consider it a stale entry
-      // unless it was uploaded VERY recently (within 30 seconds).
-      // On mount, the frontend will call this. If it's just 'uploaded' and older than 30s, 
-      // we kill it to prevent "ghost" uploads.
-      const thirtySecondsAgo = new Date(now.getTime() - 30 * 1000);
-      if (new Date(latest.createdAt || 0) < thirtySecondsAgo) {
-        console.log(`[Latest] Cleaning up stale 'uploaded' record: ${latest.id}`);
-        // Cleanup files if they exist
-        if (latest.originalPath && fs.existsSync(latest.originalPath)) {
-          await unlinkAsync(latest.originalPath).catch(() => {});
-        }
-        await storage.deleteVideo(latest.id);
-        return res.json(null);
+      console.log(`[Latest] Aggressively cleaning up 'uploaded' video: ${latest.id}`);
+      // Cleanup files if they exist
+      if (latest.originalPath && fs.existsSync(latest.originalPath)) {
+        await unlinkAsync(latest.originalPath).catch(() => {});
       }
+      await storage.deleteVideo(latest.id);
+      return res.json(null);
     }
 
     const progress = videoProgress.get(latest.id) ?? 0;
