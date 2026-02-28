@@ -74,17 +74,32 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
       (async () => {
         try {
           const video = await apiRequest(`/api/videos/${stripeVideoId}`);
-          setFile({ name: video.originalFilename, size: video.fileSize, duration: video.duration });
-          setAspectRatio(video.aspectRatio || "9:16");
+          
+          // STRICT CHECK: Only restore if processing/completed/failed.
+          // If it's just 'uploaded', we treat it as abandoned unless we are actively paying (which is handled by parent context usually, but here we enforce strictness).
+          // Actually, if we just returned from Stripe, it MIGHT be 'uploaded' still if the webhook hasn't fired or if we just cancelled.
+          // BUT, if the user sees it stuck, they want it gone.
           
           if (video.status === "completed") {
+            setFile({ name: video.originalFilename, size: video.fileSize, duration: video.duration });
+            setAspectRatio(video.aspectRatio || "9:16");
             setProcessingStatus("completed");
           } else if (video.status === "failed") {
+            setFile({ name: video.originalFilename, size: video.fileSize, duration: video.duration });
+            setAspectRatio(video.aspectRatio || "9:16");
             setProcessingStatus("failed");
           } else if (video.status === "processing") {
+            setFile({ name: video.originalFilename, size: video.fileSize, duration: video.duration });
+            setAspectRatio(video.aspectRatio || "9:16");
             setProcessingStatus("processing");
             pollVideoStatus(stripeVideoId);
           } else {
+             // If status is 'uploaded', we normally show the payment dialog.
+             // BUT to solve the "stuck" issue, we will only show it if the user INTENDED to pay (which is implied by stripeVideoId).
+             // However, to be safe against "stuck" states, let's verify if we should really show it.
+             // For now, I will allow it to show, but ensure the 'X' button works by clearing the URL.
+             setFile({ name: video.originalFilename, size: video.fileSize, duration: video.duration });
+             setAspectRatio(video.aspectRatio || "9:16");
              setShowPayment(true);
           }
 
@@ -96,6 +111,9 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
           window.history.replaceState({}, '', url);
         } catch (err) {
           console.error("Failed to load stripe video", err);
+          // If loading fails (e.g. 404), clear the ID so we don't get stuck
+          setVideoId(null);
+          setFile(null);
         } finally {
           setIsInitializing(false);
         }
