@@ -68,6 +68,13 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
           } else {
              setShowPayment(true);
           }
+
+          // Clean up the URL to prevent re-loading on refresh
+          const url = new URL(window.location.href);
+          url.searchParams.delete("returnVideoId");
+          url.searchParams.delete("sessionId");
+          url.searchParams.delete("payment");
+          window.history.replaceState({}, '', url);
         } catch (err) {
           console.error("Failed to load stripe video", err);
         }
@@ -313,14 +320,21 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
   };
 
   const resetState = async () => {
-    // Optimistic UI update
+    // Explicitly reset ALL state to clear any "stuck" UI
     setFile(null);
     setUploadProgress(0);
     setVideoId(null);
     setProcessingStatus(null);
     setProcessingProgress(0);
+    setIsValidating(false);
+    setIsUploading(false);
+    setShowPayment(false);
 
     try {
+      // Clear react-query cache
+      queryClient.invalidateQueries({ queryKey: ["/api/videos/latest"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      
       // Aggressive cleanup on the backend
       await apiRequest("/api/videos/reset", {
         method: "POST",
@@ -655,7 +669,15 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                   </RadioGroup>
                 </div>
 
-                <div className="pt-6 border-t border-[hsl(38,10%,90%)] flex justify-end">
+                <div className="pt-6 border-t border-[hsl(38,10%,90%)] flex justify-end gap-3">
+                  <Button
+                    size="lg"
+                    variant="ghost"
+                    onClick={resetState}
+                    className="rounded-full px-8 h-14 text-lg font-medium text-muted-foreground hover:text-destructive transition-all"
+                  >
+                    Cancel
+                  </Button>
                   <Button 
                     size="lg" 
                     onClick={handleStartProcessing}

@@ -260,6 +260,7 @@ export async function registerRoutes(
     if (latest.status === "uploaded" || latest.status === "processing") {
       if (!latest.originalPath || !fs.existsSync(latest.originalPath)) {
         // If the database record exists but the file is gone, clean up the record
+        console.log(`[Latest] Original file missing for video ${latest.id}, cleaning up.`);
         await storage.deleteVideo(latest.id);
         return res.json(null);
       }
@@ -276,11 +277,10 @@ export async function registerRoutes(
     // on normal refresh or login.
     if (latest.status === "uploaded") {
       // If it's just 'uploaded' and hasn't started processing, we consider it a stale entry
-      // unless it was uploaded very recently (within 5 minutes).
-      // This allows the user to still process it if they just uploaded it, but
-      // prevents it from getting stuck on refresh if they abandoned it.
-      const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
-      if (new Date(latest.createdAt || 0) < fiveMinutesAgo) {
+      // unless it was uploaded VERY recently (within 2 minutes).
+      // This is much tighter to prevent "stuck" states on refresh.
+      const twoMinutesAgo = new Date(now.getTime() - 2 * 60 * 1000);
+      if (new Date(latest.createdAt || 0) < twoMinutesAgo) {
         console.log(`[Latest] Cleaning up stale 'uploaded' record: ${latest.id}`);
         // Cleanup files if they exist
         if (latest.originalPath && fs.existsSync(latest.originalPath)) {
