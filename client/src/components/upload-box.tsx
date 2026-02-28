@@ -121,31 +121,38 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
           
           // Add cache-busting timestamp to prevent browser from returning stale latest video
           const video = await apiRequest(`/api/videos/latest?t=${Date.now()}`);
-          if (video) {
+          
+          if (video && (video.status === "processing" || video.status === "completed" || video.status === "failed")) {
             // ONLY auto-restore processing or completed videos on normal refresh.
             // NEVER restore 'uploaded' videos - they should be cleaned up by the backend
-            if (video.status === "processing" || video.status === "completed" || video.status === "failed") {
-              setVideoId(video.id);
-              setFile({ name: video.originalFilename, size: video.fileSize, duration: video.duration });
-              setAspectRatio(video.aspectRatio || "9:16");
-              
-              if (video.status === "completed") {
-                setProcessingStatus("completed");
-              } else if (video.status === "failed") {
-                setProcessingStatus("failed");
-              } else if (video.status === "processing") {
-                setProcessingStatus("processing");
-                pollVideoStatus(video.id);
-              }
-            } else {
-              // For any other status (including 'uploaded'), don't show in UI
-              // The backend should have already cleaned this up, but we'll ensure it's gone
-              console.log(`[Init] Found video with status '${video.status}', cleaning up without displaying.`);
-              await apiRequest("/api/videos/reset", { method: "POST" }).catch(() => {});
+            setVideoId(video.id);
+            setFile({ name: video.originalFilename, size: video.fileSize, duration: video.duration });
+            setAspectRatio(video.aspectRatio || "9:16");
+            
+            if (video.status === "completed") {
+              setProcessingStatus("completed");
+            } else if (video.status === "failed") {
+              setProcessingStatus("failed");
+            } else if (video.status === "processing") {
+              setProcessingStatus("processing");
+              pollVideoStatus(video.id);
+            }
+          } else {
+            // If no video or it's 'uploaded', ensure we clear local state
+            console.log("[Init] No active processing/completed video found, clearing local state.");
+            localStorage.removeItem("pendingVideoId");
+            localStorage.removeItem("pendingVideoTimestamp");
+            
+            // If we got an 'uploaded' video somehow, ask backend to nuke it
+            if (video && video.status === "uploaded") {
+               await apiRequest("/api/videos/reset", { method: "POST" }).catch(() => {});
             }
           }
         } catch (err) {
           console.error("Failed to fetch latest video", err);
+          // On error, better to be safe and clear potentially stale state
+          localStorage.removeItem("pendingVideoId");
+          localStorage.removeItem("pendingVideoTimestamp");
         } finally {
           setIsInitializing(false);
         }

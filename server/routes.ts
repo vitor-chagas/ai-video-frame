@@ -280,6 +280,10 @@ export async function registerRoutes(
       if (latest.originalPath && fs.existsSync(latest.originalPath)) {
         await unlinkAsync(latest.originalPath).catch(() => {});
       }
+      // Also check for processed path just in case
+      if (latest.processedPath && fs.existsSync(latest.processedPath)) {
+        await unlinkAsync(latest.processedPath).catch(() => {});
+      }
       await storage.deleteVideo(latest.id);
       return res.json(null);
     }
