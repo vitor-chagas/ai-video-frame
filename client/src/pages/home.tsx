@@ -35,6 +35,10 @@ export default function Home() {
 
     if (returnVideoId) {
       setPersistedVideoId(returnVideoId);
+      // Clean up URL immediately after consuming to prevent persistence on refresh
+      params.delete("returnVideoId");
+      const newUrl = window.location.pathname + (params.toString() ? "?" + params.toString() : "");
+      window.history.replaceState({}, "", newUrl);
     }
 
     if (paymentStatus === "success" && params.get("sessionId")) {
