@@ -40,7 +40,10 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
   useEffect(() => {
     // Reset state if user logs out
     if (!isAuthenticated && !isLoading) {
-      resetState();
+      setFile(null);
+      setUploadProgress(0);
+      setVideoId(null);
+      setProcessingStatus(null);
     }
   }, [isAuthenticated, isLoading]);
 
@@ -89,6 +92,12 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                 setProcessingStatus("processing");
                 pollVideoStatus(video.id);
               }
+            } else if (video.status === "uploaded") {
+              // If it's just 'uploaded' and we're not in a Stripe redirect, 
+              // it means the user refreshed before starting processing.
+              // We should give them a clean slate.
+              console.log("Restoration: Found 'uploaded' video, skipping auto-restore to avoid stuck UI.");
+              resetState();
             }
           }
         } catch (err) {
