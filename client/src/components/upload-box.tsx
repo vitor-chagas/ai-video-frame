@@ -38,97 +38,109 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
   const { toast } = useToast();
   const { user, isAuthenticated, isLoading } = useAuth();
 
+  const resetState = async () => {
+    // Pure UI reset first
+    setFile(null);
+    setUploadProgress(0);
+    setVideoId(null);
+    setProcessingStatus(null);
+    setProcessingProgress(0);
+    setIsValidating(false);
+    setIsUploading(false);
+    setShowPayment(false);
+
+    try {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      
+      // Clear backend for this user only when explicitly starting over
+      await apiRequest("/api/videos/reset", {
+        method: "POST",
+      });
+    } catch (error) {
+      console.error("Reset error:", error);
+    }
+  };
+
+  const pollVideoStatus = async (id: string) => {
+    const poll = setInterval(async () => {
+      try {
+        const video = await apiRequest(`/api/videos/${id}`);
+        if (video.progress !== undefined) {
+          setProcessingProgress(Math.round(video.progress));
+        }
+        if (video.status === "completed") {
+          clearInterval(poll);
+          setProcessingProgress(100);
+          setProcessingStatus("completed");
+          toast({
+            title: "Video ready!",
+            description: "Your auto-framed video is ready to download.",
+          });
+        } else if (video.status === "failed") {
+          clearInterval(poll);
+          setProcessingStatus("failed");
+          toast({
+            title: "Processing failed",
+            description: "Something went wrong. Please try again.",
+            variant: "destructive",
+          });
+        }
+      } catch {
+        clearInterval(poll);
+      }
+    }, 3000);
+  };
+
   useEffect(() => {
-    // Reset state and cleanup backend if user logs out
+    // Basic state reset on logout
     if (!isAuthenticated && !isLoading) {
       setFile(null);
       setUploadProgress(0);
       setVideoId(null);
       setProcessingStatus(null);
       setProcessingProgress(0);
-      
-      // Clear localStorage
-      localStorage.removeItem("pendingVideoId");
-      localStorage.removeItem("pendingVideoTimestamp");
-      
-      // Cleanup any abandoned uploads on logout
-      apiRequest("/api/videos/reset", { method: "POST" }).catch(() => {});
+      setShowPayment(false);
     }
   }, [isAuthenticated, isLoading]);
 
   useEffect(() => {
-    console.log("[Init] useEffect triggered", { stripeVideoId, isAuthenticated, isLoading });
-    
-    // Wait for auth to resolve before making decisions
     if (isLoading) return;
 
-    // If we have a video from Stripe redirect, use it
-    if (stripeVideoId && isAuthenticated) {
-      console.log("[Init] Using stripeVideoId:", stripeVideoId);
-      setVideoId(stripeVideoId);
-      (async () => {
-        try {
+    const initializeState = async () => {
+      try {
+        // 1. Prioritize Stripe redirect video
+        if (stripeVideoId && isAuthenticated) {
           const video = await apiRequest(`/api/videos/${stripeVideoId}`);
-          console.log("[Init] Stripe video loaded:", video);
-          
-          // STRICT CHECK: Only restore if processing/completed/failed.
-          
+          setVideoId(video.id);
+          setFile({ name: video.originalFilename, size: video.fileSize, duration: video.duration });
+          setAspectRatio(video.aspectRatio || "9:16");
+
           if (video.status === "completed") {
-            setFile({ name: video.originalFilename, size: video.fileSize, duration: video.duration });
-            setAspectRatio(video.aspectRatio || "9:16");
             setProcessingStatus("completed");
           } else if (video.status === "failed") {
-            setFile({ name: video.originalFilename, size: video.fileSize, duration: video.duration });
-            setAspectRatio(video.aspectRatio || "9:16");
             setProcessingStatus("failed");
           } else if (video.status === "processing") {
-            setFile({ name: video.originalFilename, size: video.fileSize, duration: video.duration });
-            setAspectRatio(video.aspectRatio || "9:16");
             setProcessingStatus("processing");
-            pollVideoStatus(stripeVideoId);
+            pollVideoStatus(video.id);
           } else {
-             console.log("[Init] Stripe video is in 'uploaded' state. Showing payment dialog.");
-             setFile({ name: video.originalFilename, size: video.fileSize, duration: video.duration });
-             setAspectRatio(video.aspectRatio || "9:16");
-             setShowPayment(true);
+            setShowPayment(true);
           }
 
-          // Clean up the URL to prevent re-loading on refresh
+          // Clean up URL
           const url = new URL(window.location.href);
-          url.searchParams.delete("returnVideoId");
-          url.searchParams.delete("sessionId");
-          url.searchParams.delete("payment");
+          ["returnVideoId", "sessionId", "payment"].forEach(p => url.searchParams.delete(p));
           window.history.replaceState({}, '', url);
-        } catch (err) {
-          console.error("Failed to load stripe video", err);
-          // If loading fails (e.g. 404), clear the ID so we don't get stuck
-          setVideoId(null);
-          setFile(null);
-        } finally {
-          setIsInitializing(false);
+          return;
         }
-      })();
-    } else if (isAuthenticated) {
-      // Otherwise, check if there's any active video within the window
-      (async () => {
-        try {
-          console.log("[Init] Clearing localStorage and fetching latest video...");
-          // ALWAYS clear localStorage on mount.
-          localStorage.removeItem("pendingVideoId");
-          localStorage.removeItem("pendingVideoTimestamp");
-          
-          // Add cache-busting timestamp to prevent browser from returning stale latest video
+
+        // 2. Otherwise fetch latest video for authenticated users
+        if (isAuthenticated) {
           const video = await apiRequest(`/api/videos/latest?t=${Date.now()}`);
-          console.log("[Init] Latest video response:", video);
-          
-          // STRICT RESTORE: Only restore processing, completed, or failed.
-          // 'uploaded' videos are explicitly ignored/cleaned by backend now.
-          if (video && (video.status === "processing" || video.status === "completed" || video.status === "failed")) {
-            console.log("[Init] Restoring video state:", video.status);
+          if (video) {
             setVideoId(video.id);
             setFile({ name: video.originalFilename, size: video.fileSize, duration: video.duration });
             setAspectRatio(video.aspectRatio || "9:16");
-            
+
             if (video.status === "completed") {
               setProcessingStatus("completed");
             } else if (video.status === "failed") {
@@ -137,27 +149,16 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
               setProcessingStatus("processing");
               pollVideoStatus(video.id);
             }
-          } else {
-            console.log("[Init] No active video to restore. UI will remain in upload state.");
-            // Reset local state just in case something was lingering
-            setVideoId(null);
-            setFile(null);
-            setProcessingStatus(null);
           }
-        } catch (err) {
-          console.error("Failed to fetch latest video", err);
-          setVideoId(null);
-          setFile(null);
-        } finally {
-          setIsInitializing(false);
         }
-      })();
-    } else {
-      console.log("[Init] Not authenticated or loading, skipping video fetch.");
-      if (!isLoading) {
+      } catch (err) {
+        console.error("[Init] Error:", err);
+      } finally {
         setIsInitializing(false);
       }
-    }
+    };
+
+    initializeState();
   }, [stripeVideoId, isAuthenticated, isLoading]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -187,10 +188,6 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
              setVideoId(videoData.id);
              setFile(prev => prev ? { ...prev, duration: videoData.duration } : null);
              setIsValidating(false);
-             
-             // Store in localStorage to track pending uploads
-             localStorage.setItem("pendingVideoId", videoData.id);
-             localStorage.setItem("pendingVideoTimestamp", Date.now().toString());
            }, 500);
         } catch (error: any) {
            setIsUploading(false);
@@ -284,10 +281,6 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
         method: "POST",
       });
 
-      // Clear localStorage since video is now being processed
-      localStorage.removeItem("pendingVideoId");
-      localStorage.removeItem("pendingVideoTimestamp");
-
       // Update user credits in UI
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
 
@@ -310,36 +303,6 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
     } finally {
       setIsPaymentProcessing(false);
     }
-  };
-
-  const pollVideoStatus = async (id: string) => {
-    const poll = setInterval(async () => {
-      try {
-        const video = await apiRequest(`/api/videos/${id}`);
-        if (video.progress !== undefined) {
-          setProcessingProgress(Math.round(video.progress));
-        }
-        if (video.status === "completed") {
-          clearInterval(poll);
-          setProcessingProgress(100);
-          setProcessingStatus("completed");
-          toast({
-            title: "Video ready!",
-            description: "Your auto-framed video is ready to download.",
-          });
-        } else if (video.status === "failed") {
-          clearInterval(poll);
-          setProcessingStatus("failed");
-          toast({
-            title: "Processing failed",
-            description: "Something went wrong. Please try again.",
-            variant: "destructive",
-          });
-        }
-      } catch {
-        clearInterval(poll);
-      }
-    }, 3000);
   };
 
   const handleDownload = () => {
@@ -368,35 +331,6 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
       });
     } finally {
       setIsPortalLoading(false);
-    }
-  };
-
-  const resetState = async () => {
-    // Explicitly reset ALL state to clear any "stuck" UI
-    setFile(null);
-    setUploadProgress(0);
-    setVideoId(null);
-    setProcessingStatus(null);
-    setProcessingProgress(0);
-    setIsValidating(false);
-    setIsUploading(false);
-    setShowPayment(false);
-
-    // Clear localStorage
-    localStorage.removeItem("pendingVideoId");
-    localStorage.removeItem("pendingVideoTimestamp");
-
-    try {
-      // Clear react-query cache
-      queryClient.invalidateQueries({ queryKey: ["/api/videos/latest"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      
-      // Aggressive cleanup on the backend
-      await apiRequest("/api/videos/reset", {
-        method: "POST",
-      });
-    } catch (error) {
-      console.error("Failed to perform aggressive reset", error);
     }
   };
 
@@ -801,7 +735,7 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate" title={file.name}>{truncateFilename(file.name, 35)}</p>
-                  <p className="text-xs text-muted-foreground">{(file.size / (1024 * 1024)).toFixed(2)} MB → {aspectRatio}</p>
+                  <p className="text-xs text-muted-foreground">{(file.size / (1024 * 1024)).toFixed(2) } MB → {aspectRatio}</p>
                 </div>
               </div>
             )}

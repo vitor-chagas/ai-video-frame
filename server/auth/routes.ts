@@ -136,13 +136,12 @@ export function registerAuthRoutes(app: Express): void {
     }
   });
 
-  // Verify magic link
+  // Logout route
   app.post("/api/auth/logout", async (req, res, next) => {
     const userId = getUserId(req);
     if (userId) {
-      // Cleanup unprocessed videos on logout to save storage
-      // and ensure clean state on next login
-      await cleanupUserFiles(userId, true);
+      // Cleanup files on logout to save storage
+      await cleanupUserFiles(userId);
     }
     req.logout((err) => {
       if (err) return next(err);
