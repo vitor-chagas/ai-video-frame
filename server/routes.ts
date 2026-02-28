@@ -275,11 +275,13 @@ export async function registerRoutes(
     // unless explicitly requested by ID. This prevents the "stuck at 0%" issue
     // on normal refresh or login.
     if (latest.status === "uploaded") {
-      // If it's just 'uploaded' and hasn't started processing, we consider it a stale entry
-      // unless it was created very recently (e.g., within 2 minutes) to allow for 
-      // network latency or Stripe redirect delays.
-      const twoMinutesAgo = new Date(now.getTime() - 2 * 60 * 1000);
-      if (new Date(latest.createdAt || 0) < twoMinutesAgo) {
+      // If it's just 'uploaded' and hasn't started processing, we consider it a stale entry.
+      // We only allow very recent uploads (within 30 seconds) to be returned,
+      // which handles the immediate period after upload before the user interacts.
+      const thirtySecondsAgo = new Date(now.getTime() - 30 * 1000);
+      if (new Date(latest.createdAt || 0) < thirtySecondsAgo) {
+        // Clean up the stale 'uploaded' record
+        await storage.deleteVideo(latest.id);
         return res.json(null);
       }
     }
