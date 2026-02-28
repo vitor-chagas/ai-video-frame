@@ -27,6 +27,7 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
   const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
   
   const [aspectRatio, setAspectRatio] = useState("9:16");
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -77,10 +78,12 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
           window.history.replaceState({}, '', url);
         } catch (err) {
           console.error("Failed to load stripe video", err);
+        } finally {
+          setIsInitializing(false);
         }
       })();
     } else if (isAuthenticated) {
-      // Otherwise, check if there's any active video within the 15m window
+      // Otherwise, check if there's any active video within the window
       (async () => {
         try {
           // Add cache-busting timestamp to prevent browser from returning stale latest video
@@ -111,8 +114,12 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
           }
         } catch (err) {
           console.error("Failed to fetch latest video", err);
+        } finally {
+          setIsInitializing(false);
         }
       })();
+    } else {
+      setIsInitializing(false);
     }
   }, [stripeVideoId, isAuthenticated]);
 
@@ -357,6 +364,15 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
+
+  if (isInitializing) {
+    return (
+      <div className="w-full max-w-2xl mx-auto text-center py-20">
+        <Loader2 className="h-10 w-10 animate-spin mx-auto text-[hsl(24,10%,10%)] mb-4" />
+        <p className="text-muted-foreground">Checking for active sessions...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-2xl mx-auto" data-video-id={videoId || ""}>

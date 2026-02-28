@@ -277,10 +277,11 @@ export async function registerRoutes(
     // on normal refresh or login.
     if (latest.status === "uploaded") {
       // If it's just 'uploaded' and hasn't started processing, we consider it a stale entry
-      // unless it was uploaded VERY recently (within 2 minutes).
-      // This is much tighter to prevent "stuck" states on refresh.
-      const twoMinutesAgo = new Date(now.getTime() - 2 * 60 * 1000);
-      if (new Date(latest.createdAt || 0) < twoMinutesAgo) {
+      // unless it was uploaded VERY recently (within 30 seconds).
+      // On mount, the frontend will call this. If it's just 'uploaded' and older than 30s, 
+      // we kill it to prevent "ghost" uploads.
+      const thirtySecondsAgo = new Date(now.getTime() - 30 * 1000);
+      if (new Date(latest.createdAt || 0) < thirtySecondsAgo) {
         console.log(`[Latest] Cleaning up stale 'uploaded' record: ${latest.id}`);
         // Cleanup files if they exist
         if (latest.originalPath && fs.existsSync(latest.originalPath)) {
