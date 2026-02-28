@@ -326,6 +326,23 @@ export async function registerRoutes(
     }
   });
 
+  app.post("/api/videos/reset", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = getUserId(req)!;
+      console.log(`[Reset] Aggressive cleanup triggered for user ${userId}`);
+      
+      // Cleanup files on disk
+      await cleanupUserFiles(userId);
+      // Delete all database records for this user
+      await storage.deleteAllUserVideos(userId);
+      
+      return res.json({ success: true });
+    } catch (error: any) {
+      console.error(`[Reset Error] ${error.message}`);
+      return res.status(500).json({ message: error.message });
+    }
+  });
+
   // ---- STRIPE PAYMENT ROUTE ----
 
   app.post("/api/payments/create-credits", isAuthenticated, async (req: Request, res: Response) => {

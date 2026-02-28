@@ -75,7 +75,8 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
       // Otherwise, check if there's any active video within the 15m window
       (async () => {
         try {
-          const video = await apiRequest("/api/videos/latest");
+          // Add cache-busting timestamp to prevent browser from returning stale latest video
+          const video = await apiRequest(`/api/videos/latest?t=${Date.now()}`);
           if (video) {
             // ONLY auto-restore processing or completed videos on normal refresh.
             // If it's just 'uploaded', we reset unless we're in the Stripe redirect flow (handled above).
@@ -95,9 +96,9 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
             } else if (video.status === "uploaded") {
               // If it's just 'uploaded' and we're not in a Stripe redirect, 
               // it means the user refreshed before starting processing.
-              // We should give them a clean slate.
-              console.log("Restoration: Found 'uploaded' video, skipping auto-restore to avoid stuck UI.");
-              resetState();
+              // We should give them a clean slate and aggressively clean up the backend.
+              console.log("Restoration: Found 'uploaded' video, skipping auto-restore and resetting.");
+              await resetState();
             }
           }
         } catch (err) {
@@ -326,24 +327,20 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
   };
 
   const resetState = async () => {
-    const currentVideoId = videoId;
-    
     // Optimistic UI update
     setFile(null);
     setUploadProgress(0);
     setVideoId(null);
     setProcessingStatus(null);
+    setProcessingProgress(0);
 
-    // If we're resetting (e.g. "Try Again" or manual reset), 
-    // we should clean up the old video record if it exists
-    if (currentVideoId) {
-      try {
-        await apiRequest(`/api/videos/${currentVideoId}`, {
-          method: "DELETE",
-        });
-      } catch (error) {
-        console.error("Failed to delete video record during reset", error);
-      }
+    try {
+      // Aggressive cleanup on the backend
+      await apiRequest("/api/videos/reset", {
+        method: "POST",
+      });
+    } catch (error) {
+      console.error("Failed to perform aggressive reset", error);
     }
   };
 
