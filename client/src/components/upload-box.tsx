@@ -104,7 +104,7 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
           const video = await apiRequest(`/api/videos/latest?t=${Date.now()}`);
           if (video) {
             // ONLY auto-restore processing or completed videos on normal refresh.
-            // If it's just 'uploaded', we reset unless we're in the Stripe redirect flow (handled above).
+            // NEVER restore 'uploaded' videos - they should be cleaned up by the backend
             if (video.status === "processing" || video.status === "completed" || video.status === "failed") {
               setVideoId(video.id);
               setFile({ name: video.originalFilename, size: video.fileSize, duration: video.duration });
@@ -118,12 +118,11 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                 setProcessingStatus("processing");
                 pollVideoStatus(video.id);
               }
-            } else if (video.status === "uploaded") {
-              // If it's just 'uploaded' and we're not in a Stripe redirect, 
-              // it means the user refreshed before starting processing.
-              // We should give them a clean slate and aggressively clean up the backend.
-              console.log("Restoration: Found 'uploaded' video, skipping auto-restore and resetting.");
-              await resetState();
+            } else {
+              // For any other status (including 'uploaded'), don't show in UI
+              // The backend should have already cleaned this up, but we'll ensure it's gone
+              console.log(`[Init] Found video with status '${video.status}', cleaning up without displaying.`);
+              await apiRequest("/api/videos/reset", { method: "POST" }).catch(() => {});
             }
           }
         } catch (err) {
