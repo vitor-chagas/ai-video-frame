@@ -265,7 +265,7 @@ export async function registerRoutes(
     }
 
     // Verify file existence on disk
-    if (latest.status === "uploaded" || latest.status === "processing") {
+    if (latest.status === "processing") {
       if (!latest.originalPath || !fs.existsSync(latest.originalPath)) {
         // If the database record exists but the file is gone, clean up the record
         console.log(`[Latest] Original file missing for video ${latest.id}, cleaning up.`);
@@ -285,19 +285,21 @@ export async function registerRoutes(
     // This prevents the "stuck at 0%" issue on page refresh or login
     if (latest.status === "uploaded") {
       console.log(`[Latest] Aggressively cleaning up 'uploaded' video: ${latest.id}`);
+      
       // Cleanup files if they exist
       if (latest.originalPath && fs.existsSync(latest.originalPath)) {
         await unlinkAsync(latest.originalPath).catch(() => {});
       }
+      
       // Also check for processed path just in case
       if (latest.processedPath && fs.existsSync(latest.processedPath)) {
         await unlinkAsync(latest.processedPath).catch(() => {});
       }
-      await storage.deleteVideo(latest.id);
-      console.log(`[Latest] Deleted 'uploaded' video ${latest.id}. Returning null.`);
-      
-      // Also trigger a reset on other potential videos for this user
+
+      // Delete ALL user videos when we find an 'uploaded' one during initialization
+      // This is because 'uploaded' means it's an abandoned session from before the refresh.
       await storage.deleteAllUserVideos(userId);
+      console.log(`[Latest] Deleted all videos for user ${userId} because of 'uploaded' state. Returning null.`);
       
       return res.json(null);
     }

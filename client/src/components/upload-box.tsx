@@ -57,10 +57,13 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
   }, [isAuthenticated, isLoading]);
 
   useEffect(() => {
-    console.log("[Init] useEffect triggered", { stripeVideoId, isAuthenticated });
+    console.log("[Init] useEffect triggered", { stripeVideoId, isAuthenticated, isLoading });
+    
+    // Wait for auth to resolve before making decisions
+    if (isLoading) return;
 
     // If we have a video from Stripe redirect, use it
-    if (stripeVideoId) {
+    if (stripeVideoId && isAuthenticated) {
       console.log("[Init] Using stripeVideoId:", stripeVideoId);
       setVideoId(stripeVideoId);
       (async () => {
@@ -118,9 +121,10 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
           const video = await apiRequest(`/api/videos/latest?t=${Date.now()}`);
           console.log("[Init] Latest video response:", video);
           
+          // STRICT RESTORE: Only restore processing, completed, or failed.
+          // 'uploaded' videos are explicitly ignored/cleaned by backend now.
           if (video && (video.status === "processing" || video.status === "completed" || video.status === "failed")) {
             console.log("[Init] Restoring video state:", video.status);
-            // ONLY restore processing or completed videos.
             setVideoId(video.id);
             setFile({ name: video.originalFilename, size: video.fileSize, duration: video.duration });
             setAspectRatio(video.aspectRatio || "9:16");
@@ -134,25 +138,27 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
               pollVideoStatus(video.id);
             }
           } else {
-            console.log("[Init] No active video to restore.");
-            // If the backend returns an 'uploaded' video (which it shouldn't due to our backend fix),
-            // or if it returns null, we ensure we clean up.
-            if (video && video.status === "uploaded") {
-               console.log("[Init] Found uploaded but unprocessed video, requesting cleanup.");
-               await apiRequest("/api/videos/reset", { method: "POST" }).catch(() => {});
-            }
+            console.log("[Init] No active video to restore. UI will remain in upload state.");
+            // Reset local state just in case something was lingering
+            setVideoId(null);
+            setFile(null);
+            setProcessingStatus(null);
           }
         } catch (err) {
           console.error("Failed to fetch latest video", err);
+          setVideoId(null);
+          setFile(null);
         } finally {
           setIsInitializing(false);
         }
       })();
     } else {
-      console.log("[Init] Not authenticated, skipping video fetch.");
-      setIsInitializing(false);
+      console.log("[Init] Not authenticated or loading, skipping video fetch.");
+      if (!isLoading) {
+        setIsInitializing(false);
+      }
     }
-  }, [stripeVideoId, isAuthenticated]);
+  }, [stripeVideoId, isAuthenticated, isLoading]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
