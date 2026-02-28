@@ -137,17 +137,21 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
         if (isAuthenticated) {
           const video = await apiRequest(`/api/videos/latest?t=${Date.now()}`);
           if (video) {
-            setVideoId(video.id);
-            setFile({ name: video.originalFilename, size: video.fileSize, duration: video.duration });
-            setAspectRatio(video.aspectRatio || "9:16");
+            // Only restore if the video is actually being processed or is done
+            // 'uploaded' videos are now wiped by the backend anyway, but we double-check here
+            if (video.status === "processing" || video.status === "completed" || video.status === "failed") {
+              setVideoId(video.id);
+              setFile({ name: video.originalFilename, size: video.fileSize, duration: video.duration });
+              setAspectRatio(video.aspectRatio || "9:16");
 
-            if (video.status === "completed") {
-              setProcessingStatus("completed");
-            } else if (video.status === "failed") {
-              setProcessingStatus("failed");
-            } else if (video.status === "processing") {
-              setProcessingStatus("processing");
-              pollVideoStatus(video.id);
+              if (video.status === "completed") {
+                setProcessingStatus("completed");
+              } else if (video.status === "failed") {
+                setProcessingStatus("failed");
+              } else if (video.status === "processing") {
+                setProcessingStatus("processing");
+                pollVideoStatus(video.id);
+              }
             }
           }
         }

@@ -215,9 +215,20 @@ export async function registerRoutes(
       new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
     )[0];
 
+    // Wipe out "uploaded" videos immediately on refresh - always start fresh unless processing/done
+    if (latest.status === "uploaded") {
+      console.log(`[API] Wiping abandoned upload: ${latest.id}`);
+      if (latest.originalPath && fs.existsSync(latest.originalPath)) {
+        await unlinkAsync(latest.originalPath).catch(() => {});
+      }
+      await storage.deleteVideo(latest.id);
+      return res.json(null);
+    }
+
     const age = new Date().getTime() - new Date(latest.createdAt || 0).getTime();
     if (age > CLEANUP_THRESHOLD_MS) return res.json(null);
 
+    // Verify files still exist for processing/completed videos
     if (latest.status === "processing") {
       if (!latest.originalPath || !fs.existsSync(latest.originalPath)) {
         await storage.deleteVideo(latest.id);
