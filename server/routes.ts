@@ -295,6 +295,10 @@ export async function registerRoutes(
       }
       await storage.deleteVideo(latest.id);
       console.log(`[Latest] Deleted 'uploaded' video ${latest.id}. Returning null.`);
+      
+      // Also trigger a reset on other potential videos for this user
+      await storage.deleteAllUserVideos(userId);
+      
       return res.json(null);
     }
 

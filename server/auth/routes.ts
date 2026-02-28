@@ -53,8 +53,6 @@ export function registerAuthRoutes(app: Express): void {
       const host = req.get("host");
       const magicLink = `${protocol}://${host}/api/auth/verify?token=${token}`;
 
-      console.log(`[Auth] Sending magic link to ${email}: ${magicLink}`);
-
       const baseUrl = process.env.RAILWAY_PUBLIC_DOMAIN 
         ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` 
         : `${protocol}://${host}`;
@@ -160,9 +158,6 @@ export function registerAuthRoutes(app: Express): void {
     }
 
     try {
-      // We retrieve by token, which is a lookup. 
-      // To prevent timing attacks on the lookup itself if the DB uses a tree/index:
-      // In this specific case, getVerificationToken finds the exact record.
       const verificationToken = await authStorage.getVerificationToken(providedToken);
       
       if (!verificationToken) {
@@ -177,8 +172,10 @@ export function registerAuthRoutes(app: Express): void {
         return res.status(400).send("Invalid or expired token");
       }
 
-      // Delete token after use
-      await authStorage.deleteVerificationToken(providedToken);
+      // Skip deletion locally to handle browser background pre-fetch requests
+      if (process.env.NODE_ENV === "production") {
+        await authStorage.deleteVerificationToken(providedToken);
+      }
 
       // Find or create user
       let user = await authStorage.getUserByEmail(verificationToken.identifier);

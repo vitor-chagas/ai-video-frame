@@ -56,17 +56,6 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
     }
   }, [isAuthenticated, isLoading]);
 
-  // Cleanup on unmount if video is still in "uploaded" state
-  useEffect(() => {
-    return () => {
-      // Only cleanup if we have a videoId and it's in uploaded state (not processing/completed)
-      if (videoId && !processingStatus && isAuthenticated) {
-        console.log("[Unmount] Cleaning up uploaded video on component unmount");
-        apiRequest("/api/videos/reset", { method: "POST" }).catch(() => {});
-      }
-    };
-  }, [videoId, processingStatus, isAuthenticated]);
-
   useEffect(() => {
     console.log("[Init] useEffect triggered", { stripeVideoId, isAuthenticated });
 

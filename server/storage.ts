@@ -5,6 +5,10 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
+import fs from "fs";
+import { promisify } from "util";
+
+const unlinkAsync = promisify(fs.unlink);
 
 export interface IStorage {
   getVideo(id: string): Promise<Video | undefined>;
@@ -67,10 +71,6 @@ export class DatabaseStorage implements IStorage {
         staleVideos.push(video);
         
         // Clean up physical files before deleting database record
-        const fs = require("fs");
-        const { promisify } = require("util");
-        const unlinkAsync = promisify(fs.unlink);
-        
         if (video.originalPath && fs.existsSync(video.originalPath)) {
           await unlinkAsync(video.originalPath).catch((err: any) => 
             console.error(`Failed to delete file ${video.originalPath}:`, err)
