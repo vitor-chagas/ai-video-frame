@@ -104,27 +104,17 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
       // Otherwise, check if there's any active video within the window
       (async () => {
         try {
-          // PROACTIVE CLEANUP: Check localStorage for stale uploaded videos
-          const storedVideoId = localStorage.getItem("pendingVideoId");
-          const storedTimestamp = localStorage.getItem("pendingVideoTimestamp");
-          
-          if (storedVideoId && storedTimestamp) {
-            const age = Date.now() - parseInt(storedTimestamp);
-            // If the stored video is older than 10 minutes, it's definitely stale
-            if (age > 10 * 60 * 1000) {
-              console.log(`[Init] Found stale video in localStorage (${storedVideoId}), cleaning up proactively`);
-              localStorage.removeItem("pendingVideoId");
-              localStorage.removeItem("pendingVideoTimestamp");
-              await apiRequest("/api/videos/reset", { method: "POST" }).catch(() => {});
-            }
-          }
+          // ALWAYS clear localStorage on mount.
+          // We rely solely on the backend to tell us if there is a processing/completed video.
+          // Unprocessed uploads should never persist across sessions/refreshes.
+          localStorage.removeItem("pendingVideoId");
+          localStorage.removeItem("pendingVideoTimestamp");
           
           // Add cache-busting timestamp to prevent browser from returning stale latest video
           const video = await apiRequest(`/api/videos/latest?t=${Date.now()}`);
           
           if (video && (video.status === "processing" || video.status === "completed" || video.status === "failed")) {
-            // ONLY auto-restore processing or completed videos on normal refresh.
-            // NEVER restore 'uploaded' videos - they should be cleaned up by the backend
+            // ONLY restore processing or completed videos.
             setVideoId(video.id);
             setFile({ name: video.originalFilename, size: video.fileSize, duration: video.duration });
             setAspectRatio(video.aspectRatio || "9:16");
@@ -138,21 +128,15 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
               pollVideoStatus(video.id);
             }
           } else {
-            // If no video or it's 'uploaded', ensure we clear local state
-            console.log("[Init] No active processing/completed video found, clearing local state.");
-            localStorage.removeItem("pendingVideoId");
-            localStorage.removeItem("pendingVideoTimestamp");
-            
-            // If we got an 'uploaded' video somehow, ask backend to nuke it
+            // If the backend returns an 'uploaded' video (which it shouldn't due to our backend fix),
+            // or if it returns null, we ensure we clean up.
             if (video && video.status === "uploaded") {
+               console.log("[Init] Found uploaded but unprocessed video, requesting cleanup.");
                await apiRequest("/api/videos/reset", { method: "POST" }).catch(() => {});
             }
           }
         } catch (err) {
           console.error("Failed to fetch latest video", err);
-          // On error, better to be safe and clear potentially stale state
-          localStorage.removeItem("pendingVideoId");
-          localStorage.removeItem("pendingVideoTimestamp");
         } finally {
           setIsInitializing(false);
         }
