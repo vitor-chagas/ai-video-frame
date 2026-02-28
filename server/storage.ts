@@ -14,6 +14,7 @@ export interface IStorage {
   getAllProcessingVideos(): Promise<Video[]>;
   deleteVideo(id: string): Promise<void>;
   deleteAllUserVideos(userId: string): Promise<void>;
+  deleteStaleUploadedVideos(maxAgeMs: number): Promise<Video[]>;
 
   getPayment(id: string): Promise<Payment | undefined>;
   getPaymentByVideoId(videoId: string): Promise<Payment | undefined>;
@@ -53,6 +54,22 @@ export class DatabaseStorage implements IStorage {
 
   async deleteAllUserVideos(userId: string): Promise<void> {
     await db.delete(videos).where(eq(videos.userId, userId));
+  }
+
+  async deleteStaleUploadedVideos(maxAgeMs: number): Promise<Video[]> {
+    const allVideos = await db.select().from(videos).where(eq(videos.status, "uploaded"));
+    const now = new Date();
+    const staleVideos: Video[] = [];
+    
+    for (const video of allVideos) {
+      const age = now.getTime() - new Date(video.createdAt || 0).getTime();
+      if (age > maxAgeMs) {
+        staleVideos.push(video);
+        await this.deleteVideo(video.id);
+      }
+    }
+    
+    return staleVideos;
   }
 
   async getPayment(id: string): Promise<Payment | undefined> {

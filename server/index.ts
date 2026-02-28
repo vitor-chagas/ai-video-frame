@@ -2,6 +2,7 @@ import "dotenv/config";
 import express, { type Request, Response, NextFunction } from "express";
 import helmet from "helmet";
 import { registerRoutes, cleanupExpiredVideos } from "./routes";
+import { storage } from "./storage";
 import { serveStatic } from "./static";
 import { createServer } from "http";
 
@@ -99,6 +100,18 @@ app.use((req, res, next) => {
   // Background cleanup job: Every 5 minutes
   setInterval(() => {
     cleanupExpiredVideos().catch(err => console.error("Scheduled cleanup failed:", err));
+  }, 5 * 60 * 1000);
+
+  // Cleanup stale "uploaded" videos every 5 minutes (videos stuck in uploaded state for more than 5 minutes)
+  setInterval(async () => {
+    try {
+      const staleVideos = await storage.deleteStaleUploadedVideos(5 * 60 * 1000);
+      if (staleVideos.length > 0) {
+        console.log(`[Cleanup] Removed ${staleVideos.length} stale uploaded videos`);
+      }
+    } catch (err) {
+      console.error("Stale video cleanup failed:", err);
+    }
   }, 5 * 60 * 1000);
 
   app.use((err: any, _req: Request, res: Response, next: NextFunction) => {

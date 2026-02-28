@@ -39,15 +39,29 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
   const { user, isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
-    // Reset state if user logs out
+    // Reset state and cleanup backend if user logs out
     if (!isAuthenticated && !isLoading) {
       setFile(null);
       setUploadProgress(0);
       setVideoId(null);
       setProcessingStatus(null);
       setProcessingProgress(0);
+      
+      // Cleanup any abandoned uploads on logout
+      apiRequest("/api/videos/reset", { method: "POST" }).catch(() => {});
     }
   }, [isAuthenticated, isLoading]);
+
+  // Cleanup on unmount if video is still in "uploaded" state
+  useEffect(() => {
+    return () => {
+      // Only cleanup if we have a videoId and it's in uploaded state (not processing/completed)
+      if (videoId && !processingStatus && isAuthenticated) {
+        console.log("[Unmount] Cleaning up uploaded video on component unmount");
+        apiRequest("/api/videos/reset", { method: "POST" }).catch(() => {});
+      }
+    };
+  }, [videoId, processingStatus, isAuthenticated]);
 
   useEffect(() => {
     // If we have a video from Stripe redirect, use it
