@@ -275,12 +275,17 @@ export async function registerRoutes(
     // unless explicitly requested by ID. This prevents the "stuck at 0%" issue
     // on normal refresh or login.
     if (latest.status === "uploaded") {
-      // If it's just 'uploaded' and hasn't started processing, we consider it a stale entry.
-      // We only allow very recent uploads (within 30 seconds) to be returned,
-      // which handles the immediate period after upload before the user interacts.
-      const thirtySecondsAgo = new Date(now.getTime() - 30 * 1000);
-      if (new Date(latest.createdAt || 0) < thirtySecondsAgo) {
-        // Clean up the stale 'uploaded' record
+      // If it's just 'uploaded' and hasn't started processing, we consider it a stale entry
+      // unless it was uploaded very recently (within 5 minutes).
+      // This allows the user to still process it if they just uploaded it, but
+      // prevents it from getting stuck on refresh if they abandoned it.
+      const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+      if (new Date(latest.createdAt || 0) < fiveMinutesAgo) {
+        console.log(`[Latest] Cleaning up stale 'uploaded' record: ${latest.id}`);
+        // Cleanup files if they exist
+        if (latest.originalPath && fs.existsSync(latest.originalPath)) {
+          await unlinkAsync(latest.originalPath).catch(() => {});
+        }
         await storage.deleteVideo(latest.id);
         return res.json(null);
       }
@@ -331,9 +336,23 @@ export async function registerRoutes(
       const userId = getUserId(req)!;
       console.log(`[Reset] Aggressive cleanup triggered for user ${userId}`);
       
-      // Cleanup files on disk
-      await cleanupUserFiles(userId);
-      // Delete all database records for this user
+      // 1. First, get all videos to ensure we can cleanup files
+      const videos = await storage.getVideosByUser(userId);
+      for (const video of videos) {
+        // We only allow resetting if it's NOT currently processing
+        // unless it's explicitly 'uploaded', 'completed', or 'failed'
+        if (video.status !== "processing") {
+          if (video.originalPath && fs.existsSync(video.originalPath)) {
+            await unlinkAsync(video.originalPath).catch(() => {});
+          }
+          if (video.processedPath && fs.existsSync(video.processedPath)) {
+            await unlinkAsync(video.processedPath).catch(() => {});
+          }
+          await storage.deleteVideo(video.id);
+        }
+      }
+      
+      // 2. Final sweep to ensure everything is gone
       await storage.deleteAllUserVideos(userId);
       
       return res.json({ success: true });
