@@ -4,10 +4,14 @@ import numpy as np
 import os
 import subprocess
 import sys
+import tempfile
 import time
 
 # --- CONFIGURATION ---
 SELECTED_RATIO = "4:5" # Available Ratios: "9:16", "1:1", "4:5", "16:9", "2:3"
+SMOOTHING_FACTOR = 0.1
+DETECT_EVERY_FPS_DIVISOR = 6
+PROGRESS_REPORT_INTERVAL = 30
 
 AVAILABLE_RATIOS = {
     "9:16": (9, 16),
@@ -43,6 +47,12 @@ except Exception as e:
     print(f"MediaPipe Initialization Warning: {e}")
     pose = None
 
+def format_time(seconds):
+    mins = int(seconds // 60)
+    secs = int(seconds % 60)
+    return f"{mins}m {secs}s"
+
+
 def process_video(input_path, output_path, aspect_ratio=(9, 16), progress_callback=None):
     start_time = time.time()
     cap = cv2.VideoCapture(input_path)
@@ -74,8 +84,9 @@ def process_video(input_path, output_path, aspect_ratio=(9, 16), progress_callba
     if target_height % 2 != 0:
         target_height -= 1
 
-    # Temporary video file (without audio) - Use a unique name to avoid conflicts
-    temp_output = f"temp_no_audio_{int(time.time())}.mp4"
+    # Temporary video file (without audio)
+    with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as tmp:
+        temp_output = tmp.name
     
     # Video writer setup - Try XVID first for efficiency, fallback to avc1 then mp4v
     # XVID is faster and less CPU-intensive for high resolutions
@@ -97,8 +108,8 @@ def process_video(input_path, output_path, aspect_ratio=(9, 16), progress_callba
         return False
 
     current_center_x = width / 2
-    smoothing_factor = 0.1
-    detect_every = max(1, int(fps / 6))
+    smoothing_factor = SMOOTHING_FACTOR
+    detect_every = max(1, int(fps / DETECT_EVERY_FPS_DIVISOR))
 
     print(f"Processing: {input_path}")
     print(f"Original: {width}x{height} | Target: {target_width}x{target_height}")
@@ -156,7 +167,7 @@ def process_video(input_path, output_path, aspect_ratio=(9, 16), progress_callba
         out.write(cropped_frame)
 
         frame_count += 1
-        if frame_count % 30 == 0:
+        if frame_count % PROGRESS_REPORT_INTERVAL == 0:
             progress = (frame_count / total_frames)
             print(f"Progress: {progress*100:.1f}% ({frame_count}/{total_frames})", flush=True)
             if progress_callback:
@@ -212,12 +223,6 @@ def process_video(input_path, output_path, aspect_ratio=(9, 16), progress_callba
     # Video duration in seconds
     video_duration_seconds = total_frames / fps
     
-    # Format times
-    def format_time(seconds):
-        mins = int(seconds // 60)
-        secs = int(seconds % 60)
-        return f"{mins}m {secs}s"
-
     processing_time_str = format_time(processing_duration)
     video_length_str = format_time(video_duration_seconds)
     

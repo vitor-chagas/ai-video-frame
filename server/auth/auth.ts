@@ -8,6 +8,9 @@ import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { authStorage } from "./storage";
 
+const OIDC_CACHE_MAX_AGE = 60 * 60 * 1000; // 1 hour
+const OIDC_SCOPE = "openid email profile";
+
 const getOidcConfig = memoize(
   async () => {
     return await client.discovery(
@@ -16,7 +19,7 @@ const getOidcConfig = memoize(
       process.env.AUTH_CLIENT_SECRET
     );
   },
-  { maxAge: 3600 * 1000 }
+  { maxAge: OIDC_CACHE_MAX_AGE }
 );
 
 export function getSession() {
@@ -151,7 +154,7 @@ export async function setupAuth(app: Express) {
   const strategy = new Strategy(
     {
       config,
-      scope: "openid email profile",
+      scope: OIDC_SCOPE,
       callbackURL,
     },
     verify
@@ -161,7 +164,7 @@ export async function setupAuth(app: Express) {
   app.get("/api/login", (req, res, next) => {
     passport.authenticate("oidc", {
       prompt: "select_account",
-      scope: ["openid", "email", "profile"],
+      scope: OIDC_SCOPE.split(" "),
     })(req, res, next);
   });
 
@@ -231,9 +234,7 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
 
   const refreshToken = user.refresh_token;
   if (!refreshToken) {
-    // If token is expired but we have no refresh token, we still let them through
-    // as long as the session itself is valid. We could alternatively force a re-login.
-    return next();
+    return res.status(401).json({ message: "Session expired, please log in again" });
   }
 
   try {
@@ -243,8 +244,6 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
     return next();
   } catch (error) {
     console.error("[Auth] Token refresh failed:", error);
-    // If refresh fails, we still allow the request if the session is alive,
-    // or we could redirect to login. For now, let's be lenient.
-    return next();
+    return res.status(401).json({ message: "Session expired, please log in again" });
   }
 };

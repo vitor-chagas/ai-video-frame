@@ -2,7 +2,7 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { authStorage } from "./auth/storage";
-import { setupAuth, registerAuthRoutes, isAuthenticated } from "./auth";
+import { setupAuth, registerAuthRoutes, isAuthenticated, getUserId } from "./auth";
 import multer from "multer";
 import path from "path";
 import { spawn, execFile } from "child_process";
@@ -16,17 +16,21 @@ const unlinkAsync = promisify(fs.unlink);
 const readdirAsync = promisify(fs.readdir);
 const statAsync = promisify(fs.stat);
 
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+const MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024; // 2 GB
+const ALLOWED_RATIOS = ["9:16", "1:1", "4:5", "16:9", "2:3"];
+
 // Rate limiters
 const uploadLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // limit each IP to 10 uploads per windowMs
+  windowMs: RATE_LIMIT_WINDOW_MS,
+  max: 10,
   message: { message: "Too many uploads from this IP, please try again after 15 minutes" },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
 const processingLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
+  windowMs: RATE_LIMIT_WINDOW_MS,
   max: 20,
   message: { message: "Too many processing requests, please try again later" },
   standardHeaders: true,
@@ -34,7 +38,7 @@ const processingLimiter = rateLimit({
 });
 
 const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
+  windowMs: RATE_LIMIT_WINDOW_MS,
   max: 100,
   standardHeaders: true,
   legacyHeaders: false,
@@ -43,18 +47,27 @@ const videoProgress: Map<string, number> = new Map();
 
 const CLEANUP_THRESHOLD_MS = 60 * 60 * 1000; // 60 minutes
 
+async function deleteVideoFiles(video: { originalPath?: string | null; processedPath?: string | null }) {
+  if (video.originalPath && fs.existsSync(video.originalPath)) {
+    await unlinkAsync(video.originalPath).catch(() => {});
+  }
+  if (video.processedPath && fs.existsSync(video.processedPath)) {
+    await unlinkAsync(video.processedPath).catch(() => {});
+  }
+}
+
+async function getStripe() {
+  const Stripe = (await import("stripe")).default;
+  return new Stripe(process.env.STRIPE_SECRET_KEY!);
+}
+
 export async function cleanupUserFiles(userId: string) {
   try {
     const videos = await storage.getVideosByUser(userId);
     for (const video of videos) {
       if (video.status === "processing") continue;
 
-      if (video.originalPath && fs.existsSync(video.originalPath)) {
-        await unlinkAsync(video.originalPath).catch(() => {});
-      }
-      if (video.processedPath && fs.existsSync(video.processedPath)) {
-        await unlinkAsync(video.processedPath).catch(() => {});
-      }
+      await deleteVideoFiles(video);
     }
   } catch (error) {
     console.error("Error during user file cleanup:", error);
@@ -139,7 +152,7 @@ function calculateRequiredCredits(durationInSeconds: number | null): number {
 
 const upload = multer({
   dest: "uploads/input/",
-  limits: { fileSize: 2 * 1024 * 1024 * 1024 },
+  limits: { fileSize: MAX_FILE_SIZE },
   fileFilter: (_req, file, cb) => {
     const allowedExts = [".mp4", ".mov", ".avi"];
     const allowedMimeTypes = ["video/mp4", "video/quicktime", "video/x-msvideo", "video/avi"];
@@ -152,11 +165,6 @@ const upload = multer({
     }
   },
 });
-
-function getUserId(req: Request): string | undefined {
-  const user = req.user as any;
-  return user?.claims?.sub || user?.id;
-}
 
 export async function registerRoutes(
   httpServer: Server,
@@ -176,10 +184,9 @@ export async function registerRoutes(
       await cleanupUserFiles(userId);
       await storage.deleteAllUserVideos(userId);
 
-      const allowedRatios = ["9:16", "1:1", "4:5", "16:9", "2:3"];
       const aspectRatio = req.body.aspectRatio || "9:16";
-      
-      if (!allowedRatios.includes(aspectRatio)) {
+
+      if (!ALLOWED_RATIOS.includes(aspectRatio)) {
         return res.status(400).json({ message: "Invalid aspect ratio" });
       }
 
@@ -264,12 +271,7 @@ export async function registerRoutes(
       if (!video || video.userId !== userId) {
         return res.status(404).json({ message: "Video not found" });
       }
-      if (video.originalPath && fs.existsSync(video.originalPath)) {
-        await unlinkAsync(video.originalPath).catch(() => {});
-      }
-      if (video.processedPath && fs.existsSync(video.processedPath)) {
-        await unlinkAsync(video.processedPath).catch(() => {});
-      }
+      await deleteVideoFiles(video);
       await storage.deleteVideo(videoId);
       return res.json({ success: true });
     } catch (error: any) {
@@ -283,12 +285,7 @@ export async function registerRoutes(
       const videos = await storage.getVideosByUser(userId);
       for (const video of videos) {
         if (video.status !== "processing") {
-          if (video.originalPath && fs.existsSync(video.originalPath)) {
-            await unlinkAsync(video.originalPath).catch(() => {});
-          }
-          if (video.processedPath && fs.existsSync(video.processedPath)) {
-            await unlinkAsync(video.processedPath).catch(() => {});
-          }
+          await deleteVideoFiles(video);
           await storage.deleteVideo(video.id);
         }
       }
@@ -334,8 +331,7 @@ export async function registerRoutes(
         return res.status(400).json({ message: `Stripe Price ID for plan '${plan}' is not configured` });
       }
 
-      const Stripe = (await import("stripe")).default;
-      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+      const stripe = await getStripe();
       const session = await stripe.checkout.sessions.create({
         line_items: [{ price: priceId, quantity: stripeQuantity }],
         mode: mode,
@@ -356,8 +352,7 @@ export async function registerRoutes(
       const userId = getUserId(req)!;
       if (!process.env.STRIPE_SECRET_KEY) return res.json({ status: "completed", credits: 0 });
 
-      const Stripe = (await import("stripe")).default;
-      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+      const stripe = await getStripe();
       const stripeSession = await stripe.checkout.sessions.retrieve(sessionId);
 
       if (stripeSession.payment_status === "paid") {
@@ -442,8 +437,7 @@ export async function registerRoutes(
     if (!webhookSecret || !sig) return res.status(400).send("Webhook Error: Missing secret or signature");
     let event;
     try {
-      const Stripe = (await import("stripe")).default;
-      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+      const stripe = await getStripe();
       event = stripe.webhooks.constructEvent((req as any).rawBody, sig, webhookSecret);
     } catch (err: any) {
       return res.status(400).send(`Webhook Error: ${err.message}`);
@@ -469,8 +463,7 @@ export async function registerRoutes(
       const user = await authStorage.getUser(userId);
       if (!user || !user.stripeCustomerId) return res.status(400).json({ message: "No active subscription or customer found" });
       if (!process.env.STRIPE_SECRET_KEY) return res.status(400).json({ message: "Stripe is not configured" });
-      const Stripe = (await import("stripe")).default;
-      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+      const stripe = await getStripe();
       const session = await stripe.billingPortal.sessions.create({
         customer: user.stripeCustomerId,
         return_url: `${req.protocol}://${req.get("host")}/`,
@@ -489,6 +482,10 @@ export async function registerRoutes(
       if (!video || video.userId !== userId) return res.status(404).json({ message: "Video not found" });
       if (video.status !== "completed" || !video.processedPath) return res.status(400).json({ message: "Video not ready for download" });
       const absolutePath = path.resolve(video.processedPath);
+      const uploadsDir = path.resolve("./uploads");
+      if (!absolutePath.startsWith(uploadsDir + path.sep) && absolutePath !== uploadsDir) {
+        return res.status(403).json({ message: "Access denied" });
+      }
       if (!fs.existsSync(absolutePath)) return res.status(404).json({ message: "Processed file not found" });
       const stat = await statAsync(absolutePath);
       const safeName = video.originalFilename.replace(/[^a-zA-Z0-9._-]/g, "_").substring(0, 100);
