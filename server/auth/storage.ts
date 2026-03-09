@@ -4,8 +4,8 @@ import { eq, and, gt, sql } from "drizzle-orm";
 
 const RAPIDAPI_PLAN_CREDITS: Record<string, number> = {
   BASIC: 1,
-  PRO: 50,
-  ULTRA: 200,
+  PRO: 20,
+  ULTRA: 50,
 };
 
 // Interface for auth storage operations
