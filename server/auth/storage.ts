@@ -14,6 +14,7 @@ export interface IAuthStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   updateUserCredits(id: string, amount: number): Promise<User | undefined>;
+  decrementCreditsIfAvailable(id: string): Promise<User | null>;
   updateUserStripeInfo(id: string, customerId: string, subscriptionId?: string): Promise<User | undefined>;
   createVerificationToken(token: InsertVerificationToken): Promise<VerificationToken>;
   getVerificationToken(token: string): Promise<VerificationToken | undefined>;
@@ -57,6 +58,18 @@ class AuthStorage implements IAuthStorage {
       .where(eq(users.id, id))
       .returning();
     return updatedUser;
+  }
+
+  async decrementCreditsIfAvailable(id: string): Promise<User | null> {
+    const [updated] = await db
+      .update(users)
+      .set({
+        credits: sql`${users.credits} - 1`,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(users.id, id), gt(users.credits, 0)))
+      .returning();
+    return updated ?? null;
   }
 
   async updateUserStripeInfo(id: string, customerId: string, subscriptionId?: string): Promise<User | undefined> {
