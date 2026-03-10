@@ -75,10 +75,6 @@ router.post("/:id/process", async (req, res) => {
     const rapidApiUser = (req as unknown as RapidApiRequest).rapidApiUser;
     const userId = rapidApiUser.id;
 
-    if (rapidApiUser.credits <= 0) {
-      return res.status(402).json({ error: "Insufficient credits. Please upgrade your plan on RapidAPI." });
-    }
-
     const video = await storage.getVideo(videoId);
 
     if (!video || video.userId !== userId) {
@@ -91,8 +87,12 @@ router.post("/:id/process", async (req, res) => {
       return res.status(400).json({ error: "Video has already been processed" });
     }
 
+    const updatedUser = await authStorage.decrementCreditsIfAvailable(userId);
+    if (!updatedUser) {
+      return res.status(402).json({ error: "Insufficient credits. Please upgrade your plan on RapidAPI." });
+    }
+
     await storage.updateVideoStatus(video.id, "processing");
-    await authStorage.updateUserCredits(userId, -1);
 
     const ext = path.extname(video.originalFilename) || ".mp4";
     const outputFilename = `auto_${video.aspectRatio.replace(":", "_")}_${video.id}${ext}`;

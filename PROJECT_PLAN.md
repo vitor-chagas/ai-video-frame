@@ -37,3 +37,5 @@
 - [ ] scrumble the project_plan.md from git history
 - [ ] look for securiy flaws
 - [ ] use the abel ferreira video example to create the blog and linkedin post advertiaing the microservices.
+- [ ] test rapid api
+- [ ] magic link email is going to the spam folder.
