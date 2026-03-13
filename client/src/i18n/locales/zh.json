@@ -86,7 +86,7 @@
       "signInRequired": "需要登录",
       "signInRequiredDesc": "请登录后购买点数。",
       "activeSubscription": "活跃订阅",
-      "activeSubscriptionDesc": "您已有活跃订阅。如需更改计划，请通过"管理订阅"门户进行管理。",
+      "activeSubscriptionDesc": "您已有活跃订阅。如需更改计划，请通过\"管理订阅\"门户进行管理。",
       "creditsSimulated": "点数已添加（模拟）",
       "creditsSimulatedDesc": "您的点数余额已更新。"
     }
