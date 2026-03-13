@@ -1,0 +1,193 @@
+{
+  "common": {
+    "loading": "読み込み中...",
+    "error": "エラー",
+    "cancel": "キャンセル",
+    "signIn": "ログイン",
+    "logOut": "ログアウト"
+  },
+  "layout": {
+    "footer": "© 2026 AI Video Frame. 全著作権所有。"
+  },
+  "home": {
+    "badge": "4Kエクスポートに対応しました",
+    "hero": {
+      "title": "動画のためのインテリジェントフレーミング。",
+      "subtitle": "AIが横向き動画を縦型フォーマットに自動でクロップします。TikTok、Reels、Shortsに最適。"
+    },
+    "pricing": {
+      "payg": {
+        "title": "従量課金",
+        "badge": "初回無料",
+        "price": "$0.99",
+        "priceUnit": "/クレジット",
+        "creditExplain": "1クレジット = 1動画（最大5分）",
+        "overageNote": "5分を超える動画は追加1分ごとに+1クレジット。",
+        "feature1": "スマートAIフレーミング",
+        "feature2": "4K高画質エクスポート",
+        "feature3": "ウォーターマークなし",
+        "cta": "クレジットを購入",
+        "ctaLoading": "読み込み中..."
+      },
+      "monthly": {
+        "title": "月額クリエイター",
+        "badge": "最も人気",
+        "price": "$9.99",
+        "priceUnit": "/月",
+        "credits": "毎月12クレジット。",
+        "feature1": "毎動画お得に",
+        "feature2": "優先処理",
+        "feature3": "12クレジット込み",
+        "cta": "登録する",
+        "ctaLoading": "読み込み中..."
+      },
+      "yearly": {
+        "title": "年間プロ",
+        "price": "$107.88",
+        "priceUnit": "/年",
+        "credits": "144クレジット（月12クレジット）。",
+        "feature1": "プロに最適なコスパ",
+        "feature2": "優先処理",
+        "feature3": "合計144クレジット",
+        "cta": "年間プランを選択",
+        "ctaLoading": "読み込み中..."
+      },
+      "footnote": "*1クレジットで動画の最初の5分をカバー。追加の1分（または端数）ごとに1クレジット追加。"
+    },
+    "api": {
+      "title": "APIで構築する",
+      "subtitle": "AIビデオリフレーミングをご自身のアプリに直接統合できます。RapidAPIで登録してAPIキーを取得してください。",
+      "ctaRapidApi": "RapidAPIで見る",
+      "ctaApiDoc": "APIドキュメントを見る"
+    },
+    "contact": {
+      "title": "ご質問やフィードバックはありますか？",
+      "subtitle": "常に改善を目指しています。機能リクエスト、バグ報告、またはただ挨拶したい場合はお気軽にご連絡ください！",
+      "cta": "メールを送る"
+    },
+    "quantityDialog": {
+      "title": "数量を選択",
+      "subtitle": "従量課金クレジット",
+      "price": "$0.99",
+      "priceUnit": "/個",
+      "label": "何クレジット必要ですか？",
+      "total": "合計：",
+      "cta_one": "{{count}}クレジットを購入",
+      "cta_other": "{{count}}クレジットを購入",
+      "secureCheckout": "Stripeによる安全なチェックアウト"
+    },
+    "toasts": {
+      "creditsAdded": "クレジットが追加されました",
+      "creditsAddedDesc": "アカウントに{{credits}}クレジットが正常に追加されました。",
+      "paymentPending": "支払い保留中",
+      "paymentPendingDesc": "お支払いはまだ処理中です。",
+      "paymentCancelled": "支払いがキャンセルされました",
+      "paymentCancelledDesc": "いつでも再試行できます。",
+      "signInRequired": "ログインが必要です",
+      "signInRequiredDesc": "クレジットを購入するにはログインしてください。",
+      "activeSubscription": "有効なサブスクリプション",
+      "activeSubscriptionDesc": "すでに有効なサブスクリプションがあります。プランを変更する場合は「サブスクリプション管理」ポータルからご管理ください。",
+      "creditsSimulated": "クレジットが追加されました（シミュレーション）",
+      "creditsSimulatedDesc": "クレジット残高が更新されました。"
+    }
+  },
+  "uploadBox": {
+    "checkingSessions": "アクティブなセッションを確認中...",
+    "manageSubscription": "サブスクリプション管理",
+    "credits_one": "{{count}}クレジット",
+    "credits_other": "{{count}}クレジット",
+    "processing": {
+      "title": "動画を処理中",
+      "subtitle": "AIが被写体を追跡し、{{ratio}}に自動フレーミングしています。",
+      "initializing": "初期化中...",
+      "analyzing": "AIがフレームを分析中...",
+      "finalizing": "動画を完成中...",
+      "progressNote_analyzing": "AIが被写体を追跡し自動フレーミング中...",
+      "progressNote_finalizing": "音声を統合してファイルを保存中。もう少しで完了！",
+      "progressNote_setup": "AIポーズ検出を設定中..."
+    },
+    "completed": {
+      "title": "動画の準備ができました！",
+      "subtitle": "AI被写体追跡で{{ratio}}に自動フレーミングされました。",
+      "download": "動画をダウンロード",
+      "processAnother": "別の動画を処理"
+    },
+    "failed": {
+      "title": "処理に失敗しました",
+      "subtitle": "問題が発生しました。もう一度お試しください。",
+      "tryAgain": "再試行"
+    },
+    "signIn": {
+      "title": "始めるにはログインしてください",
+      "subtitle": "動画をアップロードして処理するにはログインしてください。",
+      "highlight": "最初の動画は無料です！",
+      "cta": "ログイン"
+    },
+    "dropzone": {
+      "title": "動画をアップロード",
+      "titleDrag": "ここに動画をドロップ",
+      "subtitle": "ファイルをここにドラッグ＆ドロップするか、クリックして参照。MP4、MOV、またはAVI（最大2GB）。",
+      "browse": "ファイルを参照"
+    },
+    "filePreview": {
+      "outputRatio": "出力比率を選択",
+      "aiTracking": "AI追跡が有効",
+      "uploading": "動画をアップロード中...",
+      "analyzing": "動画を分析中...",
+      "analyzingNote": "サーバーで動画を分析中です。しばらくお待ちください...",
+      "calculatingCredits": "クレジットを計算中...",
+      "waitingUpload": "アップロードを待機中...",
+      "analyzingVideo": "動画を分析中...",
+      "useCredits_one": "{{count}}クレジットを使用して処理",
+      "useCredits_other": "{{count}}クレジットを使用して処理"
+    },
+    "paymentDialog": {
+      "title": "注文概要",
+      "subtitle": "AIビデオフレームを{{ratio}}に",
+      "useCredits_one": "{{count}}クレジットを使用",
+      "useCredits_other": "{{count}}クレジットを使用",
+      "insufficientCredits": "クレジット不足",
+      "needMoreCredits_one": "この動画を処理するにはあと{{count}}クレジット必要です。",
+      "needMoreCredits_other": "この動画を処理するにはあと{{count}}クレジット必要です。",
+      "purchaseQty": "購入数量",
+      "total": "合計：",
+      "buyCredits_one": "{{count}}クレジットを購入",
+      "buyCredits_other": "{{count}}クレジットを購入",
+      "viewPlans": "サブスクリプションプランを見る",
+      "securedByStripe": "Stripeによる安全なお支払い"
+    },
+    "toasts": {
+      "videoReady": "動画の準備ができました！",
+      "videoReadyDesc": "自動フレーミングされた動画がダウンロード可能です。",
+      "processingFailed": "処理に失敗しました",
+      "processingFailedDesc": "問題が発生しました。もう一度お試しください。",
+      "uploadFailed": "アップロードに失敗しました",
+      "processingStarted": "処理を開始しました",
+      "processingStartedDesc": "動画を自動フレーミング中です。数分かかる場合があります。",
+      "creditsSimulated": "クレジットが追加されました（シミュレーション）",
+      "creditsSimulatedDesc": "{{count}}クレジットが正常に追加されました。",
+      "portalError": "エラー"
+    }
+  },
+  "loginDialog": {
+    "title": "ログイン",
+    "description": "続行するには希望のログイン方法を選択してください。",
+    "freeCreditBadge": "初回ログインで1クレジット無料",
+    "continueWithGoogle": "Googleで続行",
+    "orWithEmail": "またはメールで",
+    "emailPlaceholder": "name@example.com",
+    "sendMagicLink": "マジックリンクを送信",
+    "checkInbox": "受信トレイを確認してください！",
+    "magicLinkSentDesc": "{{email}}にログインリンクを送信しました。",
+    "tryAnotherEmail": "別のメールを試す",
+    "toasts": {
+      "magicLinkSent": "マジックリンクを送信しました",
+      "magicLinkSentDesc": "ログインリンクのメールを確認してください。",
+      "errorDesc": "マジックリンクの送信に失敗しました"
+    }
+  },
+  "notFound": {
+    "title": "404 ページが見つかりません",
+    "subtitle": "ページをルーターに追加し忘れましたか？"
+  }
+}

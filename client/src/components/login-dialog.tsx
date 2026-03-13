@@ -1,17 +1,18 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Mail, Loader2 } from "lucide-react";
 import { apiRequest } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 export function LoginDialog({ children }: { children: React.ReactNode }) {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSent, setIsSent] = useState(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const handleMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,13 +26,13 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
       });
       setIsSent(true);
       toast({
-        title: "Magic link sent",
-        description: "Check your email for the login link.",
+        title: t("loginDialog.toasts.magicLinkSent"),
+        description: t("loginDialog.toasts.magicLinkSentDesc"),
       });
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: error.message || "Failed to send magic link",
+        title: t("common.error"),
+        description: error.message || t("loginDialog.toasts.errorDesc"),
         variant: "destructive",
       });
     } finally {
@@ -46,18 +47,18 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
-          <DialogTitle className="font-serif text-2xl">Sign In</DialogTitle>
+          <DialogTitle className="font-serif text-2xl">{t("loginDialog.title")}</DialogTitle>
           <DialogDescription>
-            Choose your preferred login method to continue.
+            {t("loginDialog.description")}
           </DialogDescription>
           <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-50 border border-green-100 text-green-700 text-xs font-semibold">
             <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
-            Get 1 free credit on your first login
+            {t("loginDialog.freeCreditBadge")}
           </div>
         </DialogHeader>
         <div className="flex flex-col gap-4 py-4">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="w-full h-12 flex items-center justify-center gap-3 rounded-full border-[hsl(38,10%,85%)] hover:bg-[hsl(38,10%,95%)]"
             onClick={() => window.location.href = "/api/login"}
           >
@@ -79,7 +80,7 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
                 fill="#EA4335"
               />
             </svg>
-            Continue with Google
+            {t("loginDialog.continueWithGoogle")}
           </Button>
 
           <div className="relative my-2">
@@ -87,7 +88,7 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
               <span className="w-full border-t border-[hsl(38,10%,90%)]" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-muted-foreground">Or with email</span>
+              <span className="bg-white px-2 text-muted-foreground">{t("loginDialog.orWithEmail")}</span>
             </div>
           </div>
 
@@ -96,15 +97,15 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
               <div className="space-y-2">
                 <Input
                   type="email"
-                  placeholder="name@example.com"
+                  placeholder={t("loginDialog.emailPlaceholder")}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   className="rounded-xl h-12 border-[hsl(38,10%,85%)] focus:ring-[hsl(24,10%,10%)]"
                 />
               </div>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={isLoading}
                 className="w-full h-12 rounded-full bg-[hsl(24,10%,10%)] text-[hsl(38,20%,97%)] hover:bg-[hsl(24,10%,20%)] transition-colors"
               >
@@ -113,7 +114,7 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
                 ) : (
                   <Mail className="h-4 w-4 mr-2" />
                 )}
-                Send Magic Link
+                {t("loginDialog.sendMagicLink")}
               </Button>
             </form>
           ) : (
@@ -121,16 +122,16 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
               <div className="mx-auto w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
                 <Mail className="h-6 w-6 text-green-600" />
               </div>
-              <p className="text-sm font-medium text-[hsl(24,10%,10%)]">Check your inbox!</p>
+              <p className="text-sm font-medium text-[hsl(24,10%,10%)]">{t("loginDialog.checkInbox")}</p>
               <p className="text-sm text-muted-foreground">
-                We've sent a login link to <strong>{email}</strong>.
+                {t("loginDialog.magicLinkSentDesc", { email })}
               </p>
-              <Button 
-                variant="link" 
+              <Button
+                variant="link"
                 onClick={() => setIsSent(false)}
                 className="text-xs text-muted-foreground"
               >
-                Try another email
+                {t("loginDialog.tryAnotherEmail")}
               </Button>
             </div>
           )}

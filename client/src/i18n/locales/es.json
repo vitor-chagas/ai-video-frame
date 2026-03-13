@@ -1,0 +1,193 @@
+{
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "cancel": "Cancelar",
+    "signIn": "Iniciar sesión",
+    "logOut": "Cerrar sesión"
+  },
+  "layout": {
+    "footer": "© 2026 AI Video Frame. Todos los derechos reservados."
+  },
+  "home": {
+    "badge": "Ahora compatible con exportación 4K",
+    "hero": {
+      "title": "Encuadre inteligente para tus vídeos.",
+      "subtitle": "Deja que la IA recorte automáticamente vídeos horizontales a formatos verticales. Perfecto para TikTok, Reels y Shorts."
+    },
+    "pricing": {
+      "payg": {
+        "title": "Pago por uso",
+        "badge": "PRIMERO GRATIS",
+        "price": "$0.99",
+        "priceUnit": "/crédito",
+        "creditExplain": "1 Crédito = 1 Vídeo (hasta 5 min)",
+        "overageNote": "Vídeos de más de 5 min cuestan +1 crédito por minuto adicional.",
+        "feature1": "Encuadre AI Inteligente",
+        "feature2": "Exportación en Calidad 4K",
+        "feature3": "Sin Marca de Agua",
+        "cta": "Comprar Créditos",
+        "ctaLoading": "Cargando..."
+      },
+      "monthly": {
+        "title": "Creador Mensual",
+        "badge": "MÁS POPULAR",
+        "price": "$9.99",
+        "priceUnit": "/mes",
+        "credits": "12 Créditos cada mes.",
+        "feature1": "Ahorra en cada vídeo",
+        "feature2": "Procesamiento Prioritario",
+        "feature3": "12 Créditos Incluidos",
+        "cta": "Suscribirse",
+        "ctaLoading": "Cargando..."
+      },
+      "yearly": {
+        "title": "Pro Anual",
+        "price": "$107.88",
+        "priceUnit": "/año",
+        "credits": "144 Créditos (12 por mes).",
+        "feature1": "Mejor relación calidad-precio",
+        "feature2": "Procesamiento Prioritario",
+        "feature3": "144 Créditos en total",
+        "cta": "Plan Anual",
+        "ctaLoading": "Cargando..."
+      },
+      "footnote": "*1 crédito cubre los primeros 5 minutos de un vídeo. Cada minuto adicional (o fracción) cuesta 1 crédito extra."
+    },
+    "api": {
+      "title": "Construye con nuestra API",
+      "subtitle": "Integra el reencuadre de vídeo con IA directamente en tu app. Suscríbete y obtén tu clave de API en RapidAPI.",
+      "ctaRapidApi": "Ver en RapidAPI",
+      "ctaApiDoc": "Ver Documentación API"
+    },
+    "contact": {
+      "title": "¿Tienes preguntas o comentarios?",
+      "subtitle": "Siempre buscamos mejorar. Contáctanos si tienes solicitudes de funciones, encontraste un error o simplemente quieres saludar.",
+      "cta": "Envíanos un correo"
+    },
+    "quantityDialog": {
+      "title": "Seleccionar Cantidad",
+      "subtitle": "Créditos de pago por uso",
+      "price": "$0.99",
+      "priceUnit": "/ud",
+      "label": "¿Cuántos créditos necesitas?",
+      "total": "Total:",
+      "cta_one": "Comprar {{count}} Crédito",
+      "cta_other": "Comprar {{count}} Créditos",
+      "secureCheckout": "Pago Seguro por Stripe"
+    },
+    "toasts": {
+      "creditsAdded": "Créditos añadidos",
+      "creditsAddedDesc": "Se añadieron {{credits}} créditos a tu cuenta con éxito.",
+      "paymentPending": "Pago pendiente",
+      "paymentPendingDesc": "Tu pago aún está siendo procesado.",
+      "paymentCancelled": "Pago cancelado",
+      "paymentCancelledDesc": "Puedes intentarlo de nuevo en cualquier momento.",
+      "signInRequired": "Inicio de sesión requerido",
+      "signInRequiredDesc": "Por favor, inicia sesión para comprar créditos.",
+      "activeSubscription": "Suscripción Activa",
+      "activeSubscriptionDesc": "Ya tienes una suscripción activa. Adminístrala desde el portal 'Administrar Suscripción' si deseas cambiar tu plan.",
+      "creditsSimulated": "Créditos añadidos (Simulado)",
+      "creditsSimulatedDesc": "Tu saldo de créditos ha sido actualizado."
+    }
+  },
+  "uploadBox": {
+    "checkingSessions": "Verificando sesiones activas...",
+    "manageSubscription": "Administrar Suscripción",
+    "credits_one": "{{count}} Crédito",
+    "credits_other": "{{count}} Créditos",
+    "processing": {
+      "title": "Procesando tu vídeo",
+      "subtitle": "Nuestra IA está rastreando sujetos y encuadrando automáticamente a {{ratio}}.",
+      "initializing": "Inicializando...",
+      "analyzing": "IA analizando fotogramas...",
+      "finalizing": "Finalizando tu vídeo...",
+      "progressNote_analyzing": "La IA está rastreando sujetos y encuadrando automáticamente...",
+      "progressNote_finalizing": "Mezclando audio y guardando archivos. ¡Casi listo!",
+      "progressNote_setup": "Configurando detección de pose con IA..."
+    },
+    "completed": {
+      "title": "¡Tu vídeo está listo!",
+      "subtitle": "Encuadrado automáticamente a {{ratio}} con seguimiento AI.",
+      "download": "Descargar Vídeo",
+      "processAnother": "Procesar Otro"
+    },
+    "failed": {
+      "title": "Error de procesamiento",
+      "subtitle": "Algo salió mal. Por favor, inténtalo de nuevo.",
+      "tryAgain": "Intentar de Nuevo"
+    },
+    "signIn": {
+      "title": "Inicia sesión para comenzar",
+      "subtitle": "Inicia sesión para subir y procesar vídeos.",
+      "highlight": "¡Tu primer vídeo es gratis!",
+      "cta": "Iniciar sesión"
+    },
+    "dropzone": {
+      "title": "Sube tu vídeo",
+      "titleDrag": "Suelta el vídeo aquí",
+      "subtitle": "Arrastra y suelta tu archivo aquí, o haz clic para explorar. MP4, MOV o AVI hasta 2GB.",
+      "browse": "Explorar Archivos"
+    },
+    "filePreview": {
+      "outputRatio": "Seleccionar Relación de Aspecto",
+      "aiTracking": "Seguimiento AI Activado",
+      "uploading": "Subiendo vídeo...",
+      "analyzing": "Analizando vídeo...",
+      "analyzingNote": "Por favor espera mientras analizamos el vídeo en nuestro servidor...",
+      "calculatingCredits": "Calculando Créditos...",
+      "waitingUpload": "Esperando Subida...",
+      "analyzingVideo": "Analizando Vídeo...",
+      "useCredits_one": "Usar {{count}} Crédito para Procesar",
+      "useCredits_other": "Usar {{count}} Créditos para Procesar"
+    },
+    "paymentDialog": {
+      "title": "Resumen del Pedido",
+      "subtitle": "AI Video Frame a {{ratio}}",
+      "useCredits_one": "Usar {{count}} Crédito",
+      "useCredits_other": "Usar {{count}} Créditos",
+      "insufficientCredits": "Créditos Insuficientes",
+      "needMoreCredits_one": "Necesitas {{count}} crédito más para procesar este vídeo.",
+      "needMoreCredits_other": "Necesitas {{count}} créditos más para procesar este vídeo.",
+      "purchaseQty": "Cantidad a Comprar",
+      "total": "Total:",
+      "buyCredits_one": "Comprar {{count}} Crédito",
+      "buyCredits_other": "Comprar {{count}} Créditos",
+      "viewPlans": "Ver Planes de Suscripción",
+      "securedByStripe": "Pagos protegidos por Stripe"
+    },
+    "toasts": {
+      "videoReady": "¡Vídeo listo!",
+      "videoReadyDesc": "Tu vídeo encuadrado automáticamente está listo para descargar.",
+      "processingFailed": "Error de procesamiento",
+      "processingFailedDesc": "Algo salió mal. Por favor, inténtalo de nuevo.",
+      "uploadFailed": "Error de subida",
+      "processingStarted": "Procesamiento iniciado",
+      "processingStartedDesc": "Tu vídeo está siendo encuadrado automáticamente. Esto puede tardar unos minutos.",
+      "creditsSimulated": "Créditos añadidos (Simulado)",
+      "creditsSimulatedDesc": "{{count}} créditos añadidos con éxito.",
+      "portalError": "Error"
+    }
+  },
+  "loginDialog": {
+    "title": "Iniciar Sesión",
+    "description": "Elige tu método de inicio de sesión preferido para continuar.",
+    "freeCreditBadge": "Obtén 1 crédito gratis en tu primer inicio de sesión",
+    "continueWithGoogle": "Continuar con Google",
+    "orWithEmail": "O con correo electrónico",
+    "emailPlaceholder": "nombre@ejemplo.com",
+    "sendMagicLink": "Enviar Enlace Mágico",
+    "checkInbox": "¡Revisa tu bandeja de entrada!",
+    "magicLinkSentDesc": "Hemos enviado un enlace de inicio de sesión a {{email}}.",
+    "tryAnotherEmail": "Probar otro correo",
+    "toasts": {
+      "magicLinkSent": "Enlace mágico enviado",
+      "magicLinkSentDesc": "Revisa tu correo para el enlace de inicio de sesión.",
+      "errorDesc": "Error al enviar el enlace mágico"
+    }
+  },
+  "notFound": {
+    "title": "404 Página No Encontrada",
+    "subtitle": "¿Olvidaste agregar la página al enrutador?"
+  }
+}

@@ -1,0 +1,193 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "cancel": "Cancel",
+    "signIn": "Sign In",
+    "logOut": "Log out"
+  },
+  "layout": {
+    "footer": "© 2026 AI Video Frame. All rights reserved."
+  },
+  "home": {
+    "badge": "Now supporting 4K export",
+    "hero": {
+      "title": "Intelligent framing for your videos.",
+      "subtitle": "Let AI automatically crop landscape videos to vertical formats. Perfect for TikTok, Reels, and Shorts."
+    },
+    "pricing": {
+      "payg": {
+        "title": "Pay as you go",
+        "badge": "FIRST ONE FREE",
+        "price": "$0.99",
+        "priceUnit": "/credit",
+        "creditExplain": "1 Credit = 1 Video (up to 5 min)",
+        "overageNote": "Videos longer than 5 min cost +1 credit per additional minute.",
+        "feature1": "Smart AI Framing",
+        "feature2": "4K Quality Export",
+        "feature3": "No Watermark",
+        "cta": "Buy Credits",
+        "ctaLoading": "Loading..."
+      },
+      "monthly": {
+        "title": "Monthly Creator",
+        "badge": "MOST POPULAR",
+        "price": "$9.99",
+        "priceUnit": "/month",
+        "credits": "12 Credits every month.",
+        "feature1": "Save on every video",
+        "feature2": "Priority Processing",
+        "feature3": "12 Credits Included",
+        "cta": "Subscribe",
+        "ctaLoading": "Loading..."
+      },
+      "yearly": {
+        "title": "Annual Pro",
+        "price": "$107.88",
+        "priceUnit": "/year",
+        "credits": "144 Credits (12 per month).",
+        "feature1": "Best value for pros",
+        "feature2": "Priority Processing",
+        "feature3": "144 Credits total",
+        "cta": "Get Yearly",
+        "ctaLoading": "Loading..."
+      },
+      "footnote": "*1 credit covers the first 5 minutes of a video. Each additional minute (or part thereof) costs 1 additional credit."
+    },
+    "api": {
+      "title": "Build with our API",
+      "subtitle": "Integrate AI video reframing directly into your own app. Subscribe and get your API key on RapidAPI.",
+      "ctaRapidApi": "View on RapidAPI",
+      "ctaApiDoc": "View API Doc"
+    },
+    "contact": {
+      "title": "Have questions or feedback?",
+      "subtitle": "We're always looking to improve. Reach out if you have any feature requests, found a bug, or just want to say hi!",
+      "cta": "Email Us"
+    },
+    "quantityDialog": {
+      "title": "Select Quantity",
+      "subtitle": "Pay as you go credits",
+      "price": "$0.99",
+      "priceUnit": "/ea",
+      "label": "How many credits do you need?",
+      "total": "Total:",
+      "cta_one": "Purchase {{count}} Credit",
+      "cta_other": "Purchase {{count}} Credits",
+      "secureCheckout": "Secure Checkout by Stripe"
+    },
+    "toasts": {
+      "creditsAdded": "Credits added",
+      "creditsAddedDesc": "Successfully added {{credits}} credits to your account.",
+      "paymentPending": "Payment pending",
+      "paymentPendingDesc": "Your payment is still being processed.",
+      "paymentCancelled": "Payment cancelled",
+      "paymentCancelledDesc": "You can try again anytime.",
+      "signInRequired": "Sign in required",
+      "signInRequiredDesc": "Please sign in to buy credits.",
+      "activeSubscription": "Active Subscription",
+      "activeSubscriptionDesc": "You already have an active subscription. Please manage it through the 'Manage Subscription' portal if you wish to change your plan.",
+      "creditsSimulated": "Credits added (Simulated)",
+      "creditsSimulatedDesc": "Your credit balance has been updated."
+    }
+  },
+  "uploadBox": {
+    "checkingSessions": "Checking for active sessions...",
+    "manageSubscription": "Manage Subscription",
+    "credits_one": "{{count}} Credit",
+    "credits_other": "{{count}} Credits",
+    "processing": {
+      "title": "Processing your video",
+      "subtitle": "Our AI is tracking subjects and auto-framing to {{ratio}}.",
+      "initializing": "Initializing...",
+      "analyzing": "AI analyzing frames...",
+      "finalizing": "Finalizing your video...",
+      "progressNote_analyzing": "AI is tracking subjects and auto-framing...",
+      "progressNote_finalizing": "Merging audio and saving files. Almost there!",
+      "progressNote_setup": "Setting up AI pose detection..."
+    },
+    "completed": {
+      "title": "Your video is ready!",
+      "subtitle": "Auto-framed to {{ratio}} with AI subject tracking.",
+      "download": "Download Video",
+      "processAnother": "Process Another"
+    },
+    "failed": {
+      "title": "Processing failed",
+      "subtitle": "Something went wrong. Please try again.",
+      "tryAgain": "Try Again"
+    },
+    "signIn": {
+      "title": "Sign in to get started",
+      "subtitle": "Sign in to upload and process videos.",
+      "highlight": "Your first video is on us!",
+      "cta": "Sign In"
+    },
+    "dropzone": {
+      "title": "Upload your video",
+      "titleDrag": "Drop video here",
+      "subtitle": "Drag and drop your file here, or click to browse. MP4, MOV, or AVI up to 2GB.",
+      "browse": "Browse Files"
+    },
+    "filePreview": {
+      "outputRatio": "Select Output Ratio",
+      "aiTracking": "AI Tracking Enabled",
+      "uploading": "Uploading video...",
+      "analyzing": "Analyzing video...",
+      "analyzingNote": "Please wait while we analyze the video on our server...",
+      "calculatingCredits": "Calculating Credits...",
+      "waitingUpload": "Waiting for Upload...",
+      "analyzingVideo": "Analyzing Video...",
+      "useCredits_one": "Use {{count}} Credit to Process",
+      "useCredits_other": "Use {{count}} Credits to Process"
+    },
+    "paymentDialog": {
+      "title": "Order Summary",
+      "subtitle": "AI Video Frame to {{ratio}}",
+      "useCredits_one": "Use {{count}} Credit",
+      "useCredits_other": "Use {{count}} Credits",
+      "insufficientCredits": "Insufficient Credits",
+      "needMoreCredits_one": "You need {{count}} more credit to process this video.",
+      "needMoreCredits_other": "You need {{count}} more credits to process this video.",
+      "purchaseQty": "Purchase Quantity",
+      "total": "Total:",
+      "buyCredits_one": "Buy {{count}} Credit",
+      "buyCredits_other": "Buy {{count}} Credits",
+      "viewPlans": "View Subscription Plans",
+      "securedByStripe": "Payments secured by Stripe"
+    },
+    "toasts": {
+      "videoReady": "Video ready!",
+      "videoReadyDesc": "Your auto-framed video is ready to download.",
+      "processingFailed": "Processing failed",
+      "processingFailedDesc": "Something went wrong. Please try again.",
+      "uploadFailed": "Upload failed",
+      "processingStarted": "Processing started",
+      "processingStartedDesc": "Your video is being auto-framed. This may take a few minutes.",
+      "creditsSimulated": "Credits added (Simulated)",
+      "creditsSimulatedDesc": "Successfully added {{count}} credits.",
+      "portalError": "Error"
+    }
+  },
+  "loginDialog": {
+    "title": "Sign In",
+    "description": "Choose your preferred login method to continue.",
+    "freeCreditBadge": "Get 1 free credit on your first login",
+    "continueWithGoogle": "Continue with Google",
+    "orWithEmail": "Or with email",
+    "emailPlaceholder": "name@example.com",
+    "sendMagicLink": "Send Magic Link",
+    "checkInbox": "Check your inbox!",
+    "magicLinkSentDesc": "We've sent a login link to {{email}}.",
+    "tryAnotherEmail": "Try another email",
+    "toasts": {
+      "magicLinkSent": "Magic link sent",
+      "magicLinkSentDesc": "Check your email for the login link.",
+      "errorDesc": "Failed to send magic link"
+    }
+  },
+  "notFound": {
+    "title": "404 Page Not Found",
+    "subtitle": "Did you forget to add the page to the router?"
+  }
+}

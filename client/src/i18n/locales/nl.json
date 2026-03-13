@@ -1,0 +1,193 @@
+{
+  "common": {
+    "loading": "Laden...",
+    "error": "Fout",
+    "cancel": "Annuleren",
+    "signIn": "Inloggen",
+    "logOut": "Uitloggen"
+  },
+  "layout": {
+    "footer": "© 2026 AI Video Frame. Alle rechten voorbehouden."
+  },
+  "home": {
+    "badge": "Nu met ondersteuning voor 4K-export",
+    "hero": {
+      "title": "Intelligente kadrering voor uw video's.",
+      "subtitle": "Laat AI automatisch liggende video's bijsnijden naar staande formaten. Perfect voor TikTok, Reels en Shorts."
+    },
+    "pricing": {
+      "payg": {
+        "title": "Betaal per gebruik",
+        "badge": "EERSTE GRATIS",
+        "price": "$0.99",
+        "priceUnit": "/credit",
+        "creditExplain": "1 Credit = 1 Video (tot 5 min)",
+        "overageNote": "Video's langer dan 5 min kosten +1 credit per extra minuut.",
+        "feature1": "Slimme AI-kadrering",
+        "feature2": "4K-kwaliteitsexport",
+        "feature3": "Geen Watermerk",
+        "cta": "Credits kopen",
+        "ctaLoading": "Laden..."
+      },
+      "monthly": {
+        "title": "Maandelijkse Creator",
+        "badge": "MEEST POPULAIR",
+        "price": "$9.99",
+        "priceUnit": "/maand",
+        "credits": "12 Credits elke maand.",
+        "feature1": "Bespaar op elke video",
+        "feature2": "Prioriteitsverwerking",
+        "feature3": "12 Credits inbegrepen",
+        "cta": "Abonneren",
+        "ctaLoading": "Laden..."
+      },
+      "yearly": {
+        "title": "Jaarlijks Pro",
+        "price": "$107.88",
+        "priceUnit": "/jaar",
+        "credits": "144 Credits (12 per maand).",
+        "feature1": "Beste prijs-kwaliteitverhouding",
+        "feature2": "Prioriteitsverwerking",
+        "feature3": "144 Credits totaal",
+        "cta": "Jaarplan",
+        "ctaLoading": "Laden..."
+      },
+      "footnote": "*1 credit dekt de eerste 5 minuten van een video. Elke extra minuut (of deel daarvan) kost 1 extra credit."
+    },
+    "api": {
+      "title": "Bouwen met onze API",
+      "subtitle": "Integreer AI-video reframing rechtstreeks in uw app. Abonneer u en haal uw API-sleutel op bij RapidAPI.",
+      "ctaRapidApi": "Bekijken op RapidAPI",
+      "ctaApiDoc": "API-documentatie bekijken"
+    },
+    "contact": {
+      "title": "Vragen of feedback?",
+      "subtitle": "We zijn altijd op zoek naar verbetering. Neem contact op als u functieverzoeken heeft, een bug heeft gevonden of gewoon hallo wilt zeggen!",
+      "cta": "E-mail ons"
+    },
+    "quantityDialog": {
+      "title": "Hoeveelheid selecteren",
+      "subtitle": "Pay-as-you-go credits",
+      "price": "$0.99",
+      "priceUnit": "/st",
+      "label": "Hoeveel credits heeft u nodig?",
+      "total": "Totaal:",
+      "cta_one": "{{count}} Credit kopen",
+      "cta_other": "{{count}} Credits kopen",
+      "secureCheckout": "Veilig afrekenen via Stripe"
+    },
+    "toasts": {
+      "creditsAdded": "Credits toegevoegd",
+      "creditsAddedDesc": "{{credits}} credits zijn succesvol aan uw account toegevoegd.",
+      "paymentPending": "Betaling in behandeling",
+      "paymentPendingDesc": "Uw betaling wordt nog verwerkt.",
+      "paymentCancelled": "Betaling geannuleerd",
+      "paymentCancelledDesc": "U kunt het op elk moment opnieuw proberen.",
+      "signInRequired": "Inloggen vereist",
+      "signInRequiredDesc": "Log in om credits te kopen.",
+      "activeSubscription": "Actief Abonnement",
+      "activeSubscriptionDesc": "U heeft al een actief abonnement. Beheer het via het portaal 'Abonnement beheren' als u uw plan wilt wijzigen.",
+      "creditsSimulated": "Credits toegevoegd (Gesimuleerd)",
+      "creditsSimulatedDesc": "Uw creditsaldo is bijgewerkt."
+    }
+  },
+  "uploadBox": {
+    "checkingSessions": "Actieve sessies controleren...",
+    "manageSubscription": "Abonnement beheren",
+    "credits_one": "{{count}} Credit",
+    "credits_other": "{{count}} Credits",
+    "processing": {
+      "title": "Uw video wordt verwerkt",
+      "subtitle": "Onze AI volgt onderwerpen en kadreert automatisch naar {{ratio}}.",
+      "initializing": "Initialiseren...",
+      "analyzing": "AI analyseert frames...",
+      "finalizing": "Uw video wordt afgerond...",
+      "progressNote_analyzing": "AI volgt onderwerpen en kadreert automatisch...",
+      "progressNote_finalizing": "Audio samenvoegen en bestanden opslaan. Bijna klaar!",
+      "progressNote_setup": "AI-posedetectie instellen..."
+    },
+    "completed": {
+      "title": "Uw video is klaar!",
+      "subtitle": "Automatisch gekaderd naar {{ratio}} met AI-onderwerptracking.",
+      "download": "Video downloaden",
+      "processAnother": "Een andere verwerken"
+    },
+    "failed": {
+      "title": "Verwerking mislukt",
+      "subtitle": "Er is iets misgegaan. Probeer het opnieuw.",
+      "tryAgain": "Opnieuw proberen"
+    },
+    "signIn": {
+      "title": "Log in om te beginnen",
+      "subtitle": "Log in om video's te uploaden en verwerken.",
+      "highlight": "Uw eerste video is op onze kosten!",
+      "cta": "Inloggen"
+    },
+    "dropzone": {
+      "title": "Upload uw video",
+      "titleDrag": "Video hier neerzetten",
+      "subtitle": "Sleep uw bestand hier naartoe of klik om te bladeren. MP4, MOV of AVI tot 2GB.",
+      "browse": "Bestanden bladeren"
+    },
+    "filePreview": {
+      "outputRatio": "Uitvoerverhouding selecteren",
+      "aiTracking": "AI-tracking ingeschakeld",
+      "uploading": "Video uploaden...",
+      "analyzing": "Video analyseren...",
+      "analyzingNote": "Even geduld terwijl we de video op onze server analyseren...",
+      "calculatingCredits": "Credits berekenen...",
+      "waitingUpload": "Wachten op upload...",
+      "analyzingVideo": "Video analyseren...",
+      "useCredits_one": "{{count}} Credit gebruiken om te verwerken",
+      "useCredits_other": "{{count}} Credits gebruiken om te verwerken"
+    },
+    "paymentDialog": {
+      "title": "Besteloverzicht",
+      "subtitle": "AI Video Frame naar {{ratio}}",
+      "useCredits_one": "{{count}} Credit gebruiken",
+      "useCredits_other": "{{count}} Credits gebruiken",
+      "insufficientCredits": "Onvoldoende Credits",
+      "needMoreCredits_one": "U heeft {{count}} extra credit nodig om deze video te verwerken.",
+      "needMoreCredits_other": "U heeft {{count}} extra credits nodig om deze video te verwerken.",
+      "purchaseQty": "Aankoopaantal",
+      "total": "Totaal:",
+      "buyCredits_one": "{{count}} Credit kopen",
+      "buyCredits_other": "{{count}} Credits kopen",
+      "viewPlans": "Abonnementsplannen bekijken",
+      "securedByStripe": "Betalingen beveiligd door Stripe"
+    },
+    "toasts": {
+      "videoReady": "Video klaar!",
+      "videoReadyDesc": "Uw automatisch gekaderde video is klaar om te downloaden.",
+      "processingFailed": "Verwerking mislukt",
+      "processingFailedDesc": "Er is iets misgegaan. Probeer het opnieuw.",
+      "uploadFailed": "Upload mislukt",
+      "processingStarted": "Verwerking gestart",
+      "processingStartedDesc": "Uw video wordt automatisch gekaderd. Dit kan een paar minuten duren.",
+      "creditsSimulated": "Credits toegevoegd (Gesimuleerd)",
+      "creditsSimulatedDesc": "{{count}} credits succesvol toegevoegd.",
+      "portalError": "Fout"
+    }
+  },
+  "loginDialog": {
+    "title": "Inloggen",
+    "description": "Kies uw voorkeursmethode om in te loggen.",
+    "freeCreditBadge": "Ontvang 1 gratis credit bij uw eerste login",
+    "continueWithGoogle": "Doorgaan met Google",
+    "orWithEmail": "Of met e-mail",
+    "emailPlaceholder": "naam@voorbeeld.nl",
+    "sendMagicLink": "Magic Link versturen",
+    "checkInbox": "Controleer uw inbox!",
+    "magicLinkSentDesc": "We hebben een inloglink naar {{email}} gestuurd.",
+    "tryAnotherEmail": "Ander e-mailadres proberen",
+    "toasts": {
+      "magicLinkSent": "Magic link verzonden",
+      "magicLinkSentDesc": "Controleer uw e-mail voor de inloglink.",
+      "errorDesc": "Verzenden van magic link mislukt"
+    }
+  },
+  "notFound": {
+    "title": "404 Pagina Niet Gevonden",
+    "subtitle": "Bent u vergeten de pagina aan de router toe te voegen?"
+  }
+}
