@@ -2,7 +2,7 @@
 
 AI-powered video cropping tool that automatically detects subjects using computer vision to reframe videos into different aspect ratios.
 
-![AI Video Frame Demo](client/public/ai_video_frame_logo.png)
+https://aivideoframe.com
 
 ## Overview
 
