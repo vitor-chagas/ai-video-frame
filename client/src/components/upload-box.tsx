@@ -18,6 +18,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { uploadVideo, apiRequest } from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
 import { LoginDialog } from "./login-dialog";
+import { useTranslation } from "react-i18next";
 
 export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) {
   const [file, setFile] = useState<{ name: string; size: number; duration?: number | null } | null>(null);
@@ -28,15 +29,16 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
   const [isUploading, setIsUploading] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
-  
+
   const [aspectRatio, setAspectRatio] = useState("9:16");
   const [uploadProgress, setUploadProgress] = useState(0);
   const [videoId, setVideoId] = useState<string | null>(null);
   const [processingStatus, setProcessingStatus] = useState<string | null>(null);
   const [processingProgress, setProcessingProgress] = useState(0);
-  
+
   const { toast } = useToast();
   const { user, isAuthenticated, isLoading } = useAuth();
+  const { t } = useTranslation();
 
   const resetState = async () => {
     // Pure UI reset first
@@ -51,7 +53,7 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
 
     try {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      
+
       // Clear backend for this user only when explicitly starting over
       await apiRequest("/api/videos/reset", {
         method: "POST",
@@ -73,15 +75,15 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
           setProcessingProgress(100);
           setProcessingStatus("completed");
           toast({
-            title: "Video ready!",
-            description: "Your auto-framed video is ready to download.",
+            title: t("uploadBox.toasts.videoReady"),
+            description: t("uploadBox.toasts.videoReadyDesc"),
           });
         } else if (video.status === "failed") {
           clearInterval(poll);
           setProcessingStatus("failed");
           toast({
-            title: "Processing failed",
-            description: "Something went wrong. Please try again.",
+            title: t("uploadBox.toasts.processingFailed"),
+            description: t("uploadBox.toasts.processingFailedDesc"),
             variant: "destructive",
           });
         }
@@ -172,7 +174,7 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
       setUploadProgress(0);
       setIsUploading(true);
       setIsValidating(false);
-      
+
       // Trigger actual upload
       (async () => {
         try {
@@ -182,11 +184,11 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                setIsValidating(true);
              }
            })) as any;
-           
+
            setUploadProgress(100);
            setIsUploading(false);
            setIsValidating(true);
-           
+
            // Small delay to show 100%
            setTimeout(() => {
              setVideoId(videoData.id);
@@ -198,11 +200,11 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
            setIsValidating(false);
            setFile(null);
            setUploadProgress(0);
-           toast({ title: "Upload failed", description: error.message, variant: "destructive" });
+           toast({ title: t("uploadBox.toasts.uploadFailed"), description: error.message, variant: "destructive" });
         }
       })();
     }
-  }, [aspectRatio, toast]);
+  }, [aspectRatio, toast, t]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -244,23 +246,23 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
     try {
       const result = await apiRequest("/api/payments/create-credits", {
         method: "POST",
-        body: JSON.stringify({ 
-          plan: "single", 
+        body: JSON.stringify({
+          plan: "single",
           quantity: topUpQuantity,
-          returnVideoId: videoId 
+          returnVideoId: videoId
         }),
       });
 
       if (result.checkoutUrl) {
         window.location.href = result.checkoutUrl;
       } else if (result.simulated) {
-        toast({ title: "Credits added (Simulated)", description: `Successfully added ${missingCredits} credits.` });
+        toast({ title: t("uploadBox.toasts.creditsSimulated"), description: t("uploadBox.toasts.creditsSimulatedDesc", { count: missingCredits }) });
         queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
         setShowPayment(false);
       }
     } catch (error: any) {
       toast({
-        title: "Error",
+        title: t("uploadBox.toasts.portalError"),
         description: error.message,
         variant: "destructive",
       });
@@ -278,7 +280,7 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
   const handlePayment = async () => {
     if (!videoId) return;
     setIsPaymentProcessing(true);
-    
+
     try {
       setProcessingStatus("Starting video processing...");
       await apiRequest(`/api/videos/${videoId}/process`, {
@@ -292,14 +294,14 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
       setProcessingProgress(0);
       setProcessingStatus("processing");
       toast({
-        title: "Processing started",
-        description: "Your video is being auto-framed. This may take a few minutes.",
+        title: t("uploadBox.toasts.processingStarted"),
+        description: t("uploadBox.toasts.processingStartedDesc"),
       });
 
       pollVideoStatus(videoId);
     } catch (error: any) {
       toast({
-        title: "Error",
+        title: t("common.error"),
         description: error.message,
         variant: "destructive",
       });
@@ -329,7 +331,7 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
       }
     } catch (error: any) {
       toast({
-        title: "Error",
+        title: t("uploadBox.toasts.portalError"),
         description: error.message,
         variant: "destructive",
       });
@@ -356,7 +358,7 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
     return (
       <div className="w-full max-w-2xl mx-auto text-center py-20">
         <Loader2 className="h-10 w-10 animate-spin mx-auto text-[hsl(24,10%,10%)] mb-4" />
-        <p className="text-muted-foreground">Checking for active sessions...</p>
+        <p className="text-muted-foreground">{t("uploadBox.checkingSessions")}</p>
       </div>
     );
   }
@@ -378,13 +380,13 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
               ) : (
                 <Settings className="h-3.5 w-3.5 mr-2" />
               )}
-              Manage Subscription
+              {t("uploadBox.manageSubscription")}
             </Button>
           )}
           <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-[hsl(38,10%,85%)] px-4 py-2 rounded-full shadow-sm">
             <Coins className="h-4 w-4 text-[hsl(24,10%,10%)]" />
             <span className="text-sm font-bold text-[hsl(24,10%,10%)]">
-              {user?.credits ?? 0} Credits
+              {t("uploadBox.credits", { count: user?.credits ?? 0 })}
             </span>
           </div>
         </div>
@@ -402,30 +404,30 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                 <div className="h-20 w-20 rounded-full border-4 border-[hsl(38,10%,90%)] border-t-[hsl(24,10%,10%)] animate-spin"></div>
               </div>
               <div className="w-full max-w-sm">
-                <h3 className="text-2xl font-serif font-bold text-[hsl(24,10%,10%)] mb-2">Processing your video</h3>
-                <p className="text-muted-foreground mb-4">Our AI is tracking subjects and auto-framing to {aspectRatio}.</p>
+                <h3 className="text-2xl font-serif font-bold text-[hsl(24,10%,10%)] mb-2">{t("uploadBox.processing.title")}</h3>
+                <p className="text-muted-foreground mb-4">{t("uploadBox.processing.subtitle", { ratio: aspectRatio })}</p>
                 <div className="space-y-4">
                   <div className="flex justify-between text-sm font-medium text-[hsl(24,10%,10%)]">
                     <span className="flex items-center gap-2">
                       {processingProgress === 100 && (
                         <Loader2 className="h-3 w-3 animate-spin text-[hsl(24,10%,10%)]" />
                       )}
-                      {processingProgress === 100 
-                        ? "Finalizing your video..." 
-                        : processingProgress > 0 
-                          ? "AI analyzing frames..." 
-                          : "Initializing..."}
+                      {processingProgress === 100
+                        ? t("uploadBox.processing.finalizing")
+                        : processingProgress > 0
+                          ? t("uploadBox.processing.analyzing")
+                          : t("uploadBox.processing.initializing")}
                     </span>
                     <span data-testid="text-processing-progress">{processingProgress}%</span>
                   </div>
                   <div className="relative">
-                    <Progress 
-                      value={processingProgress} 
-                      className={`h-3 bg-[hsl(38,10%,90%)] transition-all duration-500 ${processingProgress === 100 ? "opacity-40" : ""}`} 
+                    <Progress
+                      value={processingProgress}
+                      className={`h-3 bg-[hsl(38,10%,90%)] transition-all duration-500 ${processingProgress === 100 ? "opacity-40" : ""}`}
                     />
                     {processingProgress === 100 && (
                       <div className="absolute inset-0 overflow-hidden rounded-full">
-                        <motion.div 
+                        <motion.div
                           className="h-full w-1/3 bg-gradient-to-r from-transparent via-[hsl(24,10%,10%)]/20 to-transparent"
                           animate={{
                             x: ["-100%", "300%"]
@@ -441,10 +443,10 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                   </div>
                   <p className="text-sm font-medium text-[hsl(24,10%,40%)] mt-1 animate-pulse">
                     {processingProgress === 100
-                      ? "Merging audio and saving files. Almost there!"
+                      ? t("uploadBox.processing.progressNote_finalizing")
                       : processingProgress > 0
-                        ? "AI is tracking subjects and auto-framing..."
-                        : "Setting up AI pose detection..."}
+                        ? t("uploadBox.processing.progressNote_analyzing")
+                        : t("uploadBox.processing.progressNote_setup")}
                   </p>
                 </div>
               </div>
@@ -462,8 +464,8 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                 <Check className="h-10 w-10 text-green-600" />
               </div>
               <div>
-                <h3 className="text-2xl font-serif font-bold text-[hsl(24,10%,10%)] mb-2">Your video is ready!</h3>
-                <p className="text-muted-foreground mb-1">Auto-framed to {aspectRatio} with AI subject tracking.</p>
+                <h3 className="text-2xl font-serif font-bold text-[hsl(24,10%,10%)] mb-2">{t("uploadBox.completed.title")}</h3>
+                <p className="text-muted-foreground mb-1">{t("uploadBox.completed.subtitle", { ratio: aspectRatio })}</p>
                 {file && (
                   <p className="text-sm text-[hsl(24,5%,50%)] font-medium mb-6 italic">
                     {file.name}
@@ -471,14 +473,14 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                 )}
               </div>
               <div className="flex gap-4">
-                <Button 
+                <Button
                   size="lg"
                   onClick={handleDownload}
                   className="bg-[hsl(24,10%,10%)] text-[hsl(38,20%,97%)] hover:bg-[hsl(24,10%,20%)] rounded-full px-10 h-14 text-lg font-medium shadow-lg"
                   data-testid="button-download"
                 >
                   <Download className="mr-2 h-5 w-5" />
-                  Download Video
+                  {t("uploadBox.completed.download")}
                 </Button>
                 <Button
                   size="lg"
@@ -487,7 +489,7 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                   className="rounded-full px-10 h-14 text-lg"
                   data-testid="button-process-another"
                 >
-                  Process Another
+                  {t("uploadBox.completed.processAnother")}
                 </Button>
               </div>
             </div>
@@ -504,8 +506,8 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                 <X className="h-10 w-10 text-red-600" />
               </div>
               <div>
-                <h3 className="text-2xl font-serif font-bold text-[hsl(24,10%,10%)] mb-2">Processing failed</h3>
-                <p className="text-muted-foreground mb-6">Something went wrong. Please try again.</p>
+                <h3 className="text-2xl font-serif font-bold text-[hsl(24,10%,10%)] mb-2">{t("uploadBox.failed.title")}</h3>
+                <p className="text-muted-foreground mb-6">{t("uploadBox.failed.subtitle")}</p>
               </div>
               <Button
                 size="lg"
@@ -513,7 +515,7 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                 className="bg-[hsl(24,10%,10%)] text-[hsl(38,20%,97%)] hover:bg-[hsl(24,10%,20%)] rounded-full px-10 h-14 text-lg font-medium"
                 data-testid="button-try-again"
               >
-                Try Again
+                {t("uploadBox.failed.tryAgain")}
               </Button>
             </div>
           </motion.div>
@@ -533,20 +535,20 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                 </div>
                 <div className="space-y-3">
                   <h3 className="text-2xl font-serif font-bold text-[hsl(24,10%,10%)]">
-                    {isLoading ? "Loading..." : "Sign in to get started"}
+                    {isLoading ? t("common.loading") : t("uploadBox.signIn.title")}
                   </h3>
                   <p className="text-base text-muted-foreground max-w-sm mx-auto flex flex-col gap-1">
-                    <span>Sign in to upload and process videos.</span>
-                    <span className="text-[hsl(24,10%,10%)] font-bold">Your first video is on us!</span>
+                    <span>{t("uploadBox.signIn.subtitle")}</span>
+                    <span className="text-[hsl(24,10%,10%)] font-bold">{t("uploadBox.signIn.highlight")}</span>
                   </p>
                 </div>
                 {!isLoading && (
                   <LoginDialog>
-                    <Button 
+                    <Button
                       className="mt-2 rounded-full px-10 py-6 text-base bg-[hsl(24,10%,10%)] text-[hsl(38,20%,97%)] hover:bg-[hsl(24,10%,20%)] shadow-lg hover:shadow-xl transition-all"
                       data-testid="button-signin"
                     >
-                      Sign In
+                      {t("uploadBox.signIn.cta")}
                     </Button>
                   </LoginDialog>
                 )}
@@ -563,7 +565,7 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
             <div
               {...getRootProps()}
               className={`
-                group relative overflow-hidden rounded-3xl border-2 border-dashed border-[hsl(38,10%,80%)] 
+                group relative overflow-hidden rounded-3xl border-2 border-dashed border-[hsl(38,10%,80%)]
                 bg-white p-16 text-center transition-all duration-300 ease-in-out cursor-pointer
                 hover:border-[hsl(24,10%,10%)] hover:bg-[hsl(38,20%,98%)] shadow-sm hover:shadow-md
                 ${isDragActive ? "border-[hsl(24,10%,10%)] bg-[hsl(38,20%,95%)] scale-[1.02]" : ""}
@@ -577,14 +579,14 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                 </div>
                 <div className="space-y-3">
                   <h3 className="text-2xl font-serif font-bold text-[hsl(24,10%,10%)]">
-                    {isDragActive ? "Drop video here" : "Upload your video"}
+                    {isDragActive ? t("uploadBox.dropzone.titleDrag") : t("uploadBox.dropzone.title")}
                   </h3>
                   <p className="text-base text-muted-foreground max-w-sm mx-auto">
-                    Drag and drop your file here, or click to browse. MP4, MOV, or AVI up to 2GB.
+                    {t("uploadBox.dropzone.subtitle")}
                   </p>
                 </div>
                 <Button variant="outline" className="mt-2 rounded-full px-8 py-6 text-base border-[hsl(38,10%,80%)] hover:bg-[hsl(38,20%,95%)] hover:border-[hsl(24,10%,10%)] transition-all" data-testid="button-browse">
-                  Browse Files
+                  {t("uploadBox.dropzone.browse")}
                 </Button>
               </div>
             </div>
@@ -628,13 +630,13 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
             {uploadProgress < 100 || isValidating ? (
               <div className="space-y-3 mb-6 bg-[hsl(38,20%,98%)] p-6 rounded-2xl border border-[hsl(38,10%,92%)]">
                 <div className="flex justify-between text-sm font-medium text-[hsl(24,10%,10%)]">
-                  <span>{isValidating ? "Analyzing video..." : "Uploading video..."}</span>
+                  <span>{isValidating ? t("uploadBox.filePreview.analyzing") : t("uploadBox.filePreview.uploading")}</span>
                   <span>{uploadProgress}%</span>
                 </div>
                 <Progress value={uploadProgress} className="h-3 bg-[hsl(38,10%,90%)]" />
                 {isValidating && (
                   <p className="text-xs text-muted-foreground animate-pulse">
-                    Please wait while we analyze the video on our server...
+                    {t("uploadBox.filePreview.analyzingNote")}
                   </p>
                 )}
               </div>
@@ -642,12 +644,12 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
               <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <Label className="text-lg font-serif font-bold">Select Output Ratio</Label>
-                    <span className="text-sm text-muted-foreground bg-[hsl(38,20%,95%)] px-3 py-1 rounded-full">AI Tracking Enabled</span>
+                    <Label className="text-lg font-serif font-bold">{t("uploadBox.filePreview.outputRatio")}</Label>
+                    <span className="text-sm text-muted-foreground bg-[hsl(38,20%,95%)] px-3 py-1 rounded-full">{t("uploadBox.filePreview.aiTracking")}</span>
                   </div>
-                  <RadioGroup 
-                    defaultValue="9:16" 
-                    value={aspectRatio} 
+                  <RadioGroup
+                    defaultValue="9:16"
+                    value={aspectRatio}
                     onValueChange={setAspectRatio}
                     className="grid grid-cols-5 gap-4"
                   >
@@ -679,10 +681,10 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                     onClick={resetState}
                     className="rounded-full px-8 h-14 text-lg font-medium text-muted-foreground hover:text-destructive transition-all"
                   >
-                    Cancel
+                    {t("common.cancel")}
                   </Button>
-                  <Button 
-                    size="lg" 
+                  <Button
+                    size="lg"
                     onClick={handleStartProcessing}
                     disabled={isValidating || !videoId || file?.duration === undefined}
                     className="bg-[hsl(24,10%,10%)] text-[hsl(38,20%,97%)] hover:bg-[hsl(24,10%,20%)] rounded-full px-10 h-14 text-lg font-medium shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -691,17 +693,17 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                     {isValidating ? (
                       <>
                         <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Calculating Credits...
+                        {t("uploadBox.filePreview.calculatingCredits")}
                       </>
                     ) : !videoId ? (
-                      "Waiting for Upload..."
+                      t("uploadBox.filePreview.waitingUpload")
                     ) : file?.duration === undefined ? (
                       <>
                         <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Analyzing Video...
+                        {t("uploadBox.filePreview.analyzingVideo")}
                       </>
                     ) : (
-                      `Use ${requiredCredits} ${requiredCredits === 1 ? 'Credit' : 'Credits'} to Process`
+                      t("uploadBox.filePreview.useCredits", { count: requiredCredits })
                     )}
                   </Button>
                 </div>
@@ -717,12 +719,12 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
           <div className="bg-white p-8 space-y-8">
              <div className="flex items-center justify-between border-b border-dashed border-gray-200 pb-6">
                <div>
-                 <h3 className="font-serif font-bold text-2xl text-[hsl(24,10%,10%)]">Order Summary</h3>
-                 <p className="text-sm text-muted-foreground mt-1">AI Video Frame to {aspectRatio}</p>
+                 <h3 className="font-serif font-bold text-2xl text-[hsl(24,10%,10%)]">{t("uploadBox.paymentDialog.title")}</h3>
+                 <p className="text-sm text-muted-foreground mt-1">{t("uploadBox.paymentDialog.subtitle", { ratio: aspectRatio })}</p>
                </div>
                <div className="text-right">
                  <div className="font-serif font-bold text-3xl text-[hsl(24,10%,10%)]">
-                   {requiredCredits} {requiredCredits === 1 ? 'Credit' : 'Credits'}
+                   {t("uploadBox.credits", { count: requiredCredits })}
                  </div>
                </div>
              </div>
@@ -743,8 +745,8 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                 </div>
               </div>
             )}
-              
-            <Button 
+
+            <Button
               className="w-full rounded-full h-14 text-lg font-medium bg-[hsl(24,10%,10%)] hover:bg-[hsl(24,10%,20%)] text-[hsl(38,20%,97%)] shadow-lg hover:shadow-xl transition-all duration-300"
               onClick={handlePayment}
               disabled={isPaymentProcessing || (user?.credits ?? 0) < requiredCredits}
@@ -753,47 +755,47 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
               {isPaymentProcessing ? (
                 <>
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  {processingStatus || "Processing..."}
+                  {processingStatus || t("common.loading")}
                 </>
               ) : (user?.credits ?? 0) >= requiredCredits ? (
                 <>
-                  <Check className="mr-2 h-4 w-4" /> Use {requiredCredits} {requiredCredits === 1 ? 'Credit' : 'Credits'}
+                  <Check className="mr-2 h-4 w-4" /> {t("uploadBox.paymentDialog.useCredits", { count: requiredCredits })}
                 </>
               ) : (
                 <>
-                  <Lock className="mr-2 h-4 w-4" /> Insufficient Credits
+                  <Lock className="mr-2 h-4 w-4" /> {t("uploadBox.paymentDialog.insufficientCredits")}
                 </>
               )}
             </Button>
-            
+
             {(user?.credits ?? 0) < requiredCredits && (
               <div className="space-y-4 pt-4 border-t border-dashed">
                 <p className="text-center text-sm text-red-500 font-medium">
-                  You need {missingCredits} more {missingCredits === 1 ? 'credit' : 'credits'} to process this video.
+                  {t("uploadBox.paymentDialog.needMoreCredits", { count: missingCredits })}
                 </p>
-                
+
                 <div className="flex flex-col gap-2 p-4 bg-[hsl(38,20%,97%)] rounded-2xl border border-[hsl(38,10%,90%)]">
-                  <label className="text-xs font-bold text-[hsl(24,10%,10%)] uppercase tracking-wider">Purchase Quantity</label>
+                  <label className="text-xs font-bold text-[hsl(24,10%,10%)] uppercase tracking-wider">{t("uploadBox.paymentDialog.purchaseQty")}</label>
                   <div className="flex items-center gap-3">
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       className="h-8 w-8 rounded-lg bg-[hsl(38,20%,90%)] text-[hsl(24,10%,10%)] hover:bg-[hsl(38,20%,85%)] shrink-0"
                       onClick={() => setTopUpQuantity(Math.max(1, topUpQuantity - 1))}
                     >
                       <span className="text-lg font-bold">-</span>
                     </Button>
-                    <input 
-                      type="number" 
-                      min="1" 
+                    <input
+                      type="number"
+                      min="1"
                       max="1000"
                       value={topUpQuantity}
                       onChange={(e) => setTopUpQuantity(Math.max(1, parseInt(e.target.value) || 1))}
                       className="w-full min-w-[60px] px-2 py-1.5 rounded-xl border border-[hsl(38,10%,85%)] text-center font-bold text-[hsl(24,10%,10%)] focus:ring-2 focus:ring-[hsl(24,10%,10%)] focus:outline-none bg-white shadow-sm"
                     />
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       className="h-8 w-8 rounded-lg bg-[hsl(38,20%,90%)] text-[hsl(24,10%,10%)] hover:bg-[hsl(38,20%,85%)] shrink-0"
                       onClick={() => setTopUpQuantity(topUpQuantity + 1)}
                     >
@@ -801,11 +803,11 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                     </Button>
                   </div>
                   <p className="text-center text-xs font-bold text-[hsl(24,10%,10%)] mt-1">
-                    Total: ${(topUpQuantity * 0.99).toFixed(2)}
+                    {t("uploadBox.paymentDialog.total")} ${(topUpQuantity * 0.99).toFixed(2)}
                   </p>
                 </div>
 
-                <Button 
+                <Button
                   className="w-full rounded-full h-14 bg-[hsl(24,10%,10%)] hover:bg-[hsl(24,10%,20%)] text-[hsl(38,20%,97%)] shadow-lg hover:shadow-xl transition-all"
                   onClick={handleTopUp}
                   disabled={isTopUpLoading}
@@ -815,9 +817,9 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                   ) : (
                     <Coins className="mr-2 h-4 w-4" />
                   )}
-                  Buy {topUpQuantity} {topUpQuantity === 1 ? 'Credit' : 'Credits'}
+                  {t("uploadBox.paymentDialog.buyCredits", { count: topUpQuantity })}
                 </Button>
-                <Button 
+                <Button
                   variant="ghost"
                   className="w-full rounded-full h-10 text-muted-foreground hover:text-[hsl(24,10%,10%)] transition-all text-xs"
                   onClick={() => {
@@ -825,14 +827,14 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                     document.getElementById("pricing-section")?.scrollIntoView({ behavior: "smooth" });
                   }}
                 >
-                  View Subscription Plans
+                  {t("uploadBox.paymentDialog.viewPlans")}
                 </Button>
               </div>
             )}
-            
+
             <div className="flex items-center justify-center gap-2 text-xs font-medium text-muted-foreground bg-[hsl(38,20%,98%)] py-3 rounded-xl">
               <Lock className="h-3 w-3" />
-              Payments secured by Stripe
+              {t("uploadBox.paymentDialog.securedByStripe")}
             </div>
           </div>
         </DialogContent>
