@@ -240,13 +240,7 @@ export default function Home() {
           className="w-full max-w-2xl mx-auto mt-16 text-center"
         >
           <div className="bg-white border border-[hsl(38,10%,90%)] rounded-3xl p-10 md:p-14 shadow-sm hover:shadow-md transition-shadow flex flex-col items-center gap-6">
-            <div className="flex items-center gap-2">
-              <svg width="120" height="28" viewBox="0 0 120 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="RapidAPI">
-                <path d="M10.5 2L2 14.5L8 14.5L5.5 26L18 11.5L11.5 11.5L18 2L10.5 2Z" fill="#1a1a1a"/>
-                <text x="24" y="20" fontFamily="sans-serif" fontWeight="700" fontSize="15" fill="#1a1a1a">Rapid</text>
-                <text x="69" y="20" fontFamily="sans-serif" fontWeight="400" fontSize="15" fill="#1a1a1a">API</text>
-              </svg>
-            </div>
+            <img src="/rapidapi-logo.png" alt="RapidAPI" className="h-8 w-auto" />
             <div>
               <h2 className="text-2xl md:text-3xl font-serif font-bold text-[hsl(24,10%,10%)] mb-3">
                 Build with our API
