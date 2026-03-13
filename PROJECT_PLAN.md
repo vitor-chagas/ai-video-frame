@@ -20,6 +20,7 @@
 - [x] delete historic of .env file from git history
 - [x] create a api and sell it on rapidapi.
 - [x] test rapid api
+- [x] add a mention about the rapidapi in the webpage.
 
 
 ## TODO
@@ -36,7 +37,5 @@
 - [ ] look for securiy flaws
 - [ ] use the abel ferreira video example to create the blog and linkedin post advertiaing the microservices.
 - [ ] magic link email is going to the spam folder.
-- [ ] add a mention about the rapidapi in the webpage.
 - [ ] add a paypal account for rapidapi
 - [ ] there is a bug on gmail that require click twice to authenticate.
-- [ ] reduce the prices for the launch day.
