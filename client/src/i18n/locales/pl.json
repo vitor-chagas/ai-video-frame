@@ -1,0 +1,193 @@
+{
+  "common": {
+    "loading": "Ładowanie...",
+    "error": "Błąd",
+    "cancel": "Anuluj",
+    "signIn": "Zaloguj się",
+    "logOut": "Wyloguj się"
+  },
+  "layout": {
+    "footer": "© 2026 AI Video Frame. Wszelkie prawa zastrzeżone."
+  },
+  "home": {
+    "badge": "Teraz z obsługą eksportu 4K",
+    "hero": {
+      "title": "Inteligentne kadrowanie dla Twoich filmów.",
+      "subtitle": "Pozwól AI automatycznie przycinać filmy poziome do formatów pionowych. Idealne dla TikTok, Reels i Shorts."
+    },
+    "pricing": {
+      "payg": {
+        "title": "Płatność za użycie",
+        "badge": "PIERWSZE GRATIS",
+        "price": "$0.99",
+        "priceUnit": "/kredyt",
+        "creditExplain": "1 Kredyt = 1 Film (do 5 min)",
+        "overageNote": "Filmy dłuższe niż 5 min kosztują +1 kredyt za każdą dodatkową minutę.",
+        "feature1": "Inteligentne kadrowanie AI",
+        "feature2": "Eksport w jakości 4K",
+        "feature3": "Bez znaku wodnego",
+        "cta": "Kup kredyty",
+        "ctaLoading": "Ładowanie..."
+      },
+      "monthly": {
+        "title": "Miesięczny Twórca",
+        "badge": "NAJPOPULARNIEJSZY",
+        "price": "$9.99",
+        "priceUnit": "/miesiąc",
+        "credits": "12 kredytów co miesiąc.",
+        "feature1": "Oszczędzaj na każdym filmie",
+        "feature2": "Priorytetowe przetwarzanie",
+        "feature3": "12 kredytów w zestawie",
+        "cta": "Subskrybuj",
+        "ctaLoading": "Ładowanie..."
+      },
+      "yearly": {
+        "title": "Roczny Pro",
+        "price": "$107.88",
+        "priceUnit": "/rok",
+        "credits": "144 kredyty (12 miesięcznie).",
+        "feature1": "Najlepsza wartość dla profesjonalistów",
+        "feature2": "Priorytetowe przetwarzanie",
+        "feature3": "144 kredyty łącznie",
+        "cta": "Plan roczny",
+        "ctaLoading": "Ładowanie..."
+      },
+      "footnote": "*1 kredyt pokrywa pierwsze 5 minut filmu. Każda dodatkowa minuta (lub jej część) kosztuje 1 kredyt."
+    },
+    "api": {
+      "title": "Buduj z naszym API",
+      "subtitle": "Zintegruj przekadrowanie wideo AI bezpośrednio w swojej aplikacji. Subskrybuj i pobierz klucz API na RapidAPI.",
+      "ctaRapidApi": "Zobacz na RapidAPI",
+      "ctaApiDoc": "Zobacz dokumentację API"
+    },
+    "contact": {
+      "title": "Masz pytania lub uwagi?",
+      "subtitle": "Zawsze dążymy do poprawy. Skontaktuj się, jeśli masz prośby o funkcje, znalazłeś błąd lub chcesz po prostu powiedzieć cześć!",
+      "cta": "Napisz do nas"
+    },
+    "quantityDialog": {
+      "title": "Wybierz ilość",
+      "subtitle": "Kredyty za użycie",
+      "price": "$0.99",
+      "priceUnit": "/szt",
+      "label": "Ile kredytów potrzebujesz?",
+      "total": "Razem:",
+      "cta_one": "Kup {{count}} kredyt",
+      "cta_other": "Kup {{count}} kredyty",
+      "secureCheckout": "Bezpieczna płatność przez Stripe"
+    },
+    "toasts": {
+      "creditsAdded": "Kredyty dodane",
+      "creditsAddedDesc": "Pomyślnie dodano {{credits}} kredytów do konta.",
+      "paymentPending": "Płatność oczekuje",
+      "paymentPendingDesc": "Twoja płatność jest nadal przetwarzana.",
+      "paymentCancelled": "Płatność anulowana",
+      "paymentCancelledDesc": "Możesz spróbować ponownie w dowolnym momencie.",
+      "signInRequired": "Wymagane logowanie",
+      "signInRequiredDesc": "Zaloguj się, aby kupić kredyty.",
+      "activeSubscription": "Aktywna subskrypcja",
+      "activeSubscriptionDesc": "Masz już aktywną subskrypcję. Zarządzaj nią przez portal 'Zarządzaj subskrypcją', jeśli chcesz zmienić plan.",
+      "creditsSimulated": "Kredyty dodane (symulacja)",
+      "creditsSimulatedDesc": "Twoje saldo kredytów zostało zaktualizowane."
+    }
+  },
+  "uploadBox": {
+    "checkingSessions": "Sprawdzanie aktywnych sesji...",
+    "manageSubscription": "Zarządzaj subskrypcją",
+    "credits_one": "{{count}} kredyt",
+    "credits_other": "{{count}} kredyty",
+    "processing": {
+      "title": "Przetwarzanie Twojego filmu",
+      "subtitle": "Nasze AI śledzi obiekty i automatycznie kadruje do {{ratio}}.",
+      "initializing": "Inicjalizacja...",
+      "analyzing": "AI analizuje klatki...",
+      "finalizing": "Finalizowanie Twojego filmu...",
+      "progressNote_analyzing": "AI śledzi obiekty i automatycznie kadruje...",
+      "progressNote_finalizing": "Łączenie dźwięku i zapisywanie plików. Prawie gotowe!",
+      "progressNote_setup": "Konfigurowanie wykrywania póz AI..."
+    },
+    "completed": {
+      "title": "Twój film jest gotowy!",
+      "subtitle": "Automatycznie skadrowan do {{ratio}} ze śledzeniem obiektów AI.",
+      "download": "Pobierz film",
+      "processAnother": "Przetwórz kolejny"
+    },
+    "failed": {
+      "title": "Przetwarzanie nie powiodło się",
+      "subtitle": "Coś poszło nie tak. Spróbuj ponownie.",
+      "tryAgain": "Spróbuj ponownie"
+    },
+    "signIn": {
+      "title": "Zaloguj się, aby zacząć",
+      "subtitle": "Zaloguj się, aby przesyłać i przetwarzać filmy.",
+      "highlight": "Twój pierwszy film na nasz koszt!",
+      "cta": "Zaloguj się"
+    },
+    "dropzone": {
+      "title": "Prześlij swój film",
+      "titleDrag": "Upuść film tutaj",
+      "subtitle": "Przeciągnij i upuść plik tutaj lub kliknij, aby przeglądać. MP4, MOV lub AVI do 2GB.",
+      "browse": "Przeglądaj pliki"
+    },
+    "filePreview": {
+      "outputRatio": "Wybierz format wyjściowy",
+      "aiTracking": "Śledzenie AI włączone",
+      "uploading": "Przesyłanie filmu...",
+      "analyzing": "Analizowanie filmu...",
+      "analyzingNote": "Poczekaj, aż przeanalizujemy film na naszym serwerze...",
+      "calculatingCredits": "Obliczanie kredytów...",
+      "waitingUpload": "Oczekiwanie na przesłanie...",
+      "analyzingVideo": "Analizowanie filmu...",
+      "useCredits_one": "Użyj {{count}} kredytu do przetworzenia",
+      "useCredits_other": "Użyj {{count}} kredytów do przetworzenia"
+    },
+    "paymentDialog": {
+      "title": "Podsumowanie zamówienia",
+      "subtitle": "AI Video Frame do {{ratio}}",
+      "useCredits_one": "Użyj {{count}} kredytu",
+      "useCredits_other": "Użyj {{count}} kredytów",
+      "insufficientCredits": "Niewystarczające kredyty",
+      "needMoreCredits_one": "Potrzebujesz jeszcze {{count}} kredytu, aby przetworzyć ten film.",
+      "needMoreCredits_other": "Potrzebujesz jeszcze {{count}} kredytów, aby przetworzyć ten film.",
+      "purchaseQty": "Ilość do zakupu",
+      "total": "Razem:",
+      "buyCredits_one": "Kup {{count}} kredyt",
+      "buyCredits_other": "Kup {{count}} kredyty",
+      "viewPlans": "Zobacz plany subskrypcji",
+      "securedByStripe": "Płatności zabezpieczone przez Stripe"
+    },
+    "toasts": {
+      "videoReady": "Film gotowy!",
+      "videoReadyDesc": "Twój automatycznie skkadrowany film jest gotowy do pobrania.",
+      "processingFailed": "Przetwarzanie nie powiodło się",
+      "processingFailedDesc": "Coś poszło nie tak. Spróbuj ponownie.",
+      "uploadFailed": "Przesyłanie nie powiodło się",
+      "processingStarted": "Przetwarzanie rozpoczęte",
+      "processingStartedDesc": "Twój film jest automatycznie kadrowany. Może to potrwać kilka minut.",
+      "creditsSimulated": "Kredyty dodane (symulacja)",
+      "creditsSimulatedDesc": "Pomyślnie dodano {{count}} kredytów.",
+      "portalError": "Błąd"
+    }
+  },
+  "loginDialog": {
+    "title": "Zaloguj się",
+    "description": "Wybierz preferowaną metodę logowania, aby kontynuować.",
+    "freeCreditBadge": "Otrzymaj 1 darmowy kredyt przy pierwszym logowaniu",
+    "continueWithGoogle": "Kontynuuj z Google",
+    "orWithEmail": "Lub przez e-mail",
+    "emailPlaceholder": "imie@przyklad.pl",
+    "sendMagicLink": "Wyślij magiczny link",
+    "checkInbox": "Sprawdź swoją skrzynkę!",
+    "magicLinkSentDesc": "Wysłaliśmy link do logowania na {{email}}.",
+    "tryAnotherEmail": "Spróbuj innego e-maila",
+    "toasts": {
+      "magicLinkSent": "Magiczny link wysłany",
+      "magicLinkSentDesc": "Sprawdź swój e-mail, aby znaleźć link do logowania.",
+      "errorDesc": "Nie udało się wysłać magicznego linku"
+    }
+  },
+  "notFound": {
+    "title": "404 Strona nie znaleziona",
+    "subtitle": "Zapomniałeś dodać stronę do routera?"
+  }
+}

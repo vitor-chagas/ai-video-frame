@@ -1,0 +1,193 @@
+{
+  "common": {
+    "loading": "Indlæser...",
+    "error": "Fejl",
+    "cancel": "Annuller",
+    "signIn": "Log ind",
+    "logOut": "Log ud"
+  },
+  "layout": {
+    "footer": "© 2026 AI Video Frame. Alle rettigheder forbeholdes."
+  },
+  "home": {
+    "badge": "Nu med understøttelse af 4K-eksport",
+    "hero": {
+      "title": "Intelligent billeddannelse til dine videoer.",
+      "subtitle": "Lad AI automatisk beskære liggende videoer til stående formater. Perfekt til TikTok, Reels og Shorts."
+    },
+    "pricing": {
+      "payg": {
+        "title": "Betal efter brug",
+        "badge": "FØRSTE GRATIS",
+        "price": "$0.99",
+        "priceUnit": "/kredit",
+        "creditExplain": "1 Kredit = 1 Video (op til 5 min)",
+        "overageNote": "Videoer længere end 5 min koster +1 kredit pr. ekstra minut.",
+        "feature1": "Smart AI-billeddannelse",
+        "feature2": "4K-kvalitetseksport",
+        "feature3": "Intet vandmærke",
+        "cta": "Køb kreditter",
+        "ctaLoading": "Indlæser..."
+      },
+      "monthly": {
+        "title": "Månedlig skaber",
+        "badge": "MEST POPULÆR",
+        "price": "$9.99",
+        "priceUnit": "/måned",
+        "credits": "12 kreditter hver måned.",
+        "feature1": "Spar på hver video",
+        "feature2": "Prioriteret behandling",
+        "feature3": "12 kreditter inkluderet",
+        "cta": "Abonner",
+        "ctaLoading": "Indlæser..."
+      },
+      "yearly": {
+        "title": "Årlig Pro",
+        "price": "$107.88",
+        "priceUnit": "/år",
+        "credits": "144 kreditter (12 pr. måned).",
+        "feature1": "Bedste værdi for professionelle",
+        "feature2": "Prioriteret behandling",
+        "feature3": "144 kreditter i alt",
+        "cta": "Vælg årsplan",
+        "ctaLoading": "Indlæser..."
+      },
+      "footnote": "*1 kredit dækker de første 5 minutter af en video. Hvert ekstra minut (eller del heraf) koster 1 ekstra kredit."
+    },
+    "api": {
+      "title": "Byg med vores API",
+      "subtitle": "Integrer AI-videobeskæring direkte i din app. Abonner og få din API-nøgle på RapidAPI.",
+      "ctaRapidApi": "Se på RapidAPI",
+      "ctaApiDoc": "Se API-dokumentation"
+    },
+    "contact": {
+      "title": "Har du spørgsmål eller feedback?",
+      "subtitle": "Vi forsøger altid at forbedre os. Kontakt os, hvis du har funktionsanmodninger, fandt en fejl, eller bare vil sige hej!",
+      "cta": "Send en e-mail"
+    },
+    "quantityDialog": {
+      "title": "Vælg antal",
+      "subtitle": "Betal efter brug-kreditter",
+      "price": "$0.99",
+      "priceUnit": "/stk",
+      "label": "Hvor mange kreditter har du brug for?",
+      "total": "I alt:",
+      "cta_one": "Køb {{count}} kredit",
+      "cta_other": "Køb {{count}} kreditter",
+      "secureCheckout": "Sikker betaling via Stripe"
+    },
+    "toasts": {
+      "creditsAdded": "Kreditter tilføjet",
+      "creditsAddedDesc": "{{credits}} kreditter er blevet tilføjet til din konto.",
+      "paymentPending": "Betaling afventer",
+      "paymentPendingDesc": "Din betaling behandles stadig.",
+      "paymentCancelled": "Betaling annulleret",
+      "paymentCancelledDesc": "Du kan prøve igen når som helst.",
+      "signInRequired": "Log ind krævet",
+      "signInRequiredDesc": "Log venligst ind for at købe kreditter.",
+      "activeSubscription": "Aktivt abonnement",
+      "activeSubscriptionDesc": "Du har allerede et aktivt abonnement. Administrer det via portalen 'Administrer abonnement', hvis du ønsker at ændre din plan.",
+      "creditsSimulated": "Kreditter tilføjet (Simuleret)",
+      "creditsSimulatedDesc": "Din kreditbalance er blevet opdateret."
+    }
+  },
+  "uploadBox": {
+    "checkingSessions": "Tjekker aktive sessioner...",
+    "manageSubscription": "Administrer abonnement",
+    "credits_one": "{{count}} kredit",
+    "credits_other": "{{count}} kreditter",
+    "processing": {
+      "title": "Behandler din video",
+      "subtitle": "Vores AI sporer motiver og indrammes automatisk til {{ratio}}.",
+      "initializing": "Initialiserer...",
+      "analyzing": "AI analyserer billeder...",
+      "finalizing": "Afslutter din video...",
+      "progressNote_analyzing": "AI sporer motiver og indrammes automatisk...",
+      "progressNote_finalizing": "Fusionerer lyd og gemmer filer. Næsten færdig!",
+      "progressNote_setup": "Konfigurerer AI-positionsgenkendelse..."
+    },
+    "completed": {
+      "title": "Din video er klar!",
+      "subtitle": "Automatisk indrammet til {{ratio}} med AI-motivsporing.",
+      "download": "Download video",
+      "processAnother": "Behandl en til"
+    },
+    "failed": {
+      "title": "Behandling mislykkedes",
+      "subtitle": "Noget gik galt. Prøv igen.",
+      "tryAgain": "Prøv igen"
+    },
+    "signIn": {
+      "title": "Log ind for at komme i gang",
+      "subtitle": "Log ind for at uploade og behandle videoer.",
+      "highlight": "Din første video er gratis!",
+      "cta": "Log ind"
+    },
+    "dropzone": {
+      "title": "Upload din video",
+      "titleDrag": "Slip videoen her",
+      "subtitle": "Træk og slip din fil her, eller klik for at gennemse. MP4, MOV eller AVI op til 2GB.",
+      "browse": "Gennemse filer"
+    },
+    "filePreview": {
+      "outputRatio": "Vælg outputformat",
+      "aiTracking": "AI-sporing aktiveret",
+      "uploading": "Uploader video...",
+      "analyzing": "Analyserer video...",
+      "analyzingNote": "Vent venligst mens vi analyserer videoen på vores server...",
+      "calculatingCredits": "Beregner kreditter...",
+      "waitingUpload": "Venter på upload...",
+      "analyzingVideo": "Analyserer video...",
+      "useCredits_one": "Brug {{count}} kredit til behandling",
+      "useCredits_other": "Brug {{count}} kreditter til behandling"
+    },
+    "paymentDialog": {
+      "title": "Ordreresumé",
+      "subtitle": "AI-videoramme til {{ratio}}",
+      "useCredits_one": "Brug {{count}} kredit",
+      "useCredits_other": "Brug {{count}} kreditter",
+      "insufficientCredits": "Utilstrækkelige kreditter",
+      "needMoreCredits_one": "Du har brug for {{count}} kredit mere for at behandle denne video.",
+      "needMoreCredits_other": "Du har brug for {{count}} kreditter mere for at behandle denne video.",
+      "purchaseQty": "Indkøbsantal",
+      "total": "I alt:",
+      "buyCredits_one": "Køb {{count}} kredit",
+      "buyCredits_other": "Køb {{count}} kreditter",
+      "viewPlans": "Se abonnementsplaner",
+      "securedByStripe": "Betalinger sikret af Stripe"
+    },
+    "toasts": {
+      "videoReady": "Video klar!",
+      "videoReadyDesc": "Din automatisk indrammede video er klar til download.",
+      "processingFailed": "Behandling mislykkedes",
+      "processingFailedDesc": "Noget gik galt. Prøv igen.",
+      "uploadFailed": "Upload mislykkedes",
+      "processingStarted": "Behandling startet",
+      "processingStartedDesc": "Din video indrammes automatisk. Det kan tage et par minutter.",
+      "creditsSimulated": "Kreditter tilføjet (Simuleret)",
+      "creditsSimulatedDesc": "{{count}} kreditter tilføjet.",
+      "portalError": "Fejl"
+    }
+  },
+  "loginDialog": {
+    "title": "Log ind",
+    "description": "Vælg din foretrukne loginmetode for at fortsætte.",
+    "freeCreditBadge": "Få 1 gratis kredit ved dit første login",
+    "continueWithGoogle": "Fortsæt med Google",
+    "orWithEmail": "Eller med e-mail",
+    "emailPlaceholder": "navn@eksempel.dk",
+    "sendMagicLink": "Send magisk link",
+    "checkInbox": "Tjek din indbakke!",
+    "magicLinkSentDesc": "Vi har sendt et login-link til {{email}}.",
+    "tryAnotherEmail": "Prøv en anden e-mail",
+    "toasts": {
+      "magicLinkSent": "Magisk link sendt",
+      "magicLinkSentDesc": "Tjek din e-mail for login-linket.",
+      "errorDesc": "Kunne ikke sende magisk link"
+    }
+  },
+  "notFound": {
+    "title": "404 Side ikke fundet",
+    "subtitle": "Glemte du at tilføje siden til routeren?"
+  }
+}

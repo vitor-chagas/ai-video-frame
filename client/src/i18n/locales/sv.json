@@ -1,0 +1,193 @@
+{
+  "common": {
+    "loading": "Laddar...",
+    "error": "Fel",
+    "cancel": "Avbryt",
+    "signIn": "Logga in",
+    "logOut": "Logga ut"
+  },
+  "layout": {
+    "footer": "© 2026 AI Video Frame. Alla rättigheter förbehållna."
+  },
+  "home": {
+    "badge": "Nu med stöd för 4K-export",
+    "hero": {
+      "title": "Intelligent bildkomposition för dina videor.",
+      "subtitle": "Låt AI automatiskt beskära liggande videor till stående format. Perfekt för TikTok, Reels och Shorts."
+    },
+    "pricing": {
+      "payg": {
+        "title": "Betala per användning",
+        "badge": "FÖRSTA GRATIS",
+        "price": "$0.99",
+        "priceUnit": "/kredit",
+        "creditExplain": "1 Kredit = 1 Video (upp till 5 min)",
+        "overageNote": "Videor längre än 5 min kostar +1 kredit per extra minut.",
+        "feature1": "Smart AI-bildkomposition",
+        "feature2": "4K-kvalitetsexport",
+        "feature3": "Inget vattenmärke",
+        "cta": "Köp krediter",
+        "ctaLoading": "Laddar..."
+      },
+      "monthly": {
+        "title": "Månatlig skapare",
+        "badge": "MEST POPULÄR",
+        "price": "$9.99",
+        "priceUnit": "/månad",
+        "credits": "12 krediter varje månad.",
+        "feature1": "Spara på varje video",
+        "feature2": "Prioriterad bearbetning",
+        "feature3": "12 krediter inkluderade",
+        "cta": "Prenumerera",
+        "ctaLoading": "Laddar..."
+      },
+      "yearly": {
+        "title": "Årsplan Pro",
+        "price": "$107.88",
+        "priceUnit": "/år",
+        "credits": "144 krediter (12 per månad).",
+        "feature1": "Bästa värdet för proffs",
+        "feature2": "Prioriterad bearbetning",
+        "feature3": "144 krediter totalt",
+        "cta": "Välj årsplan",
+        "ctaLoading": "Laddar..."
+      },
+      "footnote": "*1 kredit täcker de första 5 minuterna av en video. Varje extra minut (eller del därav) kostar 1 extra kredit."
+    },
+    "api": {
+      "title": "Bygg med vårt API",
+      "subtitle": "Integrera AI-videobeskärning direkt i din app. Prenumerera och hämta din API-nyckel på RapidAPI.",
+      "ctaRapidApi": "Visa på RapidAPI",
+      "ctaApiDoc": "Visa API-dokumentation"
+    },
+    "contact": {
+      "title": "Har du frågor eller feedback?",
+      "subtitle": "Vi strävar alltid efter att förbättras. Hör av dig om du har funktionsönskemål, hittat en bugg eller bara vill säga hej!",
+      "cta": "Skicka e-post"
+    },
+    "quantityDialog": {
+      "title": "Välj antal",
+      "subtitle": "Betala per användning-krediter",
+      "price": "$0.99",
+      "priceUnit": "/st",
+      "label": "Hur många krediter behöver du?",
+      "total": "Totalt:",
+      "cta_one": "Köp {{count}} kredit",
+      "cta_other": "Köp {{count}} krediter",
+      "secureCheckout": "Säker betalning via Stripe"
+    },
+    "toasts": {
+      "creditsAdded": "Krediter tillagda",
+      "creditsAddedDesc": "{{credits}} krediter har lagts till ditt konto.",
+      "paymentPending": "Betalning väntar",
+      "paymentPendingDesc": "Din betalning bearbetas fortfarande.",
+      "paymentCancelled": "Betalning avbruten",
+      "paymentCancelledDesc": "Du kan försöka igen när som helst.",
+      "signInRequired": "Inloggning krävs",
+      "signInRequiredDesc": "Vänligen logga in för att köpa krediter.",
+      "activeSubscription": "Aktiv prenumeration",
+      "activeSubscriptionDesc": "Du har redan en aktiv prenumeration. Hantera den via portalen 'Hantera prenumeration' om du vill ändra din plan.",
+      "creditsSimulated": "Krediter tillagda (Simulerat)",
+      "creditsSimulatedDesc": "Ditt kreditsaldo har uppdaterats."
+    }
+  },
+  "uploadBox": {
+    "checkingSessions": "Kontrollerar aktiva sessioner...",
+    "manageSubscription": "Hantera prenumeration",
+    "credits_one": "{{count}} kredit",
+    "credits_other": "{{count}} krediter",
+    "processing": {
+      "title": "Bearbetar din video",
+      "subtitle": "Vår AI spårar motiv och ramar automatiskt in till {{ratio}}.",
+      "initializing": "Initierar...",
+      "analyzing": "AI analyserar bildrutor...",
+      "finalizing": "Slutför din video...",
+      "progressNote_analyzing": "AI spårar motiv och ramar automatiskt in...",
+      "progressNote_finalizing": "Slår ihop ljud och sparar filer. Nästan klart!",
+      "progressNote_setup": "Konfigurerar AI-posdetektering..."
+    },
+    "completed": {
+      "title": "Din video är klar!",
+      "subtitle": "Automatiskt inramad till {{ratio}} med AI-motivspårning.",
+      "download": "Ladda ner video",
+      "processAnother": "Bearbeta en till"
+    },
+    "failed": {
+      "title": "Bearbetning misslyckades",
+      "subtitle": "Något gick fel. Försök igen.",
+      "tryAgain": "Försök igen"
+    },
+    "signIn": {
+      "title": "Logga in för att börja",
+      "subtitle": "Logga in för att ladda upp och bearbeta videor.",
+      "highlight": "Din första video bekostas av oss!",
+      "cta": "Logga in"
+    },
+    "dropzone": {
+      "title": "Ladda upp din video",
+      "titleDrag": "Släpp videon här",
+      "subtitle": "Dra och släpp din fil här, eller klicka för att bläddra. MP4, MOV eller AVI upp till 2GB.",
+      "browse": "Bläddra bland filer"
+    },
+    "filePreview": {
+      "outputRatio": "Välj utdataformat",
+      "aiTracking": "AI-spårning aktiverad",
+      "uploading": "Laddar upp video...",
+      "analyzing": "Analyserar video...",
+      "analyzingNote": "Vänta medan vi analyserar videon på vår server...",
+      "calculatingCredits": "Beräknar krediter...",
+      "waitingUpload": "Väntar på uppladdning...",
+      "analyzingVideo": "Analyserar video...",
+      "useCredits_one": "Använd {{count}} kredit för att bearbeta",
+      "useCredits_other": "Använd {{count}} krediter för att bearbeta"
+    },
+    "paymentDialog": {
+      "title": "Ordersammanfattning",
+      "subtitle": "AI-videoram till {{ratio}}",
+      "useCredits_one": "Använd {{count}} kredit",
+      "useCredits_other": "Använd {{count}} krediter",
+      "insufficientCredits": "Otillräckliga krediter",
+      "needMoreCredits_one": "Du behöver {{count}} kredit till för att bearbeta denna video.",
+      "needMoreCredits_other": "Du behöver {{count}} krediter till för att bearbeta denna video.",
+      "purchaseQty": "Inköpsantal",
+      "total": "Totalt:",
+      "buyCredits_one": "Köp {{count}} kredit",
+      "buyCredits_other": "Köp {{count}} krediter",
+      "viewPlans": "Visa prenumerationsplaner",
+      "securedByStripe": "Betalningar säkrade av Stripe"
+    },
+    "toasts": {
+      "videoReady": "Video klar!",
+      "videoReadyDesc": "Din automatiskt inramade video är klar att ladda ned.",
+      "processingFailed": "Bearbetning misslyckades",
+      "processingFailedDesc": "Något gick fel. Försök igen.",
+      "uploadFailed": "Uppladdning misslyckades",
+      "processingStarted": "Bearbetning påbörjad",
+      "processingStartedDesc": "Din video ramar automatiskt in. Det kan ta några minuter.",
+      "creditsSimulated": "Krediter tillagda (Simulerat)",
+      "creditsSimulatedDesc": "{{count}} krediter har lagts till.",
+      "portalError": "Fel"
+    }
+  },
+  "loginDialog": {
+    "title": "Logga in",
+    "description": "Välj din föredragna inloggningsmetod för att fortsätta.",
+    "freeCreditBadge": "Få 1 gratis kredit vid din första inloggning",
+    "continueWithGoogle": "Fortsätt med Google",
+    "orWithEmail": "Eller med e-post",
+    "emailPlaceholder": "namn@exempel.se",
+    "sendMagicLink": "Skicka magisk länk",
+    "checkInbox": "Kolla din inkorg!",
+    "magicLinkSentDesc": "Vi har skickat en inloggningslänk till {{email}}.",
+    "tryAnotherEmail": "Prova en annan e-post",
+    "toasts": {
+      "magicLinkSent": "Magisk länk skickad",
+      "magicLinkSentDesc": "Kolla din e-post för inloggningslänken.",
+      "errorDesc": "Misslyckades att skicka magisk länk"
+    }
+  },
+  "notFound": {
+    "title": "404 Sidan hittades inte",
+    "subtitle": "Glömde du att lägga till sidan i routern?"
+  }
+}

@@ -1,0 +1,193 @@
+{
+  "common": {
+    "loading": "Laden...",
+    "error": "Fehler",
+    "cancel": "Abbrechen",
+    "signIn": "Anmelden",
+    "logOut": "Abmelden"
+  },
+  "layout": {
+    "footer": "© 2026 AI Video Frame. Alle Rechte vorbehalten."
+  },
+  "home": {
+    "badge": "Jetzt mit 4K-Export-Unterstützung",
+    "hero": {
+      "title": "Intelligentes Framing für Ihre Videos.",
+      "subtitle": "Lassen Sie KI automatisch Querformat-Videos in vertikale Formate zuschneiden. Perfekt für TikTok, Reels und Shorts."
+    },
+    "pricing": {
+      "payg": {
+        "title": "Pay-as-you-go",
+        "badge": "ERSTES KOSTENLOS",
+        "price": "$0.99",
+        "priceUnit": "/Kredit",
+        "creditExplain": "1 Kredit = 1 Video (bis zu 5 Min)",
+        "overageNote": "Videos länger als 5 Min kosten +1 Kredit pro zusätzliche Minute.",
+        "feature1": "Intelligentes KI-Framing",
+        "feature2": "4K-Qualitätsexport",
+        "feature3": "Kein Wasserzeichen",
+        "cta": "Credits kaufen",
+        "ctaLoading": "Laden..."
+      },
+      "monthly": {
+        "title": "Monatlicher Creator",
+        "badge": "AM BELIEBTESTEN",
+        "price": "$9.99",
+        "priceUnit": "/Monat",
+        "credits": "12 Credits jeden Monat.",
+        "feature1": "Bei jedem Video sparen",
+        "feature2": "Prioritätsverarbeitung",
+        "feature3": "12 Credits inklusive",
+        "cta": "Abonnieren",
+        "ctaLoading": "Laden..."
+      },
+      "yearly": {
+        "title": "Jährliches Pro",
+        "price": "$107.88",
+        "priceUnit": "/Jahr",
+        "credits": "144 Credits (12 pro Monat).",
+        "feature1": "Bestes Preis-Leistungs-Verhältnis",
+        "feature2": "Prioritätsverarbeitung",
+        "feature3": "144 Credits gesamt",
+        "cta": "Jahresplan",
+        "ctaLoading": "Laden..."
+      },
+      "footnote": "*1 Kredit deckt die ersten 5 Minuten eines Videos ab. Jede zusätzliche Minute (oder Teil davon) kostet 1 weiteren Kredit."
+    },
+    "api": {
+      "title": "Mit unserer API entwickeln",
+      "subtitle": "Integrieren Sie KI-Video-Reframing direkt in Ihre App. Abonnieren Sie und holen Sie sich Ihren API-Schlüssel auf RapidAPI.",
+      "ctaRapidApi": "Auf RapidAPI ansehen",
+      "ctaApiDoc": "API-Dokumentation ansehen"
+    },
+    "contact": {
+      "title": "Fragen oder Feedback?",
+      "subtitle": "Wir sind immer bestrebt, uns zu verbessern. Melden Sie sich, wenn Sie Funktionsanfragen haben, einen Fehler gefunden haben oder einfach Hallo sagen möchten!",
+      "cta": "E-Mail senden"
+    },
+    "quantityDialog": {
+      "title": "Menge auswählen",
+      "subtitle": "Pay-as-you-go Credits",
+      "price": "$0.99",
+      "priceUnit": "/Stk",
+      "label": "Wie viele Credits benötigen Sie?",
+      "total": "Gesamt:",
+      "cta_one": "{{count}} Kredit kaufen",
+      "cta_other": "{{count}} Credits kaufen",
+      "secureCheckout": "Sicherer Checkout über Stripe"
+    },
+    "toasts": {
+      "creditsAdded": "Credits hinzugefügt",
+      "creditsAddedDesc": "{{credits}} Credits wurden erfolgreich Ihrem Konto hinzugefügt.",
+      "paymentPending": "Zahlung ausstehend",
+      "paymentPendingDesc": "Ihre Zahlung wird noch verarbeitet.",
+      "paymentCancelled": "Zahlung abgebrochen",
+      "paymentCancelledDesc": "Sie können es jederzeit erneut versuchen.",
+      "signInRequired": "Anmeldung erforderlich",
+      "signInRequiredDesc": "Bitte melden Sie sich an, um Credits zu kaufen.",
+      "activeSubscription": "Aktives Abonnement",
+      "activeSubscriptionDesc": "Sie haben bereits ein aktives Abonnement. Verwalten Sie es über das Portal 'Abonnement verwalten', wenn Sie Ihren Plan ändern möchten.",
+      "creditsSimulated": "Credits hinzugefügt (Simuliert)",
+      "creditsSimulatedDesc": "Ihr Kreditguthaben wurde aktualisiert."
+    }
+  },
+  "uploadBox": {
+    "checkingSessions": "Aktive Sitzungen werden geprüft...",
+    "manageSubscription": "Abonnement verwalten",
+    "credits_one": "{{count}} Kredit",
+    "credits_other": "{{count}} Credits",
+    "processing": {
+      "title": "Ihr Video wird verarbeitet",
+      "subtitle": "Unsere KI verfolgt Motive und rahmt automatisch auf {{ratio}} ein.",
+      "initializing": "Initialisierung...",
+      "analyzing": "KI analysiert Frames...",
+      "finalizing": "Video wird fertiggestellt...",
+      "progressNote_analyzing": "KI verfolgt Motive und rahmt automatisch ein...",
+      "progressNote_finalizing": "Audio wird zusammengeführt und Dateien werden gespeichert. Fast fertig!",
+      "progressNote_setup": "KI-Pose-Erkennung wird eingerichtet..."
+    },
+    "completed": {
+      "title": "Ihr Video ist fertig!",
+      "subtitle": "Automatisch auf {{ratio}} mit KI-Motivverfolgung eingerahmt.",
+      "download": "Video herunterladen",
+      "processAnother": "Weiteres verarbeiten"
+    },
+    "failed": {
+      "title": "Verarbeitung fehlgeschlagen",
+      "subtitle": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
+      "tryAgain": "Erneut versuchen"
+    },
+    "signIn": {
+      "title": "Anmelden um zu beginnen",
+      "subtitle": "Melden Sie sich an, um Videos hochzuladen und zu verarbeiten.",
+      "highlight": "Ihr erstes Video ist kostenlos!",
+      "cta": "Anmelden"
+    },
+    "dropzone": {
+      "title": "Video hochladen",
+      "titleDrag": "Video hier ablegen",
+      "subtitle": "Datei hier ablegen oder klicken, um zu durchsuchen. MP4, MOV oder AVI bis zu 2GB.",
+      "browse": "Dateien durchsuchen"
+    },
+    "filePreview": {
+      "outputRatio": "Ausgabeformat auswählen",
+      "aiTracking": "KI-Verfolgung aktiviert",
+      "uploading": "Video wird hochgeladen...",
+      "analyzing": "Video wird analysiert...",
+      "analyzingNote": "Bitte warten Sie, während wir das Video auf unserem Server analysieren...",
+      "calculatingCredits": "Credits werden berechnet...",
+      "waitingUpload": "Warten auf Upload...",
+      "analyzingVideo": "Video wird analysiert...",
+      "useCredits_one": "{{count}} Kredit für Verarbeitung verwenden",
+      "useCredits_other": "{{count}} Credits für Verarbeitung verwenden"
+    },
+    "paymentDialog": {
+      "title": "Bestellübersicht",
+      "subtitle": "KI-Videorahmen auf {{ratio}}",
+      "useCredits_one": "{{count}} Kredit verwenden",
+      "useCredits_other": "{{count}} Credits verwenden",
+      "insufficientCredits": "Unzureichende Credits",
+      "needMoreCredits_one": "Sie benötigen {{count}} weiteren Kredit, um dieses Video zu verarbeiten.",
+      "needMoreCredits_other": "Sie benötigen {{count}} weitere Credits, um dieses Video zu verarbeiten.",
+      "purchaseQty": "Kaufmenge",
+      "total": "Gesamt:",
+      "buyCredits_one": "{{count}} Kredit kaufen",
+      "buyCredits_other": "{{count}} Credits kaufen",
+      "viewPlans": "Abonnementpläne anzeigen",
+      "securedByStripe": "Zahlungen gesichert durch Stripe"
+    },
+    "toasts": {
+      "videoReady": "Video fertig!",
+      "videoReadyDesc": "Ihr automatisch eingerahmtes Video ist zum Herunterladen bereit.",
+      "processingFailed": "Verarbeitung fehlgeschlagen",
+      "processingFailedDesc": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
+      "uploadFailed": "Upload fehlgeschlagen",
+      "processingStarted": "Verarbeitung gestartet",
+      "processingStartedDesc": "Ihr Video wird automatisch eingerahmt. Dies kann einige Minuten dauern.",
+      "creditsSimulated": "Credits hinzugefügt (Simuliert)",
+      "creditsSimulatedDesc": "{{count}} Credits erfolgreich hinzugefügt.",
+      "portalError": "Fehler"
+    }
+  },
+  "loginDialog": {
+    "title": "Anmelden",
+    "description": "Wählen Sie Ihre bevorzugte Anmeldemethode, um fortzufahren.",
+    "freeCreditBadge": "1 kostenlosen Kredit bei Ihrer ersten Anmeldung erhalten",
+    "continueWithGoogle": "Mit Google fortfahren",
+    "orWithEmail": "Oder mit E-Mail",
+    "emailPlaceholder": "name@beispiel.de",
+    "sendMagicLink": "Magic Link senden",
+    "checkInbox": "Prüfen Sie Ihren Posteingang!",
+    "magicLinkSentDesc": "Wir haben einen Anmeldelink an {{email}} gesendet.",
+    "tryAnotherEmail": "Andere E-Mail versuchen",
+    "toasts": {
+      "magicLinkSent": "Magic Link gesendet",
+      "magicLinkSentDesc": "Prüfen Sie Ihre E-Mail für den Anmeldelink.",
+      "errorDesc": "Magic Link konnte nicht gesendet werden"
+    }
+  },
+  "notFound": {
+    "title": "404 Seite nicht gefunden",
+    "subtitle": "Haben Sie vergessen, die Seite zum Router hinzuzufügen?"
+  }
+}
