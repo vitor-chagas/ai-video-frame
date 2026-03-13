@@ -237,6 +237,41 @@ export default function Home() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
+          className="w-full max-w-2xl mx-auto mt-16 text-center"
+        >
+          <div className="bg-white border border-[hsl(38,10%,90%)] rounded-3xl p-10 md:p-14 shadow-sm hover:shadow-md transition-shadow flex flex-col items-center gap-6">
+            <div className="flex items-center gap-2">
+              <svg width="120" height="28" viewBox="0 0 120 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="RapidAPI">
+                <path d="M10.5 2L2 14.5L8 14.5L5.5 26L18 11.5L11.5 11.5L18 2L10.5 2Z" fill="#1a1a1a"/>
+                <text x="24" y="20" fontFamily="sans-serif" fontWeight="700" fontSize="15" fill="#1a1a1a">Rapid</text>
+                <text x="69" y="20" fontFamily="sans-serif" fontWeight="400" fontSize="15" fill="#1a1a1a">API</text>
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-2xl md:text-3xl font-serif font-bold text-[hsl(24,10%,10%)] mb-3">
+                Build with our API
+              </h2>
+              <p className="text-[hsl(24,5%,40%)] text-base max-w-md mx-auto">
+                Integrate AI video reframing directly into your own app. Subscribe and get your API key on RapidAPI.
+              </p>
+            </div>
+            <a
+              href="https://rapidapi.com/vitorvieirachagas/api/ai-video-frame/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-[hsl(24,10%,10%)] text-white font-medium hover:bg-[hsl(24,10%,20%)] transition-all transform hover:scale-[1.02] active:scale-[0.98]"
+            >
+              View on RapidAPI
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </a>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
           className="w-full max-w-2xl mx-auto mt-32 text-center"
         >
           <div className="bg-white border border-[hsl(38,10%,90%)] rounded-3xl p-10 md:p-16 shadow-sm hover:shadow-md transition-shadow">
