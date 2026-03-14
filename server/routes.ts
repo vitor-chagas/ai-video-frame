@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { authStorage } from "./auth/storage";
 import { setupAuth, registerAuthRoutes, isAuthenticated, getUserId } from "./auth";
+import { log } from "./index";
 import path from "path";
 import { spawn } from "child_process";
 import fs from "fs";
@@ -82,7 +83,7 @@ export async function cleanupExpiredVideos() {
         const filePath = path.join(dir, file);
         
         if (processingPaths.has(filePath)) {
-          console.log(`[Cleanup] Protected active file: ${filePath}`);
+          log(`Protected active file: ${filePath}`, "Cleanup");
           continue;
         }
 
@@ -90,7 +91,7 @@ export async function cleanupExpiredVideos() {
         const age = now.getTime() - stats.mtime.getTime();
         if (age > CLEANUP_THRESHOLD_MS) {
           await unlinkAsync(filePath).catch(() => {});
-          console.log(`[Cleanup] Deleted expired file: ${filePath}`);
+          log(`Deleted expired file: ${filePath}`, "Cleanup");
         }
       }
     }
@@ -161,7 +162,7 @@ export async function registerRoutes(
 
     // Wipe out "uploaded" videos immediately on refresh - always start fresh unless processing/done
     if (latest.status === "uploaded") {
-      console.log(`[API] Wiping abandoned upload: ${latest.id}`);
+      log(`Wiping abandoned upload: ${latest.id}`, "API");
       if (latest.originalPath && fs.existsSync(latest.originalPath)) {
         await unlinkAsync(latest.originalPath).catch(() => {});
       }

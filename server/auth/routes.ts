@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { authStorage } from "./storage";
 import { isAuthenticated, getUserId } from "./auth";
 import { cleanupUserFiles } from "../routes";
+import { log } from "../index";
 import { Resend } from "resend";
 import jwt from "jsonwebtoken";
 import { randomBytes, timingSafeEqual } from "crypto";
@@ -193,7 +194,7 @@ export function registerAuthRoutes(app: Express): void {
           console.error("[Auth] Magic link login error:", err);
           return next(err);
         }
-        console.log(`[Auth] User ${user!.id} logged in via magic link`);
+        log(`User ${user!.id} logged in via magic link`, "Auth");
         res.redirect("/");
       });
     } catch (error) {

@@ -7,6 +7,7 @@ import type { Express, RequestHandler } from "express";
 import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { authStorage } from "./storage";
+import { log } from "../index";
 
 const OIDC_CACHE_MAX_AGE = 60 * 60 * 1000; // 1 hour
 const OIDC_SCOPE = "openid email profile";
@@ -92,7 +93,7 @@ export async function setupAuth(app: Express) {
     try {
       const claims = tokens.claims();
       if (!claims) throw new Error("No claims found in token");
-      console.log(`[Auth] Verify successful for user: ${claims.email || claims.sub}`);
+      log(`Verify successful for user: ${claims.email || claims.sub}`, "Auth");
       const user = await upsertUser(claims);
       const sessionUser = {
         id: user.id,
@@ -109,16 +110,16 @@ export async function setupAuth(app: Express) {
   };
 
   passport.serializeUser((user: any, cb) => {
-    console.log(`[Auth] Serializing user: ${user.id}`);
+    log(`Serializing user: ${user.id}`, "Auth");
     cb(null, user.id);
   });
 
   passport.deserializeUser(async (id: string, cb) => {
     try {
-      console.log(`[Auth] Deserializing user: ${id}`);
+      log(`Deserializing user: ${id}`, "Auth");
       const user = await authStorage.getUser(id);
       if (!user) {
-        console.log(`[Auth] User ${id} not found in database during deserialization`);
+        log(`User ${id} not found in database during deserialization`, "Auth");
       }
       cb(null, user);
     } catch (error) {
@@ -149,7 +150,7 @@ export async function setupAuth(app: Express) {
     }
   }
 
-  console.log(`[Auth] Initializing OIDC strategy with callback URL: ${callbackURL}`);
+  log(`Initializing OIDC strategy with callback URL: ${callbackURL}`, "Auth");
 
   const strategy = new Strategy(
     {
@@ -169,7 +170,7 @@ export async function setupAuth(app: Express) {
   });
 
   app.get("/api/callback", (req, res, next) => {
-    console.log(`[Auth] Callback triggered. Query: ${JSON.stringify(req.query)}`);
+    log(`Callback triggered. Query: ${JSON.stringify(req.query)}`, "Auth");
     
     passport.authenticate("oidc", (err: any, user: any, info: any) => {
       if (err) {
@@ -191,7 +192,7 @@ export async function setupAuth(app: Express) {
           console.error("[Auth] req.login error:", loginErr);
           return next(loginErr);
         }
-        console.log(`[Auth] User ${user.id} logged in successfully, session established`);
+        log(`User ${user.id} logged in successfully, session established`, "Auth");
         res.redirect("/");
       });
     })(req, res, next);

@@ -107,7 +107,7 @@ app.use((req, res, next) => {
     try {
       const staleVideos = await storage.deleteStaleUploadedVideos(5 * 60 * 1000);
       if (staleVideos.length > 0) {
-        console.log(`[Cleanup] Removed ${staleVideos.length} stale uploaded videos`);
+        log(`Removed ${staleVideos.length} stale uploaded videos`, "Cleanup");
       }
     } catch (err) {
       console.error("Stale video cleanup failed:", err);
