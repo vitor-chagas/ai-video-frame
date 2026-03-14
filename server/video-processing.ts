@@ -3,6 +3,7 @@ import path from "path";
 import fs from "fs";
 import { promisify } from "util";
 import { execFile } from "child_process";
+import { log } from "./index";
 
 const execFileAsync = promisify(execFile);
 export const unlinkAsync = promisify(fs.unlink);
@@ -51,7 +52,7 @@ export async function getVideoDuration(filePath: string): Promise<number | null>
       duration = parseFloat(stdoutFormat.trim());
     }
 
-    console.log(`[FFprobe] Duration for ${filePath}: ${duration}s`);
+    log(`Duration for ${filePath}: ${duration}s`, "FFprobe");
     return isNaN(duration) ? null : Math.round(duration);
   } catch (error) {
     console.error("Error getting video duration:", error);
