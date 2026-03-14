@@ -60,14 +60,15 @@ export function registerAuthRoutes(app: Express): void {
       const { data, error } = await resend.emails.send({
         from: "AI Video Frame <contact@aivideoframe.com>",
         to: email,
-        subject: "Login to AI Video Frame",
+        subject: "Your sign-in link for AI Video Frame",
+        text: `Sign in to AI Video Frame\n\nClick the link below to sign in. This link expires in 15 minutes.\n\n${magicLink}\n\nIf you didn't request this, you can safely ignore this email.\n\n© 2026 AI Video Frame`,
         html: `
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login to AI Video Frame</title>
+  <title>Sign in to AI Video Frame</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f9f6f1; color: #1a1512;">
   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f9f6f1;">
@@ -76,7 +77,7 @@ export function registerAuthRoutes(app: Express): void {
         <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse;">
           <tr>
             <td align="center" style="padding: 0 0 30px 0;">
-              <img src="${baseUrl}/logo.png" alt="AI Video Frame" width="180" style="display: block; border: 0;" />
+              <p style="margin: 0; font-family: 'Georgia', serif; font-size: 22px; font-weight: bold; color: #1a1512; letter-spacing: -0.5px;">AI Video Frame</p>
             </td>
           </tr>
           <tr>
@@ -85,13 +86,13 @@ export function registerAuthRoutes(app: Express): void {
                 <tr>
                   <td style="padding: 0 0 20px 0;">
                     <h1 style="margin: 0; font-family: 'Georgia', serif; font-size: 28px; line-height: 1.2; font-weight: bold; color: #1a1512;">
-                      Magic link for your login.
+                      Your sign-in link.
                     </h1>
                   </td>
                 </tr>
                 <tr>
                   <td style="padding: 0 0 30px 0; font-size: 16px; line-height: 1.6; color: #5c554f;">
-                    Click the button below to securely login to your AI Video Frame account. This link will expire in 15 minutes.
+                    Click the button below to securely sign in to your AI Video Frame account. This link will expire in 15 minutes.
                   </td>
                 </tr>
                 <tr>
@@ -112,7 +113,7 @@ export function registerAuthRoutes(app: Express): void {
           </tr>
           <tr>
             <td style="padding: 30px 40px; text-align: center; font-size: 12px; color: #8c857f;">
-              &copy; 2026 AI Video Frame. All rights reserved.
+              &copy; 2026 AI Video Frame. All rights reserved.<br>If you didn't request this email, you can safely ignore it.
             </td>
           </tr>
         </table>
