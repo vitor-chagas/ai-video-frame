@@ -19,6 +19,15 @@ const magicLinkLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+const magicLinkEmailLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 3, // max 3 magic links per email address per hour
+  keyGenerator: (req) => (req.body?.email ?? "").toLowerCase(),
+  message: { message: "Too many magic link requests for this email, please try again later" },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Register auth-specific routes
 export function registerAuthRoutes(app: Express): void {
   // Get current authenticated user
@@ -34,9 +43,10 @@ export function registerAuthRoutes(app: Express): void {
   });
 
   // Request a magic link
-  app.post("/api/auth/magic-link", magicLinkLimiter, async (req, res) => {
+  app.post("/api/auth/magic-link", magicLinkLimiter, magicLinkEmailLimiter, async (req, res) => {
     const { email } = req.body;
-    if (!email || !email.includes("@")) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
       return res.status(400).json({ message: "Invalid email address" });
     }
 
