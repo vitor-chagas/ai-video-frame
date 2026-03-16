@@ -107,6 +107,13 @@ export async function registerRoutes(
   await setupAuth(app);
   registerAuthRoutes(app);
 
+  // Security contact info for researchers
+  app.get("/.well-known/security.txt", (_req, res) => {
+    res.type("text/plain").send(
+      `Contact: mailto:contact@aivideoframe.com\nExpires: 2027-01-01T00:00:00.000Z\n`
+    );
+  });
+
   // Public API v1 (RapidAPI)
   app.use("/api/v1/videos", v1VideosRouter);
   setupSwaggerDocs(app);
