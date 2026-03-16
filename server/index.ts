@@ -17,7 +17,16 @@ const app = express();
 // Trust proxy MUST be set before any middleware (like session) to correctly handle HTTPS behind Railway's load balancer
 app.set("trust proxy", 1);
 
-app.use(helmet());
+app.use(helmet({
+  permissionsPolicy: {
+    features: {
+      camera: [],
+      microphone: [],
+      geolocation: [],
+      payment: [],
+    },
+  },
+}));
 const httpServer = createServer(app);
 
 declare module "http" {
