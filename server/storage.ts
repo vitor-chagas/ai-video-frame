@@ -5,12 +5,20 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
+import fs from "fs";
+import { promisify } from "util";
+
+const unlinkAsync = promisify(fs.unlink);
 
 export interface IStorage {
   getVideo(id: string): Promise<Video | undefined>;
   getVideosByUser(userId: string): Promise<Video[]>;
   createVideo(video: InsertVideo): Promise<Video>;
   updateVideoStatus(id: string, status: string, processedPath?: string): Promise<Video | undefined>;
+  getAllProcessingVideos(): Promise<Video[]>;
+  deleteVideo(id: string): Promise<void>;
+  deleteAllUserVideos(userId: string): Promise<void>;
+  deleteStaleUploadedVideos(maxAgeMs: number): Promise<Video[]>;
 
   getPayment(id: string): Promise<Payment | undefined>;
   getPaymentByVideoId(videoId: string): Promise<Payment | undefined>;
@@ -38,6 +46,47 @@ export class DatabaseStorage implements IStorage {
     if (processedPath) updateData.processedPath = processedPath;
     const [video] = await db.update(videos).set(updateData).where(eq(videos.id, id)).returning();
     return video;
+  }
+
+  async getAllProcessingVideos(): Promise<Video[]> {
+    return await db.select().from(videos).where(eq(videos.status, "processing"));
+  }
+
+  async deleteVideo(id: string): Promise<void> {
+    await db.delete(videos).where(eq(videos.id, id));
+  }
+
+  async deleteAllUserVideos(userId: string): Promise<void> {
+    await db.delete(videos).where(eq(videos.userId, userId));
+  }
+
+  async deleteStaleUploadedVideos(maxAgeMs: number): Promise<Video[]> {
+    const allVideos = await db.select().from(videos).where(eq(videos.status, "uploaded"));
+    const now = new Date();
+    const staleVideos: Video[] = [];
+    
+    for (const video of allVideos) {
+      const age = now.getTime() - new Date(video.createdAt || 0).getTime();
+      if (age > maxAgeMs) {
+        staleVideos.push(video);
+        
+        // Clean up physical files before deleting database record
+        if (video.originalPath && fs.existsSync(video.originalPath)) {
+          await unlinkAsync(video.originalPath).catch((err: any) => 
+            console.error(`Failed to delete file ${video.originalPath}:`, err)
+          );
+        }
+        if (video.processedPath && fs.existsSync(video.processedPath)) {
+          await unlinkAsync(video.processedPath).catch((err: any) => 
+            console.error(`Failed to delete file ${video.processedPath}:`, err)
+          );
+        }
+        
+        await this.deleteVideo(video.id);
+      }
+    }
+    
+    return staleVideos;
   }
 
   async getPayment(id: string): Promise<Payment | undefined> {

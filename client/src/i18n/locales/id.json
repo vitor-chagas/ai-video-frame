@@ -1,0 +1,193 @@
+{
+  "common": {
+    "loading": "Memuat...",
+    "error": "Kesalahan",
+    "cancel": "Batal",
+    "signIn": "Masuk",
+    "logOut": "Keluar"
+  },
+  "layout": {
+    "footer": "© 2026 AI Video Frame. Semua hak dilindungi."
+  },
+  "home": {
+    "badge": "Kini mendukung ekspor 4K",
+    "hero": {
+      "title": "Pembingkaian cerdas untuk video Anda.",
+      "subtitle": "Biarkan AI secara otomatis memotong video landscape ke format vertikal. Sempurna untuk TikTok, Reels, dan Shorts."
+    },
+    "pricing": {
+      "payg": {
+        "title": "Bayar sesuai penggunaan",
+        "badge": "PERTAMA GRATIS",
+        "price": "$0.99",
+        "priceUnit": "/kredit",
+        "creditExplain": "1 Kredit = 1 Video (hingga 5 menit)",
+        "overageNote": "Video lebih dari 5 menit dikenakan +1 kredit per menit tambahan.",
+        "feature1": "Pembingkaian AI Cerdas",
+        "feature2": "Ekspor Kualitas 4K",
+        "feature3": "Tanpa Watermark",
+        "cta": "Beli Kredit",
+        "ctaLoading": "Memuat..."
+      },
+      "monthly": {
+        "title": "Kreator Bulanan",
+        "badge": "PALING POPULER",
+        "price": "$9.99",
+        "priceUnit": "/bulan",
+        "credits": "12 Kredit setiap bulan.",
+        "feature1": "Hemat di setiap video",
+        "feature2": "Pemrosesan Prioritas",
+        "feature3": "12 Kredit Termasuk",
+        "cta": "Berlangganan",
+        "ctaLoading": "Memuat..."
+      },
+      "yearly": {
+        "title": "Pro Tahunan",
+        "price": "$107.88",
+        "priceUnit": "/tahun",
+        "credits": "144 Kredit (12 per bulan).",
+        "feature1": "Nilai terbaik untuk profesional",
+        "feature2": "Pemrosesan Prioritas",
+        "feature3": "Total 144 Kredit",
+        "cta": "Paket Tahunan",
+        "ctaLoading": "Memuat..."
+      },
+      "footnote": "*1 kredit mencakup 5 menit pertama video. Setiap menit tambahan (atau bagiannya) dikenakan biaya 1 kredit."
+    },
+    "api": {
+      "title": "Bangun dengan API kami",
+      "subtitle": "Integrasikan reframing video AI langsung ke aplikasi Anda. Berlangganan dan dapatkan kunci API Anda di RapidAPI.",
+      "ctaRapidApi": "Lihat di RapidAPI",
+      "ctaApiDoc": "Lihat Dokumentasi API"
+    },
+    "contact": {
+      "title": "Ada pertanyaan atau masukan?",
+      "subtitle": "Kami selalu berusaha untuk berkembang. Hubungi kami jika ada permintaan fitur, menemukan bug, atau hanya ingin menyapa!",
+      "cta": "Kirim Email"
+    },
+    "quantityDialog": {
+      "title": "Pilih Jumlah",
+      "subtitle": "Kredit bayar sesuai penggunaan",
+      "price": "$0.99",
+      "priceUnit": "/buah",
+      "label": "Berapa kredit yang Anda butuhkan?",
+      "total": "Total:",
+      "cta_one": "Beli {{count}} Kredit",
+      "cta_other": "Beli {{count}} Kredit",
+      "secureCheckout": "Checkout Aman via Stripe"
+    },
+    "toasts": {
+      "creditsAdded": "Kredit ditambahkan",
+      "creditsAddedDesc": "{{credits}} kredit berhasil ditambahkan ke akun Anda.",
+      "paymentPending": "Pembayaran tertunda",
+      "paymentPendingDesc": "Pembayaran Anda masih diproses.",
+      "paymentCancelled": "Pembayaran dibatalkan",
+      "paymentCancelledDesc": "Anda dapat mencoba lagi kapan saja.",
+      "signInRequired": "Masuk diperlukan",
+      "signInRequiredDesc": "Silakan masuk untuk membeli kredit.",
+      "activeSubscription": "Langganan Aktif",
+      "activeSubscriptionDesc": "Anda sudah memiliki langganan aktif. Kelola melalui portal 'Kelola Langganan' jika ingin mengubah paket.",
+      "creditsSimulated": "Kredit ditambahkan (Simulasi)",
+      "creditsSimulatedDesc": "Saldo kredit Anda telah diperbarui."
+    }
+  },
+  "uploadBox": {
+    "checkingSessions": "Memeriksa sesi aktif...",
+    "manageSubscription": "Kelola Langganan",
+    "credits_one": "{{count}} Kredit",
+    "credits_other": "{{count}} Kredit",
+    "processing": {
+      "title": "Memproses video Anda",
+      "subtitle": "AI kami melacak subjek dan membingkai otomatis ke {{ratio}}.",
+      "initializing": "Menginisialisasi...",
+      "analyzing": "AI menganalisis frame...",
+      "finalizing": "Menyelesaikan video Anda...",
+      "progressNote_analyzing": "AI melacak subjek dan membingkai otomatis...",
+      "progressNote_finalizing": "Menggabungkan audio dan menyimpan file. Hampir selesai!",
+      "progressNote_setup": "Menyiapkan deteksi pose AI..."
+    },
+    "completed": {
+      "title": "Video Anda siap!",
+      "subtitle": "Dibingkai otomatis ke {{ratio}} dengan pelacakan subjek AI.",
+      "download": "Unduh Video",
+      "processAnother": "Proses yang Lain"
+    },
+    "failed": {
+      "title": "Pemrosesan gagal",
+      "subtitle": "Ada yang salah. Silakan coba lagi.",
+      "tryAgain": "Coba Lagi"
+    },
+    "signIn": {
+      "title": "Masuk untuk memulai",
+      "subtitle": "Masuk untuk mengunggah dan memproses video.",
+      "highlight": "Video pertama Anda gratis dari kami!",
+      "cta": "Masuk"
+    },
+    "dropzone": {
+      "title": "Unggah video Anda",
+      "titleDrag": "Letakkan video di sini",
+      "subtitle": "Seret dan letakkan file di sini, atau klik untuk menelusuri. MP4, MOV, atau AVI hingga 2GB.",
+      "browse": "Telusuri File"
+    },
+    "filePreview": {
+      "outputRatio": "Pilih Rasio Output",
+      "aiTracking": "Pelacakan AI Aktif",
+      "uploading": "Mengunggah video...",
+      "analyzing": "Menganalisis video...",
+      "analyzingNote": "Harap tunggu sementara kami menganalisis video di server kami...",
+      "calculatingCredits": "Menghitung Kredit...",
+      "waitingUpload": "Menunggu Unggahan...",
+      "analyzingVideo": "Menganalisis Video...",
+      "useCredits_one": "Gunakan {{count}} Kredit untuk Memproses",
+      "useCredits_other": "Gunakan {{count}} Kredit untuk Memproses"
+    },
+    "paymentDialog": {
+      "title": "Ringkasan Pesanan",
+      "subtitle": "AI Video Frame ke {{ratio}}",
+      "useCredits_one": "Gunakan {{count}} Kredit",
+      "useCredits_other": "Gunakan {{count}} Kredit",
+      "insufficientCredits": "Kredit Tidak Cukup",
+      "needMoreCredits_one": "Anda membutuhkan {{count}} kredit lagi untuk memproses video ini.",
+      "needMoreCredits_other": "Anda membutuhkan {{count}} kredit lagi untuk memproses video ini.",
+      "purchaseQty": "Jumlah Pembelian",
+      "total": "Total:",
+      "buyCredits_one": "Beli {{count}} Kredit",
+      "buyCredits_other": "Beli {{count}} Kredit",
+      "viewPlans": "Lihat Paket Langganan",
+      "securedByStripe": "Pembayaran diamankan oleh Stripe"
+    },
+    "toasts": {
+      "videoReady": "Video siap!",
+      "videoReadyDesc": "Video yang dibingkai otomatis siap diunduh.",
+      "processingFailed": "Pemrosesan gagal",
+      "processingFailedDesc": "Ada yang salah. Silakan coba lagi.",
+      "uploadFailed": "Unggahan gagal",
+      "processingStarted": "Pemrosesan dimulai",
+      "processingStartedDesc": "Video Anda sedang dibingkai otomatis. Ini mungkin memerlukan beberapa menit.",
+      "creditsSimulated": "Kredit ditambahkan (Simulasi)",
+      "creditsSimulatedDesc": "{{count}} kredit berhasil ditambahkan.",
+      "portalError": "Kesalahan"
+    }
+  },
+  "loginDialog": {
+    "title": "Masuk",
+    "description": "Pilih metode masuk yang Anda inginkan untuk melanjutkan.",
+    "freeCreditBadge": "Dapatkan 1 kredit gratis saat masuk pertama kali",
+    "continueWithGoogle": "Lanjutkan dengan Google",
+    "orWithEmail": "Atau dengan email",
+    "emailPlaceholder": "nama@contoh.com",
+    "sendMagicLink": "Kirim Magic Link",
+    "checkInbox": "Periksa kotak masuk Anda!",
+    "magicLinkSentDesc": "Kami telah mengirimkan link masuk ke {{email}}.",
+    "tryAnotherEmail": "Coba email lain",
+    "toasts": {
+      "magicLinkSent": "Magic link terkirim",
+      "magicLinkSentDesc": "Periksa email Anda untuk link masuk.",
+      "errorDesc": "Gagal mengirim magic link"
+    }
+  },
+  "notFound": {
+    "title": "404 Halaman Tidak Ditemukan",
+    "subtitle": "Apakah Anda lupa menambahkan halaman ke router?"
+  }
+}

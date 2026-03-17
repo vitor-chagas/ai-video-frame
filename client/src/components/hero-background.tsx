@@ -13,8 +13,8 @@ export function HeroBackground() {
         >
              {/* The "Video" Source */}
              <img 
-                src="/demo-bg-2.jpg" 
-                alt="Demo Background" 
+                src="/hero-section.png"
+                alt="Demo Background"
                 className="w-full h-full object-cover object-center grayscale opacity-60"
              />
              
@@ -33,7 +33,7 @@ export function HeroBackground() {
                 {/* Inside the frame: The "Clear" version of the image to simulate focus */}
                 <div className="absolute inset-0 overflow-hidden">
                     <motion.img 
-                        src="/demo-bg-2.jpg" 
+                        src="/hero-section.png"
                         alt="Focused Content"
                         className="absolute h-[140%] max-w-none object-cover grayscale-0"
                         style={{ 

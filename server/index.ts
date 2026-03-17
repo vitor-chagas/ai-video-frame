@@ -1,6 +1,8 @@
 import "dotenv/config";
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
+import helmet from "helmet";
+import { registerRoutes, cleanupExpiredVideos } from "./routes";
+import { storage } from "./storage";
 import { serveStatic } from "./static";
 import { createServer } from "http";
 
@@ -12,6 +14,19 @@ process.on("unhandledRejection", (reason) => {
 });
 
 const app = express();
+// Trust proxy MUST be set before any middleware (like session) to correctly handle HTTPS behind Railway's load balancer
+app.set("trust proxy", 1);
+
+app.use(helmet({
+  permissionsPolicy: {
+    features: {
+      camera: [],
+      microphone: [],
+      geolocation: [],
+      payment: [],
+    },
+  },
+}));
 const httpServer = createServer(app);
 
 declare module "http" {
@@ -57,7 +72,28 @@ app.use((req, res, next) => {
     if (path.startsWith("/api")) {
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
       if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+        // Redact sensitive fields from logs
+        const redactedResponse = { ...capturedJsonResponse };
+        const sensitiveKeys = [
+          "access_token", 
+          "refresh_token", 
+          "password", 
+          "id_token", 
+          "session_secret", 
+          "token", 
+          "sessionId", 
+          "stripe-signature",
+          "checkoutUrl",
+          "url"
+        ];
+        
+        for (const key of sensitiveKeys) {
+          if (key in redactedResponse) {
+            redactedResponse[key] = "[REDACTED]";
+          }
+        }
+        
+        logLine += ` :: ${JSON.stringify(redactedResponse)}`;
       }
 
       log(logLine);
@@ -69,6 +105,23 @@ app.use((req, res, next) => {
 
 (async () => {
   await registerRoutes(httpServer, app);
+
+  // Background cleanup job: Every 5 minutes
+  setInterval(() => {
+    cleanupExpiredVideos().catch(err => console.error("Scheduled cleanup failed:", err));
+  }, 5 * 60 * 1000);
+
+  // Cleanup stale "uploaded" videos every 5 minutes (videos stuck in uploaded state for more than 5 minutes)
+  setInterval(async () => {
+    try {
+      const staleVideos = await storage.deleteStaleUploadedVideos(5 * 60 * 1000);
+      if (staleVideos.length > 0) {
+        log(`Removed ${staleVideos.length} stale uploaded videos`, "Cleanup");
+      }
+    } catch (err) {
+      console.error("Stale video cleanup failed:", err);
+    }
+  }, 5 * 60 * 1000);
 
   app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
@@ -98,6 +151,15 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || "5000", 10);
+  
+  // Set global timeouts to handle large file downloads
+  // 1 hour timeout for long video transfers
+  httpServer.timeout = 3600000;
+  httpServer.keepAliveTimeout = 65000;
+  httpServer.headersTimeout = 66000;
+  // This ensures the response doesn't timeout while streaming large files
+  httpServer.requestTimeout = 3600000;
+
   httpServer.listen(
     {
       port,

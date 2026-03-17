@@ -1,0 +1,193 @@
+{
+  "common": {
+    "loading": "Ladataan...",
+    "error": "Virhe",
+    "cancel": "Peruuta",
+    "signIn": "Kirjaudu sisään",
+    "logOut": "Kirjaudu ulos"
+  },
+  "layout": {
+    "footer": "© 2026 AI Video Frame. Kaikki oikeudet pidätetään."
+  },
+  "home": {
+    "badge": "Nyt 4K-vienti tuettu",
+    "hero": {
+      "title": "Älykäs kehystys videoillesi.",
+      "subtitle": "Anna tekoälyn rajata vaakavideoita automaattisesti pystymuotoihin. Täydellinen TikTokille, Reelsille ja Shortsille."
+    },
+    "pricing": {
+      "payg": {
+        "title": "Maksa käytön mukaan",
+        "badge": "ENSIMMÄINEN ILMAINEN",
+        "price": "$0.99",
+        "priceUnit": "/krediitti",
+        "creditExplain": "1 Krediitti = 1 Video (enintään 5 min)",
+        "overageNote": "Yli 5 minuutin videot maksavat +1 krediitti per lisäminuutti.",
+        "feature1": "Älykäs tekoälykehystys",
+        "feature2": "4K-laadun vienti",
+        "feature3": "Ei vesileimaa",
+        "cta": "Osta krediittejä",
+        "ctaLoading": "Ladataan..."
+      },
+      "monthly": {
+        "title": "Kuukausittainen luoja",
+        "badge": "SUOSITUIN",
+        "price": "$9.99",
+        "priceUnit": "/kuukausi",
+        "credits": "12 krediittiä joka kuukausi.",
+        "feature1": "Säästä jokaisella videolla",
+        "feature2": "Prioriteettikäsittely",
+        "feature3": "12 krediittiä mukana",
+        "cta": "Tilaa",
+        "ctaLoading": "Ladataan..."
+      },
+      "yearly": {
+        "title": "Vuosittainen Pro",
+        "price": "$107.88",
+        "priceUnit": "/vuosi",
+        "credits": "144 krediittiä (12 kuukaudessa).",
+        "feature1": "Paras arvo ammattilaisille",
+        "feature2": "Prioriteettikäsittely",
+        "feature3": "144 krediittiä yhteensä",
+        "cta": "Vuosisuunnitelma",
+        "ctaLoading": "Ladataan..."
+      },
+      "footnote": "*1 krediitti kattaa videon ensimmäiset 5 minuuttia. Jokainen lisäminuutti (tai osa siitä) maksaa 1 lisäkreditin."
+    },
+    "api": {
+      "title": "Rakenna API:mme avulla",
+      "subtitle": "Integroi tekoälyn videoiden uudelleenkehystys suoraan sovellukseesi. Tilaa ja hanki API-avaimesi RapidAPI:sta.",
+      "ctaRapidApi": "Katso RapidAPI:ssa",
+      "ctaApiDoc": "Katso API-dokumentaatio"
+    },
+    "contact": {
+      "title": "Onko sinulla kysyttävää tai palautetta?",
+      "subtitle": "Pyrimme aina parantamaan. Ota yhteyttä, jos sinulla on ominaisuuspyyntöjä, löysit bugin tai haluat vain sanoa hei!",
+      "cta": "Lähetä sähköposti"
+    },
+    "quantityDialog": {
+      "title": "Valitse määrä",
+      "subtitle": "Maksa käytön mukaan -krediitit",
+      "price": "$0.99",
+      "priceUnit": "/kpl",
+      "label": "Kuinka monta krediittiä tarvitset?",
+      "total": "Yhteensä:",
+      "cta_one": "Osta {{count}} krediitti",
+      "cta_other": "Osta {{count}} krediittiä",
+      "secureCheckout": "Turvallinen kassalla Stripen kautta"
+    },
+    "toasts": {
+      "creditsAdded": "Krediitit lisätty",
+      "creditsAddedDesc": "{{credits}} krediittiä lisätty tilillesi onnistuneesti.",
+      "paymentPending": "Maksu odottaa",
+      "paymentPendingDesc": "Maksusi käsitellään vielä.",
+      "paymentCancelled": "Maksu peruutettu",
+      "paymentCancelledDesc": "Voit yrittää uudelleen milloin tahansa.",
+      "signInRequired": "Kirjautuminen vaaditaan",
+      "signInRequiredDesc": "Kirjaudu sisään ostaaksesi krediittejä.",
+      "activeSubscription": "Aktiivinen tilaus",
+      "activeSubscriptionDesc": "Sinulla on jo aktiivinen tilaus. Hallinnoi sitä 'Hallinnoi tilausta' -portaalin kautta, jos haluat vaihtaa suunnitelmaa.",
+      "creditsSimulated": "Krediitit lisätty (simuloitu)",
+      "creditsSimulatedDesc": "Krediittisaldosi on päivitetty."
+    }
+  },
+  "uploadBox": {
+    "checkingSessions": "Tarkistetaan aktiivisia istuntoja...",
+    "manageSubscription": "Hallinnoi tilausta",
+    "credits_one": "{{count}} krediitti",
+    "credits_other": "{{count}} krediittiä",
+    "processing": {
+      "title": "Käsitellään videoasi",
+      "subtitle": "Tekoälymme seuraa kohteita ja kehystää automaattisesti {{ratio}}.",
+      "initializing": "Alustetaan...",
+      "analyzing": "Tekoäly analysoi kehyksiä...",
+      "finalizing": "Viimeistellään videoasi...",
+      "progressNote_analyzing": "Tekoäly seuraa kohteita ja kehystää automaattisesti...",
+      "progressNote_finalizing": "Yhdistetään ääni ja tallennetaan tiedostot. Melkein valmis!",
+      "progressNote_setup": "Asetetaan tekoälyn asentojen tunnistus..."
+    },
+    "completed": {
+      "title": "Videosi on valmis!",
+      "subtitle": "Automaattisesti kehystetty {{ratio}} tekoälyn kohteiden seurannalla.",
+      "download": "Lataa video",
+      "processAnother": "Käsittele toinen"
+    },
+    "failed": {
+      "title": "Käsittely epäonnistui",
+      "subtitle": "Jotain meni pieleen. Yritä uudelleen.",
+      "tryAgain": "Yritä uudelleen"
+    },
+    "signIn": {
+      "title": "Kirjaudu sisään aloittaaksesi",
+      "subtitle": "Kirjaudu sisään ladataksesi ja käsitelläksesi videoita.",
+      "highlight": "Ensimmäinen videosi on meiltä!",
+      "cta": "Kirjaudu sisään"
+    },
+    "dropzone": {
+      "title": "Lataa videosi",
+      "titleDrag": "Pudota video tähän",
+      "subtitle": "Vedä ja pudota tiedosto tähän tai napsauta selataksesi. MP4, MOV tai AVI enintään 2 Gt.",
+      "browse": "Selaa tiedostoja"
+    },
+    "filePreview": {
+      "outputRatio": "Valitse tulostussuhde",
+      "aiTracking": "Tekoälyn seuranta käytössä",
+      "uploading": "Ladataan videota...",
+      "analyzing": "Analysoidaan videota...",
+      "analyzingNote": "Odota, kun analysoimme videota palvelimellamme...",
+      "calculatingCredits": "Lasketaan krediittejä...",
+      "waitingUpload": "Odotetaan latausta...",
+      "analyzingVideo": "Analysoidaan videota...",
+      "useCredits_one": "Käytä {{count}} krediitti käsittelyyn",
+      "useCredits_other": "Käytä {{count}} krediittiä käsittelyyn"
+    },
+    "paymentDialog": {
+      "title": "Tilauksen yhteenveto",
+      "subtitle": "AI Video Frame {{ratio}}",
+      "useCredits_one": "Käytä {{count}} krediitti",
+      "useCredits_other": "Käytä {{count}} krediittiä",
+      "insufficientCredits": "Riittämättömät krediitit",
+      "needMoreCredits_one": "Tarvitset {{count}} krediittiä lisää käsitelläksesi tämän videon.",
+      "needMoreCredits_other": "Tarvitset {{count}} krediittiä lisää käsitelläksesi tämän videon.",
+      "purchaseQty": "Ostomäärä",
+      "total": "Yhteensä:",
+      "buyCredits_one": "Osta {{count}} krediitti",
+      "buyCredits_other": "Osta {{count}} krediittiä",
+      "viewPlans": "Katso tilaussuunnitelmat",
+      "securedByStripe": "Maksut suojattu Stripeillä"
+    },
+    "toasts": {
+      "videoReady": "Video valmis!",
+      "videoReadyDesc": "Automaattisesti kehystetty videosi on valmis ladattavaksi.",
+      "processingFailed": "Käsittely epäonnistui",
+      "processingFailedDesc": "Jotain meni pieleen. Yritä uudelleen.",
+      "uploadFailed": "Lataus epäonnistui",
+      "processingStarted": "Käsittely aloitettu",
+      "processingStartedDesc": "Videoasi kehystetään automaattisesti. Tämä voi kestää muutaman minuutin.",
+      "creditsSimulated": "Krediitit lisätty (simuloitu)",
+      "creditsSimulatedDesc": "{{count}} krediittiä lisätty onnistuneesti.",
+      "portalError": "Virhe"
+    }
+  },
+  "loginDialog": {
+    "title": "Kirjaudu sisään",
+    "description": "Valitse haluamasi kirjautumistapa jatkaaksesi.",
+    "freeCreditBadge": "Saat 1 ilmaisen kreditin ensimmäisellä kirjautumisella",
+    "continueWithGoogle": "Jatka Googlella",
+    "orWithEmail": "Tai sähköpostilla",
+    "emailPlaceholder": "nimi@esimerkki.fi",
+    "sendMagicLink": "Lähetä taikakinkki",
+    "checkInbox": "Tarkista postilaatikkosi!",
+    "magicLinkSentDesc": "Lähetimme kirjautumislinkin osoitteeseen {{email}}.",
+    "tryAnotherEmail": "Kokeile toista sähköpostia",
+    "toasts": {
+      "magicLinkSent": "Taikakinkki lähetetty",
+      "magicLinkSentDesc": "Tarkista sähköpostisi kirjautumislinkkiä varten.",
+      "errorDesc": "Taikalinkin lähettäminen epäonnistui"
+    }
+  },
+  "notFound": {
+    "title": "404 Sivua ei löydy",
+    "subtitle": "Unohditko lisätä sivun reitittimeen?"
+  }
+}

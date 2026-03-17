@@ -1,0 +1,212 @@
+import type { Express } from "express";
+import swaggerUi from "swagger-ui-express";
+
+const openApiSpec = {
+  openapi: "3.0.3",
+  info: {
+    title: "AI Video Frame API",
+    description:
+      "Automatically reframe videos using AI-powered subject detection. Upload a video, start processing, poll for status, then download the result.",
+    version: "1.0.0",
+  },
+  servers: [
+    {
+      url: "https://aivideoframe.com/api/v1",
+    },
+  ],
+  paths: {
+    "/videos/upload": {
+      post: {
+        summary: "Upload a video",
+        description:
+          "Upload a video file for AI reframing. Returns a video object with an `id` to use in subsequent calls.",
+        operationId: "uploadVideo",
+        requestBody: {
+          required: true,
+          content: {
+            "multipart/form-data": {
+              schema: {
+                type: "object",
+                required: ["video"],
+                properties: {
+                  video: {
+                    type: "string",
+                    format: "binary",
+                    description: "Video file (MP4, MOV, or AVI). Max 2 GB.",
+                  },
+                  aspectRatio: {
+                    type: "string",
+                    enum: ["9:16", "1:1", "4:5", "16:9", "2:3"],
+                    default: "9:16",
+                    description: "Target aspect ratio for reframing.",
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          "201": {
+            description: "Video uploaded successfully",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Video" },
+              },
+            },
+          },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+        },
+      },
+    },
+    "/videos/{id}/process": {
+      post: {
+        summary: "Start AI processing",
+        description: "Kick off AI reframing on an uploaded video. Processing is asynchronous — poll `/status` to track progress.",
+        operationId: "processVideo",
+        parameters: [{ $ref: "#/components/parameters/VideoId" }],
+        responses: {
+          "200": {
+            description: "Processing started",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: { type: "string", example: "Processing started" },
+                    videoId: { type: "string", example: "a1b2c3d4-..." },
+                  },
+                },
+              },
+            },
+          },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+        },
+      },
+    },
+    "/videos/{id}/status": {
+      get: {
+        summary: "Poll processing status",
+        description:
+          "Get the current status and progress of a video. Poll until `status` is `completed` or `failed`. Progress is 0–100.",
+        operationId: "getVideoStatus",
+        parameters: [{ $ref: "#/components/parameters/VideoId" }],
+        responses: {
+          "200": {
+            description: "Video status",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/VideoStatus" },
+              },
+            },
+          },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+        },
+      },
+    },
+    "/videos/{id}/download": {
+      get: {
+        summary: "Download processed video",
+        description: "Download the reframed video. Only available when `status` is `completed`.",
+        operationId: "downloadVideo",
+        parameters: [{ $ref: "#/components/parameters/VideoId" }],
+        responses: {
+          "200": {
+            description: "Video file stream",
+            content: { "video/mp4": { schema: { type: "string", format: "binary" } } },
+          },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+        },
+      },
+    },
+    "/videos/{id}": {
+      delete: {
+        summary: "Delete a video",
+        description: "Delete a video and its associated files.",
+        operationId: "deleteVideo",
+        parameters: [{ $ref: "#/components/parameters/VideoId" }],
+        responses: {
+          "200": {
+            description: "Deleted successfully",
+            content: {
+              "application/json": {
+                schema: { type: "object", properties: { success: { type: "boolean" } } },
+              },
+            },
+          },
+          "403": { $ref: "#/components/responses/Forbidden" },
+          "404": { $ref: "#/components/responses/NotFound" },
+        },
+      },
+    },
+  },
+  components: {
+    parameters: {
+      VideoId: {
+        name: "id",
+        in: "path",
+        required: true,
+        schema: { type: "string" },
+        description: "Video ID returned from the upload endpoint",
+      },
+    },
+    schemas: {
+      Video: {
+        type: "object",
+        properties: {
+          id: { type: "string" },
+          originalFilename: { type: "string" },
+          aspectRatio: { type: "string", enum: ["9:16", "1:1", "4:5", "16:9", "2:3"] },
+          status: { type: "string", enum: ["uploaded", "processing", "completed", "failed"] },
+          fileSize: { type: "integer", description: "File size in bytes" },
+          duration: { type: "integer", nullable: true, description: "Duration in seconds" },
+          createdAt: { type: "string", format: "date-time" },
+        },
+      },
+      VideoStatus: {
+        type: "object",
+        properties: {
+          id: { type: "string" },
+          status: { type: "string", enum: ["uploaded", "processing", "completed", "failed"] },
+          progress: { type: "number", minimum: 0, maximum: 100, description: "Processing progress (0–100)" },
+          aspectRatio: { type: "string" },
+          duration: { type: "integer", nullable: true },
+          fileSize: { type: "integer" },
+          originalFilename: { type: "string" },
+          createdAt: { type: "string", format: "date-time" },
+        },
+      },
+    },
+    responses: {
+      BadRequest: {
+        description: "Bad request",
+        content: { "application/json": { schema: { type: "object", properties: { error: { type: "string" } } } } },
+      },
+      Forbidden: {
+        description: "Forbidden — invalid or missing RapidAPI credentials",
+        content: { "application/json": { schema: { type: "object", properties: { error: { type: "string" } } } } },
+      },
+      NotFound: {
+        description: "Not found",
+        content: { "application/json": { schema: { type: "object", properties: { error: { type: "string" } } } } },
+      },
+    },
+    securitySchemes: {
+      RapidApiKey: { type: "apiKey", in: "header", name: "X-RapidAPI-Key" },
+    },
+  },
+  security: [{ RapidApiKey: [] }],
+};
+
+export function setupSwaggerDocs(app: Express) {
+  app.get("/api/v1/openapi.json", (_req, res) => {
+    res.json(openApiSpec);
+  });
+
+  app.use("/api/v1/docs", swaggerUi.serve, swaggerUi.setup(openApiSpec));
+}

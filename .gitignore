@@ -34,3 +34,8 @@ server/public/
 # Uploads
 uploads/
 !uploads/.gitkeep
+.env
+uploads/
+*.mp4
+
+PROJECT_PLAN.md

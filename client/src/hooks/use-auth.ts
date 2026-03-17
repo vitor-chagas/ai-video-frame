@@ -1,4 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
+import posthog from "posthog-js";
 import type { User } from "@shared/models/auth";
 
 async function fetchUser(): Promise<User | null> {
@@ -29,6 +31,14 @@ export function useAuth() {
     retry: false,
     staleTime: 1000 * 60 * 5,
   });
+
+  useEffect(() => {
+    if (user) {
+      posthog.identify(user.id, { email: user.email });
+    } else if (!isLoading) {
+      posthog.reset();
+    }
+  }, [user, isLoading]);
 
   const logoutMutation = useMutation({
     mutationFn: logout,

@@ -1,0 +1,193 @@
+{
+  "common": {
+    "loading": "加载中...",
+    "error": "错误",
+    "cancel": "取消",
+    "signIn": "登录",
+    "logOut": "退出登录"
+  },
+  "layout": {
+    "footer": "© 2026 AI Video Frame. 保留所有权利。"
+  },
+  "home": {
+    "badge": "现已支持 4K 导出",
+    "hero": {
+      "title": "为您的视频提供智能裁剪。",
+      "subtitle": "让 AI 自动将横屏视频裁剪为竖屏格式。完美适配 TikTok、Reels 和 Shorts。"
+    },
+    "pricing": {
+      "payg": {
+        "title": "按需付费",
+        "badge": "首次免费",
+        "price": "$0.99",
+        "priceUnit": "/点数",
+        "creditExplain": "1 点数 = 1 视频（最长 5 分钟）",
+        "overageNote": "超过 5 分钟的视频每分钟额外收取 1 点数。",
+        "feature1": "智能 AI 裁剪",
+        "feature2": "4K 高清导出",
+        "feature3": "无水印",
+        "cta": "购买点数",
+        "ctaLoading": "加载中..."
+      },
+      "monthly": {
+        "title": "月度创作者",
+        "badge": "最受欢迎",
+        "price": "$9.99",
+        "priceUnit": "/月",
+        "credits": "每月 12 点数。",
+        "feature1": "每个视频都省钱",
+        "feature2": "优先处理",
+        "feature3": "包含 12 点数",
+        "cta": "订阅",
+        "ctaLoading": "加载中..."
+      },
+      "yearly": {
+        "title": "年度专业版",
+        "price": "$107.88",
+        "priceUnit": "/年",
+        "credits": "144 点数（每月 12 点）。",
+        "feature1": "专业用户最佳选择",
+        "feature2": "优先处理",
+        "feature3": "共 144 点数",
+        "cta": "年度计划",
+        "ctaLoading": "加载中..."
+      },
+      "footnote": "*1 点数涵盖视频前 5 分钟。每增加一分钟（或不足一分钟）额外收取 1 点数。"
+    },
+    "api": {
+      "title": "使用我们的 API 构建",
+      "subtitle": "将 AI 视频重新裁剪直接集成到您的应用中。在 RapidAPI 订阅并获取您的 API 密钥。",
+      "ctaRapidApi": "在 RapidAPI 上查看",
+      "ctaApiDoc": "查看 API 文档"
+    },
+    "contact": {
+      "title": "有问题或反馈？",
+      "subtitle": "我们一直在寻求改进。如果您有功能请求、发现了错误，或者只是想打个招呼，请联系我们！",
+      "cta": "发送邮件"
+    },
+    "quantityDialog": {
+      "title": "选择数量",
+      "subtitle": "按需付费点数",
+      "price": "$0.99",
+      "priceUnit": "/个",
+      "label": "您需要多少点数？",
+      "total": "总计：",
+      "cta_one": "购买 {{count}} 点数",
+      "cta_other": "购买 {{count}} 点数",
+      "secureCheckout": "通过 Stripe 安全结账"
+    },
+    "toasts": {
+      "creditsAdded": "点数已添加",
+      "creditsAddedDesc": "已成功向您的账户添加 {{credits}} 点数。",
+      "paymentPending": "付款待处理",
+      "paymentPendingDesc": "您的付款仍在处理中。",
+      "paymentCancelled": "付款已取消",
+      "paymentCancelledDesc": "您可以随时重试。",
+      "signInRequired": "需要登录",
+      "signInRequiredDesc": "请登录后购买点数。",
+      "activeSubscription": "活跃订阅",
+      "activeSubscriptionDesc": "您已有活跃订阅。如需更改计划，请通过\"管理订阅\"门户进行管理。",
+      "creditsSimulated": "点数已添加（模拟）",
+      "creditsSimulatedDesc": "您的点数余额已更新。"
+    }
+  },
+  "uploadBox": {
+    "checkingSessions": "正在检查活跃会话...",
+    "manageSubscription": "管理订阅",
+    "credits_one": "{{count}} 点数",
+    "credits_other": "{{count}} 点数",
+    "processing": {
+      "title": "正在处理您的视频",
+      "subtitle": "我们的 AI 正在追踪主体并自动裁剪为 {{ratio}}。",
+      "initializing": "初始化中...",
+      "analyzing": "AI 正在分析帧...",
+      "finalizing": "正在完成您的视频...",
+      "progressNote_analyzing": "AI 正在追踪主体并自动裁剪...",
+      "progressNote_finalizing": "正在合并音频并保存文件，即将完成！",
+      "progressNote_setup": "正在设置 AI 姿势检测..."
+    },
+    "completed": {
+      "title": "您的视频已准备好！",
+      "subtitle": "已使用 AI 主体追踪自动裁剪为 {{ratio}}。",
+      "download": "下载视频",
+      "processAnother": "处理另一个"
+    },
+    "failed": {
+      "title": "处理失败",
+      "subtitle": "出现了一些问题，请重试。",
+      "tryAgain": "重试"
+    },
+    "signIn": {
+      "title": "登录以开始",
+      "subtitle": "登录以上传和处理视频。",
+      "highlight": "您的第一个视频由我们免费提供！",
+      "cta": "登录"
+    },
+    "dropzone": {
+      "title": "上传您的视频",
+      "titleDrag": "将视频拖放到此处",
+      "subtitle": "将文件拖放到此处，或点击浏览。支持 MP4、MOV 或 AVI，最大 2GB。",
+      "browse": "浏览文件"
+    },
+    "filePreview": {
+      "outputRatio": "选择输出比例",
+      "aiTracking": "AI 追踪已启用",
+      "uploading": "正在上传视频...",
+      "analyzing": "正在分析视频...",
+      "analyzingNote": "请稍候，我们正在服务器上分析视频...",
+      "calculatingCredits": "正在计算点数...",
+      "waitingUpload": "等待上传...",
+      "analyzingVideo": "正在分析视频...",
+      "useCredits_one": "使用 {{count}} 点数处理",
+      "useCredits_other": "使用 {{count}} 点数处理"
+    },
+    "paymentDialog": {
+      "title": "订单摘要",
+      "subtitle": "AI 视频裁剪为 {{ratio}}",
+      "useCredits_one": "使用 {{count}} 点数",
+      "useCredits_other": "使用 {{count}} 点数",
+      "insufficientCredits": "点数不足",
+      "needMoreCredits_one": "您还需要 {{count}} 点数来处理此视频。",
+      "needMoreCredits_other": "您还需要 {{count}} 点数来处理此视频。",
+      "purchaseQty": "购买数量",
+      "total": "总计：",
+      "buyCredits_one": "购买 {{count}} 点数",
+      "buyCredits_other": "购买 {{count}} 点数",
+      "viewPlans": "查看订阅计划",
+      "securedByStripe": "通过 Stripe 保障支付安全"
+    },
+    "toasts": {
+      "videoReady": "视频已准备好！",
+      "videoReadyDesc": "您的自动裁剪视频已准备好下载。",
+      "processingFailed": "处理失败",
+      "processingFailedDesc": "出现了一些问题，请重试。",
+      "uploadFailed": "上传失败",
+      "processingStarted": "处理已开始",
+      "processingStartedDesc": "您的视频正在自动裁剪，这可能需要几分钟。",
+      "creditsSimulated": "点数已添加（模拟）",
+      "creditsSimulatedDesc": "成功添加 {{count}} 点数。",
+      "portalError": "错误"
+    }
+  },
+  "loginDialog": {
+    "title": "登录",
+    "description": "选择您首选的登录方式继续。",
+    "freeCreditBadge": "首次登录获得 1 个免费点数",
+    "continueWithGoogle": "使用 Google 继续",
+    "orWithEmail": "或使用电子邮件",
+    "emailPlaceholder": "name@example.com",
+    "sendMagicLink": "发送魔法链接",
+    "checkInbox": "查看您的收件箱！",
+    "magicLinkSentDesc": "我们已将登录链接发送至 {{email}}。",
+    "tryAnotherEmail": "尝试其他邮箱",
+    "toasts": {
+      "magicLinkSent": "魔法链接已发送",
+      "magicLinkSentDesc": "请检查您的邮箱获取登录链接。",
+      "errorDesc": "发送魔法链接失败"
+    }
+  },
+  "notFound": {
+    "title": "404 页面未找到",
+    "subtitle": "您是否忘记将页面添加到路由器？"
+  }
+}

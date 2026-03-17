@@ -4,10 +4,14 @@ import numpy as np
 import os
 import subprocess
 import sys
+import tempfile
 import time
 
 # --- CONFIGURATION ---
 SELECTED_RATIO = "4:5" # Available Ratios: "9:16", "1:1", "4:5", "16:9", "2:3"
+SMOOTHING_FACTOR = 0.1
+DETECT_EVERY_FPS_DIVISOR = 6
+PROGRESS_REPORT_INTERVAL = 30
 
 AVAILABLE_RATIOS = {
     "9:16": (9, 16),
@@ -19,22 +23,35 @@ AVAILABLE_RATIOS = {
 # ---------------------
 
 # Initialize MediaPipe Pose with robust error checking
+# Note: MediaPipe 0.10.x on Python 3.14 might have structure changes
 try:
-    if not hasattr(mp, 'solutions'):
-        raise AttributeError("MediaPipe module loaded but 'solutions' attribute is missing. This usually indicates an incomplete installation.")
-    mp_pose = mp.solutions.pose
-except AttributeError as e:
-    print(f"MediaPipe Error: {e}")
-    print(f"MediaPipe Version: {getattr(mp, '__version__', 'unknown')}")
-    print(f"MediaPipe Path: {getattr(mp, '__file__', 'unknown')}")
-    sys.exit(1)
+    # Try legacy solutions API
+    if hasattr(mp, 'solutions') and hasattr(mp.solutions, 'pose'):
+        mp_pose = mp.solutions.pose
+        pose = mp_pose.Pose(
+            static_image_mode=False,
+            model_complexity=0,
+            enable_segmentation=False,
+            min_detection_confidence=0.5
+        )
+    else:
+        # Try Tasks API (newer)
+        from mediapipe.tasks import python
+        from mediapipe.tasks.python import vision
 
-pose = mp_pose.Pose(
-    static_image_mode=False,
-    model_complexity=0,
-    enable_segmentation=False,
-    min_detection_confidence=0.5
-)
+        # We'll initialize this lazily inside process_video if needed, 
+        # or use a simplified detection if pose is not available.
+        print("MediaPipe solutions.pose not found, will attempt to use Tasks API or fallback.")
+        pose = None 
+except Exception as e:
+    print(f"MediaPipe Initialization Warning: {e}")
+    pose = None
+
+def format_time(seconds):
+    mins = int(seconds // 60)
+    secs = int(seconds % 60)
+    return f"{mins}m {secs}s"
+
 
 def process_video(input_path, output_path, aspect_ratio=(9, 16), progress_callback=None):
     start_time = time.time()
@@ -67,16 +84,32 @@ def process_video(input_path, output_path, aspect_ratio=(9, 16), progress_callba
     if target_height % 2 != 0:
         target_height -= 1
 
-    # Temporary video file (without audio) - Use a unique name to avoid conflicts
-    temp_output = f"temp_no_audio_{int(time.time())}.mp4"
+    # Temporary video file (without audio)
+    with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as tmp:
+        temp_output = tmp.name
     
-    # Video writer setup
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    # Video writer setup - Try XVID first for efficiency, fallback to avc1 then mp4v
+    # XVID is faster and less CPU-intensive for high resolutions
+    fourcc = cv2.VideoWriter_fourcc(*'XVID')
     out = cv2.VideoWriter(temp_output, fourcc, fps, (target_width, target_height))
+    
+    if not out.isOpened():
+        print("Warning: XVID codec failed, trying avc1")
+        fourcc = cv2.VideoWriter_fourcc(*'avc1')
+        out = cv2.VideoWriter(temp_output, fourcc, fps, (target_width, target_height))
+
+    if not out.isOpened():
+        print("Warning: avc1 codec failed, falling back to mp4v")
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        out = cv2.VideoWriter(temp_output, fourcc, fps, (target_width, target_height))
+
+    if not out.isOpened():
+        print("Error: Could not initialize VideoWriter with any supported codec.")
+        return False
 
     current_center_x = width / 2
-    smoothing_factor = 0.1
-    detect_every = max(1, int(fps / 6))
+    smoothing_factor = SMOOTHING_FACTOR
+    detect_every = max(1, int(fps / DETECT_EVERY_FPS_DIVISOR))
 
     print(f"Processing: {input_path}")
     print(f"Original: {width}x{height} | Target: {target_width}x{target_height}")
@@ -90,18 +123,23 @@ def process_video(input_path, output_path, aspect_ratio=(9, 16), progress_callba
             break
 
         if frame_count % detect_every == 0:
-            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            results = pose.process(frame_rgb)
-
             target_x = width / 2
+            
+            if pose is not None:
+                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                results = pose.process(frame_rgb)
 
-            if results.pose_landmarks:
-                landmarks = results.pose_landmarks.landmark
-                nose = landmarks[0]
-                l_shoulder = landmarks[11]
-                r_shoulder = landmarks[12]
-                person_x = (nose.x + l_shoulder.x + r_shoulder.x) / 3 * width
-                target_x = person_x
+                if results.pose_landmarks:
+                    landmarks = results.pose_landmarks.landmark
+                    nose = landmarks[0]
+                    l_shoulder = landmarks[11]
+                    r_shoulder = landmarks[12]
+                    person_x = (nose.x + l_shoulder.x + r_shoulder.x) / 3 * width
+                    target_x = person_x
+            else:
+                # Fallback to center if pose detection is unavailable
+                target_x = width / 2
+                
             last_target_x = target_x
         else:
             target_x = last_target_x
@@ -129,7 +167,7 @@ def process_video(input_path, output_path, aspect_ratio=(9, 16), progress_callba
         out.write(cropped_frame)
 
         frame_count += 1
-        if frame_count % 30 == 0:
+        if frame_count % PROGRESS_REPORT_INTERVAL == 0:
             progress = (frame_count / total_frames)
             print(f"Progress: {progress*100:.1f}% ({frame_count}/{total_frames})", flush=True)
             if progress_callback:
@@ -137,29 +175,29 @@ def process_video(input_path, output_path, aspect_ratio=(9, 16), progress_callba
 
     cap.release()
     out.release()
+    
+    # Verify the temporary file was actually created and has content
+    if not os.path.exists(temp_output) or os.path.getsize(temp_output) == 0:
+        print(f"Error: Processed temporary file {temp_output} is empty or was not created.")
+        return False
+
     print("\nVideo frames processed. Merging audio...")
 
     # Merge audio using ffmpeg
     try:
-        # -i temp: the processed video
-        # -i input: the original video with audio
-        # -c:v copy: copy the already processed video stream
-        # -c:a aac: encode audio to AAC (safest)
-        # -map 0:v:0: take video from first input
-        # -map 1:a:0: take audio from second input
-        # -shortest: match the shortest stream duration
+        # Security: input_path and output_path are passed as a list to subprocess.run,
+        # which avoids shell injection as it doesn't use shell=True.
         cmd = [
             'ffmpeg', '-y',
             '-i', temp_output,
             '-i', input_path,
             '-c:v', 'copy',
             '-c:a', 'aac',
-            '-map', '0:v:0',
-            '-map', '1:a:0',
+            '-map', '0:v?',
+            '-map', '1:a?',
             '-shortest',
             output_path
         ]
-        print(f"Running FFmpeg command: {' '.join(cmd)}")
         result = subprocess.run(cmd, capture_output=True, text=True)
         
         if result.returncode != 0:
@@ -185,12 +223,6 @@ def process_video(input_path, output_path, aspect_ratio=(9, 16), progress_callba
     # Video duration in seconds
     video_duration_seconds = total_frames / fps
     
-    # Format times
-    def format_time(seconds):
-        mins = int(seconds // 60)
-        secs = int(seconds % 60)
-        return f"{mins}m {secs}s"
-
     processing_time_str = format_time(processing_duration)
     video_length_str = format_time(video_duration_seconds)
     

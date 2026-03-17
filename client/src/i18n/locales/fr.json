@@ -1,0 +1,193 @@
+{
+  "common": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "cancel": "Annuler",
+    "signIn": "Se connecter",
+    "logOut": "Se déconnecter"
+  },
+  "layout": {
+    "footer": "© 2026 AI Video Frame. Tous droits réservés."
+  },
+  "home": {
+    "badge": "Exportation 4K maintenant disponible",
+    "hero": {
+      "title": "Cadrage intelligent pour vos vidéos.",
+      "subtitle": "Laissez l'IA recadrer automatiquement les vidéos horizontales en formats verticaux. Parfait pour TikTok, Reels et Shorts."
+    },
+    "pricing": {
+      "payg": {
+        "title": "Paiement à l'utilisation",
+        "badge": "PREMIER GRATUIT",
+        "price": "$0.99",
+        "priceUnit": "/crédit",
+        "creditExplain": "1 Crédit = 1 Vidéo (jusqu'à 5 min)",
+        "overageNote": "Les vidéos de plus de 5 min coûtent +1 crédit par minute supplémentaire.",
+        "feature1": "Cadrage IA Intelligent",
+        "feature2": "Exportation Qualité 4K",
+        "feature3": "Sans Filigrane",
+        "cta": "Acheter des Crédits",
+        "ctaLoading": "Chargement..."
+      },
+      "monthly": {
+        "title": "Créateur Mensuel",
+        "badge": "LE PLUS POPULAIRE",
+        "price": "$9.99",
+        "priceUnit": "/mois",
+        "credits": "12 Crédits par mois.",
+        "feature1": "Économisez sur chaque vidéo",
+        "feature2": "Traitement Prioritaire",
+        "feature3": "12 Crédits Inclus",
+        "cta": "S'abonner",
+        "ctaLoading": "Chargement..."
+      },
+      "yearly": {
+        "title": "Pro Annuel",
+        "price": "$107.88",
+        "priceUnit": "/an",
+        "credits": "144 Crédits (12 par mois).",
+        "feature1": "Meilleur rapport qualité-prix",
+        "feature2": "Traitement Prioritaire",
+        "feature3": "144 Crédits au total",
+        "cta": "Plan Annuel",
+        "ctaLoading": "Chargement..."
+      },
+      "footnote": "*1 crédit couvre les 5 premières minutes d'une vidéo. Chaque minute supplémentaire (ou fraction) coûte 1 crédit de plus."
+    },
+    "api": {
+      "title": "Construisez avec notre API",
+      "subtitle": "Intégrez le recadrage vidéo IA directement dans votre application. Abonnez-vous et obtenez votre clé API sur RapidAPI.",
+      "ctaRapidApi": "Voir sur RapidAPI",
+      "ctaApiDoc": "Voir la Documentation API"
+    },
+    "contact": {
+      "title": "Des questions ou des retours ?",
+      "subtitle": "Nous cherchons toujours à nous améliorer. Contactez-nous si vous avez des demandes de fonctionnalités, trouvé un bug, ou juste envie de dire bonjour !",
+      "cta": "Nous écrire"
+    },
+    "quantityDialog": {
+      "title": "Sélectionner la Quantité",
+      "subtitle": "Crédits à l'utilisation",
+      "price": "$0.99",
+      "priceUnit": "/u",
+      "label": "Combien de crédits vous faut-il ?",
+      "total": "Total :",
+      "cta_one": "Acheter {{count}} Crédit",
+      "cta_other": "Acheter {{count}} Crédits",
+      "secureCheckout": "Paiement Sécurisé par Stripe"
+    },
+    "toasts": {
+      "creditsAdded": "Crédits ajoutés",
+      "creditsAddedDesc": "{{credits}} crédits ajoutés avec succès à votre compte.",
+      "paymentPending": "Paiement en attente",
+      "paymentPendingDesc": "Votre paiement est toujours en cours de traitement.",
+      "paymentCancelled": "Paiement annulé",
+      "paymentCancelledDesc": "Vous pouvez réessayer à tout moment.",
+      "signInRequired": "Connexion requise",
+      "signInRequiredDesc": "Veuillez vous connecter pour acheter des crédits.",
+      "activeSubscription": "Abonnement Actif",
+      "activeSubscriptionDesc": "Vous avez déjà un abonnement actif. Gérez-le via le portail 'Gérer l'Abonnement' si vous souhaitez changer de plan.",
+      "creditsSimulated": "Crédits ajoutés (Simulé)",
+      "creditsSimulatedDesc": "Votre solde de crédits a été mis à jour."
+    }
+  },
+  "uploadBox": {
+    "checkingSessions": "Vérification des sessions actives...",
+    "manageSubscription": "Gérer l'Abonnement",
+    "credits_one": "{{count}} Crédit",
+    "credits_other": "{{count}} Crédits",
+    "processing": {
+      "title": "Traitement de votre vidéo",
+      "subtitle": "Notre IA suit les sujets et cadre automatiquement vers {{ratio}}.",
+      "initializing": "Initialisation...",
+      "analyzing": "IA analyse les images...",
+      "finalizing": "Finalisation de votre vidéo...",
+      "progressNote_analyzing": "L'IA suit les sujets et cadre automatiquement...",
+      "progressNote_finalizing": "Fusion de l'audio et sauvegarde des fichiers. Presque fini !",
+      "progressNote_setup": "Configuration de la détection de pose IA..."
+    },
+    "completed": {
+      "title": "Votre vidéo est prête !",
+      "subtitle": "Recadrée automatiquement vers {{ratio}} avec suivi IA.",
+      "download": "Télécharger la Vidéo",
+      "processAnother": "Traiter une Autre"
+    },
+    "failed": {
+      "title": "Échec du traitement",
+      "subtitle": "Quelque chose s'est mal passé. Veuillez réessayer.",
+      "tryAgain": "Réessayer"
+    },
+    "signIn": {
+      "title": "Connectez-vous pour commencer",
+      "subtitle": "Connectez-vous pour uploader et traiter des vidéos.",
+      "highlight": "Votre première vidéo est offerte !",
+      "cta": "Se connecter"
+    },
+    "dropzone": {
+      "title": "Uploadez votre vidéo",
+      "titleDrag": "Déposez la vidéo ici",
+      "subtitle": "Glissez-déposez votre fichier ici, ou cliquez pour parcourir. MP4, MOV ou AVI jusqu'à 2Go.",
+      "browse": "Parcourir les Fichiers"
+    },
+    "filePreview": {
+      "outputRatio": "Sélectionner le Format de Sortie",
+      "aiTracking": "Suivi IA Activé",
+      "uploading": "Envoi de la vidéo...",
+      "analyzing": "Analyse de la vidéo...",
+      "analyzingNote": "Veuillez patienter pendant que nous analysons la vidéo sur notre serveur...",
+      "calculatingCredits": "Calcul des Crédits...",
+      "waitingUpload": "En attente d'envoi...",
+      "analyzingVideo": "Analyse de la Vidéo...",
+      "useCredits_one": "Utiliser {{count}} Crédit pour Traiter",
+      "useCredits_other": "Utiliser {{count}} Crédits pour Traiter"
+    },
+    "paymentDialog": {
+      "title": "Récapitulatif de la Commande",
+      "subtitle": "AI Video Frame vers {{ratio}}",
+      "useCredits_one": "Utiliser {{count}} Crédit",
+      "useCredits_other": "Utiliser {{count}} Crédits",
+      "insufficientCredits": "Crédits Insuffisants",
+      "needMoreCredits_one": "Il vous faut {{count}} crédit supplémentaire pour traiter cette vidéo.",
+      "needMoreCredits_other": "Il vous faut {{count}} crédits supplémentaires pour traiter cette vidéo.",
+      "purchaseQty": "Quantité à Acheter",
+      "total": "Total :",
+      "buyCredits_one": "Acheter {{count}} Crédit",
+      "buyCredits_other": "Acheter {{count}} Crédits",
+      "viewPlans": "Voir les Plans d'Abonnement",
+      "securedByStripe": "Paiements sécurisés par Stripe"
+    },
+    "toasts": {
+      "videoReady": "Vidéo prête !",
+      "videoReadyDesc": "Votre vidéo recadrée automatiquement est prête à télécharger.",
+      "processingFailed": "Échec du traitement",
+      "processingFailedDesc": "Quelque chose s'est mal passé. Veuillez réessayer.",
+      "uploadFailed": "Échec de l'envoi",
+      "processingStarted": "Traitement démarré",
+      "processingStartedDesc": "Votre vidéo est en cours de recadrage. Cela peut prendre quelques minutes.",
+      "creditsSimulated": "Crédits ajoutés (Simulé)",
+      "creditsSimulatedDesc": "{{count}} crédits ajoutés avec succès.",
+      "portalError": "Erreur"
+    }
+  },
+  "loginDialog": {
+    "title": "Connexion",
+    "description": "Choisissez votre méthode de connexion préférée pour continuer.",
+    "freeCreditBadge": "Obtenez 1 crédit gratuit à votre première connexion",
+    "continueWithGoogle": "Continuer avec Google",
+    "orWithEmail": "Ou avec l'e-mail",
+    "emailPlaceholder": "nom@exemple.com",
+    "sendMagicLink": "Envoyer le Lien Magique",
+    "checkInbox": "Vérifiez votre boîte de réception !",
+    "magicLinkSentDesc": "Nous avons envoyé un lien de connexion à {{email}}.",
+    "tryAnotherEmail": "Essayer un autre e-mail",
+    "toasts": {
+      "magicLinkSent": "Lien magique envoyé",
+      "magicLinkSentDesc": "Vérifiez votre e-mail pour le lien de connexion.",
+      "errorDesc": "Échec de l'envoi du lien magique"
+    }
+  },
+  "notFound": {
+    "title": "404 Page Introuvable",
+    "subtitle": "Avez-vous oublié d'ajouter la page au routeur ?"
+  }
+}

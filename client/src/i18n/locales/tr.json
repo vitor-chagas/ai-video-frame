@@ -1,0 +1,193 @@
+{
+  "common": {
+    "loading": "Yükleniyor...",
+    "error": "Hata",
+    "cancel": "İptal",
+    "signIn": "Giriş Yap",
+    "logOut": "Çıkış Yap"
+  },
+  "layout": {
+    "footer": "© 2026 AI Video Frame. Tüm hakları saklıdır."
+  },
+  "home": {
+    "badge": "Artık 4K dışa aktarma destekleniyor",
+    "hero": {
+      "title": "Videolarınız için akıllı çerçeveleme.",
+      "subtitle": "Yapay zekanın yatay videoları dikey formatlara otomatik olarak kırpmasına izin verin. TikTok, Reels ve Shorts için mükemmel."
+    },
+    "pricing": {
+      "payg": {
+        "title": "Kullandıkça öde",
+        "badge": "İLK ÜCRETSİZ",
+        "price": "$0.99",
+        "priceUnit": "/kredi",
+        "creditExplain": "1 Kredi = 1 Video (5 dak. kadar)",
+        "overageNote": "5 dakikadan uzun videolar her ek dakika için +1 kredi ücretlendirilir.",
+        "feature1": "Akıllı Yapay Zeka Çerçeveleme",
+        "feature2": "4K Kalite Dışa Aktarma",
+        "feature3": "Filigran Yok",
+        "cta": "Kredi Satın Al",
+        "ctaLoading": "Yükleniyor..."
+      },
+      "monthly": {
+        "title": "Aylık İçerik Üretici",
+        "badge": "EN POPÜLER",
+        "price": "$9.99",
+        "priceUnit": "/ay",
+        "credits": "Her ay 12 Kredi.",
+        "feature1": "Her videoda tasarruf et",
+        "feature2": "Öncelikli İşleme",
+        "feature3": "12 Kredi Dahil",
+        "cta": "Abone Ol",
+        "ctaLoading": "Yükleniyor..."
+      },
+      "yearly": {
+        "title": "Yıllık Pro",
+        "price": "$107.88",
+        "priceUnit": "/yıl",
+        "credits": "144 Kredi (ayda 12).",
+        "feature1": "Profesyoneller için en iyi değer",
+        "feature2": "Öncelikli İşleme",
+        "feature3": "Toplam 144 Kredi",
+        "cta": "Yıllık Plan",
+        "ctaLoading": "Yükleniyor..."
+      },
+      "footnote": "*1 kredi bir videonun ilk 5 dakikasını kapsar. Her ek dakika (veya kısmı) 1 ek kredi ücretlendirilir."
+    },
+    "api": {
+      "title": "API'miz ile geliştirin",
+      "subtitle": "Yapay zeka video yeniden çerçevelemeyi doğrudan uygulamanıza entegre edin. RapidAPI'da abone olun ve API anahtarınızı alın.",
+      "ctaRapidApi": "RapidAPI'da Görüntüle",
+      "ctaApiDoc": "API Dokümantasyonunu Görüntüle"
+    },
+    "contact": {
+      "title": "Sorularınız veya geri bildiriminiz mi var?",
+      "subtitle": "Her zaman iyileştirme arıyoruz. Özellik istekleriniz varsa, bir hata bulduysanız veya sadece merhaba demek istiyorsanız ulaşın!",
+      "cta": "Bize E-posta Gönderin"
+    },
+    "quantityDialog": {
+      "title": "Miktar Seçin",
+      "subtitle": "Kullandıkça öde kredileri",
+      "price": "$0.99",
+      "priceUnit": "/adet",
+      "label": "Kaç krediye ihtiyacınız var?",
+      "total": "Toplam:",
+      "cta_one": "{{count}} Kredi Satın Al",
+      "cta_other": "{{count}} Kredi Satın Al",
+      "secureCheckout": "Stripe ile Güvenli Ödeme"
+    },
+    "toasts": {
+      "creditsAdded": "Krediler eklendi",
+      "creditsAddedDesc": "Hesabınıza {{credits}} kredi başarıyla eklendi.",
+      "paymentPending": "Ödeme beklemede",
+      "paymentPendingDesc": "Ödemeniz hâlâ işleniyor.",
+      "paymentCancelled": "Ödeme iptal edildi",
+      "paymentCancelledDesc": "İstediğiniz zaman tekrar deneyebilirsiniz.",
+      "signInRequired": "Giriş gerekli",
+      "signInRequiredDesc": "Kredi satın almak için lütfen giriş yapın.",
+      "activeSubscription": "Aktif Abonelik",
+      "activeSubscriptionDesc": "Zaten aktif bir aboneliğiniz var. Planınızı değiştirmek istiyorsanız 'Aboneliği Yönet' portalından yönetin.",
+      "creditsSimulated": "Krediler eklendi (Simüle)",
+      "creditsSimulatedDesc": "Kredi bakiyeniz güncellendi."
+    }
+  },
+  "uploadBox": {
+    "checkingSessions": "Aktif oturumlar kontrol ediliyor...",
+    "manageSubscription": "Aboneliği Yönet",
+    "credits_one": "{{count}} Kredi",
+    "credits_other": "{{count}} Kredi",
+    "processing": {
+      "title": "Videonuz işleniyor",
+      "subtitle": "Yapay zekamız konuları takip ediyor ve {{ratio}} için otomatik çerçeveliyor.",
+      "initializing": "Başlatılıyor...",
+      "analyzing": "Yapay zeka kareleri analiz ediyor...",
+      "finalizing": "Videonuz tamamlanıyor...",
+      "progressNote_analyzing": "Yapay zeka konuları takip ediyor ve otomatik çerçeveliyor...",
+      "progressNote_finalizing": "Ses birleştiriliyor ve dosyalar kaydediliyor. Neredeyse bitti!",
+      "progressNote_setup": "Yapay zeka poz algılama ayarlanıyor..."
+    },
+    "completed": {
+      "title": "Videonuz hazır!",
+      "subtitle": "Yapay zeka konu takibi ile {{ratio}} olarak otomatik çerçevelendi.",
+      "download": "Videoyu İndir",
+      "processAnother": "Başka Bir İşle"
+    },
+    "failed": {
+      "title": "İşleme başarısız",
+      "subtitle": "Bir şeyler ters gitti. Lütfen tekrar deneyin.",
+      "tryAgain": "Tekrar Dene"
+    },
+    "signIn": {
+      "title": "Başlamak için giriş yapın",
+      "subtitle": "Video yüklemek ve işlemek için giriş yapın.",
+      "highlight": "İlk videonuz bizden!",
+      "cta": "Giriş Yap"
+    },
+    "dropzone": {
+      "title": "Videonuzu yükleyin",
+      "titleDrag": "Videoyu buraya bırakın",
+      "subtitle": "Dosyanızı buraya sürükleyip bırakın veya göz atmak için tıklayın. 2GB'a kadar MP4, MOV veya AVI.",
+      "browse": "Dosyalara Göz At"
+    },
+    "filePreview": {
+      "outputRatio": "Çıkış Oranını Seçin",
+      "aiTracking": "Yapay Zeka Takibi Etkin",
+      "uploading": "Video yükleniyor...",
+      "analyzing": "Video analiz ediliyor...",
+      "analyzingNote": "Videoyu sunucumuzda analiz ederken lütfen bekleyin...",
+      "calculatingCredits": "Krediler Hesaplanıyor...",
+      "waitingUpload": "Yükleme Bekleniyor...",
+      "analyzingVideo": "Video Analiz Ediliyor...",
+      "useCredits_one": "İşlemek için {{count}} Kredi Kullan",
+      "useCredits_other": "İşlemek için {{count}} Kredi Kullan"
+    },
+    "paymentDialog": {
+      "title": "Sipariş Özeti",
+      "subtitle": "AI Video Frame'i {{ratio}} olarak",
+      "useCredits_one": "{{count}} Kredi Kullan",
+      "useCredits_other": "{{count}} Kredi Kullan",
+      "insufficientCredits": "Yetersiz Kredi",
+      "needMoreCredits_one": "Bu videoyu işlemek için {{count}} kredi daha gerekiyor.",
+      "needMoreCredits_other": "Bu videoyu işlemek için {{count}} kredi daha gerekiyor.",
+      "purchaseQty": "Satın Alma Miktarı",
+      "total": "Toplam:",
+      "buyCredits_one": "{{count}} Kredi Satın Al",
+      "buyCredits_other": "{{count}} Kredi Satın Al",
+      "viewPlans": "Abonelik Planlarını Görüntüle",
+      "securedByStripe": "Ödemeler Stripe tarafından güvence altına alındı"
+    },
+    "toasts": {
+      "videoReady": "Video hazır!",
+      "videoReadyDesc": "Otomatik çerçevelenmiş videonuz indirmeye hazır.",
+      "processingFailed": "İşleme başarısız",
+      "processingFailedDesc": "Bir şeyler ters gitti. Lütfen tekrar deneyin.",
+      "uploadFailed": "Yükleme başarısız",
+      "processingStarted": "İşleme başladı",
+      "processingStartedDesc": "Videonuz otomatik çerçeveleniyor. Bu birkaç dakika sürebilir.",
+      "creditsSimulated": "Krediler eklendi (Simüle)",
+      "creditsSimulatedDesc": "{{count}} kredi başarıyla eklendi.",
+      "portalError": "Hata"
+    }
+  },
+  "loginDialog": {
+    "title": "Giriş Yap",
+    "description": "Devam etmek için tercih ettiğiniz giriş yöntemini seçin.",
+    "freeCreditBadge": "İlk girişinizde 1 ücretsiz kredi kazanın",
+    "continueWithGoogle": "Google ile Devam Et",
+    "orWithEmail": "Veya e-posta ile",
+    "emailPlaceholder": "ad@ornek.com",
+    "sendMagicLink": "Sihirli Bağlantı Gönder",
+    "checkInbox": "Gelen kutunuzu kontrol edin!",
+    "magicLinkSentDesc": "{{email}} adresine bir giriş bağlantısı gönderdik.",
+    "tryAnotherEmail": "Başka e-posta dene",
+    "toasts": {
+      "magicLinkSent": "Sihirli bağlantı gönderildi",
+      "magicLinkSentDesc": "Giriş bağlantısı için e-postanızı kontrol edin.",
+      "errorDesc": "Sihirli bağlantı gönderilemedi"
+    }
+  },
+  "notFound": {
+    "title": "404 Sayfa Bulunamadı",
+    "subtitle": "Sayfayı yönlendiriciye eklemeyi unuttunuz mu?"
+  }
+}

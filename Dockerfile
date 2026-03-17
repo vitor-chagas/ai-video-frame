@@ -34,12 +34,18 @@ COPY . .
 # Build the frontend and backend
 RUN npm run build
 
-# Create uploads directories
-RUN mkdir -p uploads/input uploads/output
+# Create uploads directories and non-root user
+RUN mkdir -p uploads/input uploads/output && \
+    groupadd --gid 1001 appgroup && \
+    useradd --uid 1001 --gid appgroup --shell /bin/bash --create-home appuser && \
+    chown -R appuser:appgroup /app
 
 # Set environment variables
 ENV NODE_ENV=production
 ENV PORT=5000
+
+# Run as non-root user
+USER appuser
 
 # Expose the port
 EXPOSE 5000
