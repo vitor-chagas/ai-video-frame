@@ -28,6 +28,10 @@ RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 RUN pip3 install --no-cache-dir -r requirements.txt
 
+# Build arg for PostHog (needed at Vite build time)
+ARG VITE_POSTHOG_API_KEY
+ENV VITE_POSTHOG_API_KEY=$VITE_POSTHOG_API_KEY
+
 # Copy the rest of the application code
 COPY . .
 
