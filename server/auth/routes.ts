@@ -10,6 +10,7 @@ import { randomBytes, timingSafeEqual } from "crypto";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 import { rateLimit } from "express-rate-limit";
+import disposableDomains from "disposable-email-domains";
 
 const magicLinkLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -48,6 +49,11 @@ export function registerAuthRoutes(app: Express): void {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email || !emailRegex.test(email)) {
       return res.status(400).json({ message: "Invalid email address" });
+    }
+
+    const domain = email.split("@")[1].toLowerCase();
+    if ((disposableDomains as string[]).includes(domain)) {
+      return res.status(400).json({ message: "Disposable email addresses are not allowed. Please use a permanent email." });
     }
 
     try {
