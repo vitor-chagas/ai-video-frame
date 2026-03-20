@@ -59,7 +59,15 @@ router.post("/upload", upload.single("video"), async (req, res) => {
       duration,
     });
 
-    return res.status(201).json(video);
+    return res.status(201).json({
+      id: video.id,
+      status: video.status,
+      aspectRatio: video.aspectRatio,
+      duration: video.duration,
+      fileSize: video.fileSize,
+      originalFilename: video.originalFilename,
+      createdAt: video.createdAt,
+    });
   } catch (err: any) {
     return res.status(500).json({ error: err.message });
   }
