@@ -26,6 +26,11 @@ const statAsync = promisify(fs.stat);
 
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 
+function sanitizeVideo<T extends { originalPath?: unknown; processedPath?: unknown }>(v: T) {
+  const { originalPath, processedPath, ...safe } = v;
+  return safe;
+}
+
 // Rate limiters
 const uploadLimiter = rateLimit({
   windowMs: RATE_LIMIT_WINDOW_MS,
@@ -155,7 +160,7 @@ export async function registerRoutes(
   app.get("/api/videos", isAuthenticated, async (req: Request, res: Response) => {
     const userId = getUserId(req)!;
     const vids = await storage.getVideosByUser(userId);
-    return res.json(vids);
+    return res.json(vids.map(sanitizeVideo));
   });
 
   app.get("/api/videos/latest", isAuthenticated, async (req: Request, res: Response) => {
@@ -194,7 +199,7 @@ export async function registerRoutes(
     }
 
     const progress = videoProgress.get(latest.id) ?? 0;
-    return res.json({ ...latest, progress });
+    return res.json({ ...sanitizeVideo(latest), progress });
   });
 
   app.get("/api/videos/:id", isAuthenticated, async (req: Request, res: Response) => {
@@ -205,7 +210,7 @@ export async function registerRoutes(
       return res.status(404).json({ message: "Video not found" });
     }
     const progress = videoProgress.get(videoId) ?? 0;
-    return res.json({ ...video, progress });
+    return res.json({ ...sanitizeVideo(video), progress });
   });
 
   app.delete("/api/videos/:id", isAuthenticated, async (req: Request, res: Response) => {
