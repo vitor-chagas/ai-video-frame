@@ -756,7 +756,7 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                         <Label className="text-sm font-medium text-[hsl(24,10%,30%)]">
                           {t("uploadBox.subtitles.languageLabel")}
                         </Label>
-                        <Select value={subtitleLanguage} onValueChange={setSubtitleLanguage} modal={false}>
+                        <Select value={subtitleLanguage} onValueChange={setSubtitleLanguage}>
                           <SelectTrigger className="rounded-xl border-[hsl(38,10%,85%)]">
                             <SelectValue />
                           </SelectTrigger>
