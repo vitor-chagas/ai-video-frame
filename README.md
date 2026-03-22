@@ -11,7 +11,8 @@ AI Video Frame simplifies the process of reframing content for social media. By 
 ### Key Features
 - **AI-Driven Reframing**: Automatic subject detection and tracking using MediaPipe.
 - **Multiple Aspect Ratios**: Easily convert landscape videos to portrait or square formats.
-- **Seamless Auth**: Google OIDC integration for secure user accounts.
+- **AI-Powered Subtitles**: Auto-transcription via OpenAI Whisper with burn-in, SRT, and VTT export. Supports 20+ languages with optional GPT-4o-mini translation.
+- **Seamless Auth**: Google OIDC and Magic Link for secure, passwordless user accounts.
 - **Monetization Ready**: Integrated with Stripe for credit-based processing.
 - **Processing Queue**: Robust backend handling for video transcoding and AI analysis.
 - **Analytics**: PostHog integration tracking key user events (uploads, processing, downloads, purchases).
@@ -20,7 +21,8 @@ AI Video Frame simplifies the process of reframing content for social media. By 
 
 - **Frontend**: React, TypeScript, Tailwind CSS, Shadcn UI, Vite.
 - **Backend**: Node.js (Express), Drizzle ORM.
-- **AI/ML**: Python, MediaPipe (Pose Detection), OpenCV.
+- **AI/ML**: Python, MediaPipe (Pose Detection), OpenCV, OpenAI Whisper, GPT-4o-mini.
+- **Internationalization**: i18next with 20+ language UI support.
 - **Database**: PostgreSQL (Supabase).
 - **Video Processing**: FFmpeg.
 - **Infrastructure**: Docker, Railway.
