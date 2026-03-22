@@ -46,6 +46,9 @@ vi.mock("connect-pg-simple", () => {
         destroy(_sid: string, cb: Function) {
           cb(null);
         }
+        regenerate(_req: any, cb: Function) {
+          cb(null);
+        }
       };
     },
   };

@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, vi } from "vitest";
 import request from "supertest";
 import type { Express } from "express";
+import { authStorage } from "../../server/auth/storage.ts";
 
 // Mock storage to avoid real database calls
 vi.mock("../../server/storage.ts", () => ({
@@ -38,6 +39,8 @@ beforeAll(async () => {
   ({ app } = await createTestApp());
 });
 
+const VALID_TOKEN = "a".repeat(64);
+
 describe("POST /api/auth/magic-link — input validation", () => {
   it("returns 400 for missing email", async () => {
     const res = await request(app).post("/api/auth/magic-link").send({});
@@ -74,5 +77,91 @@ describe("POST /api/auth/magic-link — input validation", () => {
       .send({ email: "user@gmail.com" });
     expect(res.status).toBe(200);
     expect(res.body.message).toMatch(/magic link sent/i);
+  });
+});
+
+describe("POST /api/auth/verify — error cases", () => {
+  it("returns 400 for missing token", async () => {
+    const res = await request(app).post("/api/auth/verify").send({});
+    expect(res.status).toBe(400);
+    expect(res.body.message).toMatch(/invalid or missing token/i);
+  });
+
+  it("returns 400 for a token not found in the database", async () => {
+    const res = await request(app)
+      .post("/api/auth/verify")
+      .send({ token: "nonexistent-token" });
+    expect(res.status).toBe(400);
+    expect(res.body.message).toMatch(/invalid or expired token/i);
+  });
+});
+
+describe("POST /api/auth/verify — happy path", () => {
+  it("returns 200 and logs in an existing user", async () => {
+    vi.mocked(authStorage.getVerificationToken).mockResolvedValueOnce({
+      id: "token-id",
+      identifier: "user@gmail.com",
+      token: VALID_TOKEN,
+      expires: new Date(Date.now() + 15 * 60 * 1000),
+      createdAt: new Date(),
+    });
+    vi.mocked(authStorage.getUserByEmail).mockResolvedValueOnce({
+      id: "existing-user-id",
+      email: "user@gmail.com",
+      firstName: null,
+      lastName: null,
+      profileImageUrl: null,
+      credits: 5,
+      stripeCustomerId: null,
+      stripeSubscriptionId: null,
+      rapidApiUserId: null,
+      rapidApiSubscription: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    const res = await request(app)
+      .post("/api/auth/verify")
+      .send({ token: VALID_TOKEN });
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+  });
+
+  it("creates a new user with 2 credits when user does not exist", async () => {
+    vi.mocked(authStorage.getVerificationToken).mockResolvedValueOnce({
+      id: "token-id",
+      identifier: "newuser@gmail.com",
+      token: VALID_TOKEN,
+      expires: new Date(Date.now() + 15 * 60 * 1000),
+      createdAt: new Date(),
+    });
+
+    const res = await request(app)
+      .post("/api/auth/verify")
+      .send({ token: VALID_TOKEN });
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(vi.mocked(authStorage.upsertUser)).toHaveBeenCalledWith(
+      expect.objectContaining({ credits: 2 })
+    );
+  });
+
+  it("deletes the token after successful verification", async () => {
+    vi.mocked(authStorage.getVerificationToken).mockResolvedValueOnce({
+      id: "token-id",
+      identifier: "user@gmail.com",
+      token: VALID_TOKEN,
+      expires: new Date(Date.now() + 15 * 60 * 1000),
+      createdAt: new Date(),
+    });
+    vi.mocked(authStorage.deleteVerificationToken).mockClear();
+
+    await request(app)
+      .post("/api/auth/verify")
+      .send({ token: VALID_TOKEN });
+
+    expect(vi.mocked(authStorage.deleteVerificationToken)).toHaveBeenCalledWith(VALID_TOKEN);
   });
 });
