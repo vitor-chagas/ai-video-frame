@@ -17,7 +17,33 @@ const app = express();
 // Trust proxy MUST be set before any middleware (like session) to correctly handle HTTPS behind Railway's load balancer
 app.set("trust proxy", 1);
 
+// Block requests to sensitive paths before any other middleware
+app.use((req, res, next) => {
+  if (/^\/(\.env|\.git|\.htaccess|\.ssh|wp-admin|phpinfo)/i.test(req.path)) {
+    return res.status(404).end();
+  }
+  next();
+});
+
 app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "https://app.posthog.com", "https://cdn.posthog.com", "https://js.stripe.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      imgSrc: ["'self'", "data:", "blob:", "https://*.googleusercontent.com"],
+      connectSrc: ["'self'", "https://app.posthog.com", "https://api.stripe.com", "https://*.stripe.com"],
+      mediaSrc: ["'self'", "blob:"],
+      frameSrc: ["https://js.stripe.com", "https://hooks.stripe.com"],
+      workerSrc: ["'self'", "blob:"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+      frameAncestors: ["'none'"],
+      upgradeInsecureRequests: [],
+    },
+  },
   permissionsPolicy: {
     features: {
       camera: [],
