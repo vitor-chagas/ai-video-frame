@@ -179,6 +179,7 @@
     "sendMagicLink": "发送魔法链接",
     "checkInbox": "查看您的收件箱！",
     "magicLinkSentDesc": "我们已将登录链接发送至 {{email}}。",
+    "spamFolderHint": "找不到？请检查您的垃圾邮件文件夹。",
     "tryAnotherEmail": "尝试其他邮箱",
     "toasts": {
       "magicLinkSent": "魔法链接已发送",

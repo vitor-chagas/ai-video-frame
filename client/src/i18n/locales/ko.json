@@ -179,6 +179,7 @@
     "sendMagicLink": "매직 링크 보내기",
     "checkInbox": "받은 편지함을 확인하세요!",
     "magicLinkSentDesc": "{{email}}으로 로그인 링크를 보냈습니다.",
+    "spamFolderHint": "못 찾으셨나요? 스팸 폴더를 확인해 보세요.",
     "tryAnotherEmail": "다른 이메일 시도",
     "toasts": {
       "magicLinkSent": "매직 링크 발송됨",

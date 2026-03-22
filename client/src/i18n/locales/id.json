@@ -179,6 +179,7 @@
     "sendMagicLink": "Kirim Magic Link",
     "checkInbox": "Periksa kotak masuk Anda!",
     "magicLinkSentDesc": "Kami telah mengirimkan link masuk ke {{email}}.",
+    "spamFolderHint": "Tidak ditemukan? Periksa folder spam Anda.",
     "tryAnotherEmail": "Coba email lain",
     "toasts": {
       "magicLinkSent": "Magic link terkirim",

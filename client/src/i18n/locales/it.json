@@ -179,6 +179,7 @@
     "sendMagicLink": "Invia Link Magico",
     "checkInbox": "Controlla la tua casella di posta!",
     "magicLinkSentDesc": "Abbiamo inviato un link di accesso a {{email}}.",
+    "spamFolderHint": "Non lo trovi? Controlla la cartella spam.",
     "tryAnotherEmail": "Prova un'altra e-mail",
     "toasts": {
       "magicLinkSent": "Link magico inviato",

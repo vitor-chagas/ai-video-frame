@@ -179,6 +179,7 @@
     "sendMagicLink": "Wyślij magiczny link",
     "checkInbox": "Sprawdź swoją skrzynkę!",
     "magicLinkSentDesc": "Wysłaliśmy link do logowania na {{email}}.",
+    "spamFolderHint": "Nie możesz znaleźć? Sprawdź folder spam.",
     "tryAnotherEmail": "Spróbuj innego e-maila",
     "toasts": {
       "magicLinkSent": "Magiczny link wysłany",

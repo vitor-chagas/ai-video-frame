@@ -126,6 +126,9 @@ export function LoginDialog({ children }: { children: React.ReactNode }) {
               <p className="text-sm text-muted-foreground">
                 {t("loginDialog.magicLinkSentDesc", { email })}
               </p>
+              <p className="text-xs text-muted-foreground/70">
+                {t("loginDialog.spamFolderHint")}
+              </p>
               <Button
                 variant="link"
                 onClick={() => setIsSent(false)}
