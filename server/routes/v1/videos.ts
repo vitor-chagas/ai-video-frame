@@ -22,16 +22,6 @@ const router = Router();
 // All v1 routes require RapidAPI auth
 router.use(rapidApiAuth);
 
-// Temporary debug endpoint — remove after debugging
-router.get("/debug/headers", (req, res) => {
-  const user = (req as unknown as RapidApiRequest).rapidApiUser;
-  res.json({
-    subscription: req.headers["x-rapidapi-subscription"],
-    user: req.headers["x-rapidapi-user"],
-    userCredits: user?.credits,
-    userSubscription: user?.rapidApiSubscription,
-  });
-});
 
 /**
  * POST /api/v1/videos/upload
