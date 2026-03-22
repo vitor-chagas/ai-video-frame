@@ -200,21 +200,42 @@ def generate_subtitles(input_path, output_srt_path, target_language=None):
 
 
 def burn_subtitles(video_path, srt_path, output_path):
-    """Burn SRT subtitles into the video using FFmpeg."""
-    # Use absolute paths and escape for FFmpeg subtitle filter
-    abs_srt = os.path.abspath(srt_path).replace("\\", "/").replace(":", "\\:").replace(" ", "\\ ")
-    cmd = [
-        "ffmpeg", "-y",
-        "-i", video_path,
-        "-vf", f"subtitles='{abs_srt}':force_style='FontName=Arial,FontSize=18,PrimaryColour=&HFFFFFF&,OutlineColour=&H000000&,Outline=2,Alignment=2'",
-        "-c:a", "copy",
-        output_path
-    ]
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    if result.returncode != 0:
-        print(f"SubtitleError: FFmpeg burn-in failed: {result.stderr}", flush=True)
-        return False
-    return True
+    """Burn SRT subtitles into the video using FFmpeg (TikTok/Reels style)."""
+    # Uppercase text lines only (preserve index & timing lines)
+    with open(srt_path, "r", encoding="utf-8") as f:
+        srt_content = f.read()
+
+    blocks = srt_content.strip().split("\n\n")
+    upcased = []
+    for block in blocks:
+        lines = block.split("\n")
+        if len(lines) < 3:
+            upcased.append(block)
+            continue
+        upcased.append("\n".join(lines[:2] + [l.upper() for l in lines[2:]]))
+    uppercase_srt = "\n\n".join(upcased)
+
+    with tempfile.NamedTemporaryFile(suffix=".srt", delete=False, mode="w", encoding="utf-8") as tmp_srt:
+        tmp_srt.write(uppercase_srt)
+        tmp_srt_path = tmp_srt.name
+
+    try:
+        abs_srt = os.path.abspath(tmp_srt_path).replace("\\", "/").replace(":", "\\:").replace(" ", "\\ ")
+        cmd = [
+            "ffmpeg", "-y",
+            "-i", video_path,
+            "-vf", f"subtitles='{abs_srt}':force_style='FontName=Arial,FontSize=16,Bold=1,PrimaryColour=&HFFFFFF&,OutlineColour=&H000000&,Outline=1,Shadow=2,Alignment=2,MarginV=40'",
+            "-c:a", "copy",
+            output_path
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode != 0:
+            print(f"SubtitleError: FFmpeg burn-in failed: {result.stderr}", flush=True)
+            return False
+        return True
+    finally:
+        if os.path.exists(tmp_srt_path):
+            os.remove(tmp_srt_path)
 
 
 def process_video(input_path, output_path, aspect_ratio=(9, 16), progress_callback=None):
