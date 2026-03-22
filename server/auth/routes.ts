@@ -201,7 +201,7 @@ export function registerAuthRoutes(app: Express): void {
         user = await authStorage.upsertUser({
           id: undefined as any, // Drizzle will generate a UUID
           email: verificationToken.identifier,
-          credits: 1, // Give 1 free credit to new users
+          credits: 2, // Give 2 free credits to new users
         });
       }
 
