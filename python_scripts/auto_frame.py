@@ -202,7 +202,7 @@ def generate_subtitles(input_path, output_srt_path, target_language=None):
 def burn_subtitles(video_path, srt_path, output_path):
     """Burn SRT subtitles into the video using FFmpeg."""
     # Use absolute paths and escape for FFmpeg subtitle filter
-    abs_srt = os.path.abspath(srt_path).replace("\\", "/").replace(":", "\\:")
+    abs_srt = os.path.abspath(srt_path).replace("\\", "/").replace(":", "\\:").replace(" ", "\\ ")
     cmd = [
         "ffmpeg", "-y",
         "-i", video_path,
@@ -434,8 +434,10 @@ if __name__ == "__main__":
                 burned_ok = burn_subtitles(args.output, srt_path, burned_output)
                 if burned_ok:
                     os.replace(burned_output, args.output)
-                elif os.path.exists(burned_output):
-                    os.remove(burned_output)
+                else:
+                    if os.path.exists(burned_output):
+                        os.remove(burned_output)
+                    sys.exit(1)
     else:
         target_ratio = AVAILABLE_RATIOS.get(SELECTED_RATIO, (9, 16))
         ratio_suffix = SELECTED_RATIO.replace(":", "_")
