@@ -756,7 +756,7 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                         <Label className="text-sm font-medium text-[hsl(24,10%,30%)]">
                           {t("uploadBox.subtitles.languageLabel")}
                         </Label>
-                        <Select value={subtitleLanguage} onValueChange={setSubtitleLanguage}>
+                        <Select value={subtitleLanguage} onValueChange={setSubtitleLanguage} modal={false}>
                           <SelectTrigger className="rounded-xl border-[hsl(38,10%,85%)]">
                             <SelectValue />
                           </SelectTrigger>
@@ -764,7 +764,26 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                             <SelectItem value="original">{t("uploadBox.subtitles.languageOriginal")}</SelectItem>
                             <SelectItem value="en">{t("uploadBox.subtitles.languageEnglish")}</SelectItem>
                             <SelectItem value="pt-BR">{t("uploadBox.subtitles.languagePtBr")}</SelectItem>
+                            <SelectItem value="pt">{t("uploadBox.subtitles.languagePt")}</SelectItem>
                             <SelectItem value="es">{t("uploadBox.subtitles.languageSpanish")}</SelectItem>
+                            <SelectItem value="fr">{t("uploadBox.subtitles.languageFrench")}</SelectItem>
+                            <SelectItem value="de">{t("uploadBox.subtitles.languageGerman")}</SelectItem>
+                            <SelectItem value="it">{t("uploadBox.subtitles.languageItalian")}</SelectItem>
+                            <SelectItem value="nl">{t("uploadBox.subtitles.languageDutch")}</SelectItem>
+                            <SelectItem value="ru">{t("uploadBox.subtitles.languageRussian")}</SelectItem>
+                            <SelectItem value="pl">{t("uploadBox.subtitles.languagePolish")}</SelectItem>
+                            <SelectItem value="tr">{t("uploadBox.subtitles.languageTurkish")}</SelectItem>
+                            <SelectItem value="zh">{t("uploadBox.subtitles.languageChinese")}</SelectItem>
+                            <SelectItem value="ja">{t("uploadBox.subtitles.languageJapanese")}</SelectItem>
+                            <SelectItem value="ko">{t("uploadBox.subtitles.languageKorean")}</SelectItem>
+                            <SelectItem value="id">{t("uploadBox.subtitles.languageIndonesian")}</SelectItem>
+                            <SelectItem value="sv">{t("uploadBox.subtitles.languageSwedish")}</SelectItem>
+                            <SelectItem value="da">{t("uploadBox.subtitles.languageDanish")}</SelectItem>
+                            <SelectItem value="no">{t("uploadBox.subtitles.languageNorwegian")}</SelectItem>
+                            <SelectItem value="fi">{t("uploadBox.subtitles.languageFinnish")}</SelectItem>
+                            <SelectItem value="uk">{t("uploadBox.subtitles.languageUkrainian")}</SelectItem>
+                            <SelectItem value="ar">{t("uploadBox.subtitles.languageArabic")}</SelectItem>
+                            <SelectItem value="hi">{t("uploadBox.subtitles.languageHindi")}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>

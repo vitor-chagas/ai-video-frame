@@ -157,9 +157,26 @@ def generate_subtitles(input_path, output_srt_path, target_language=None):
         if target_language and target_language not in (None, "en", detected_language):
             lang_names = {
                 "pt-BR": "Brazilian Portuguese",
-                "es": "Spanish",
-                "fr": "French",
-                "de": "German",
+                "pt":    "European Portuguese",
+                "es":    "Spanish",
+                "fr":    "French",
+                "de":    "German",
+                "it":    "Italian",
+                "nl":    "Dutch",
+                "ru":    "Russian",
+                "pl":    "Polish",
+                "tr":    "Turkish",
+                "zh":    "Simplified Chinese",
+                "ja":    "Japanese",
+                "ko":    "Korean",
+                "id":    "Indonesian",
+                "sv":    "Swedish",
+                "da":    "Danish",
+                "no":    "Norwegian",
+                "fi":    "Finnish",
+                "uk":    "Ukrainian",
+                "ar":    "Arabic",
+                "hi":    "Hindi",
             }
             lang_name = lang_names.get(target_language, target_language)
             gpt_response = client.chat.completions.create(
@@ -199,32 +216,111 @@ def generate_subtitles(input_path, output_srt_path, target_language=None):
             os.remove(audio_path)
 
 
-def burn_subtitles(video_path, srt_path, output_path):
-    """Burn SRT subtitles into the video using FFmpeg (TikTok/Reels style)."""
-    # Uppercase text lines only (preserve index & timing lines)
-    with open(srt_path, "r", encoding="utf-8") as f:
-        srt_content = f.read()
+def srt_to_karaoke_style_ass(srt_content):
+    """
+    Convert SRT content to an ASS file with the same style as the karaoke output
+    (Arial 13, white uppercase text, black outline/shadow, bottom-center, MarginV=40).
+    Each SRT segment is split into word groups (3–5 words, max 18 chars) with evenly
+    distributed timing so the subtitle stays compact, matching the karaoke look.
+    """
+    MAX_CHARS = 18
+    MIN_WORDS = 3
+    MAX_WORDS = 5
+
+    ass_header = (
+        "[Script Info]\n"
+        "ScriptType: v4.00+\n"
+        "WrapStyle: 0\n"
+        "ScaledBorderAndShadow: yes\n"
+        "\n"
+        "[V4+ Styles]\n"
+        "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour,"
+        " Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow,"
+        " Alignment, MarginL, MarginR, MarginV, Encoding\n"
+        "Style: Default,Arial,13,&H00FFFFFF,&H00FFFFFF,&H00000000,&H80000000,"
+        "1,0,0,0,100,100,0,0,1,1,2,2,10,10,40,1\n"
+        "\n"
+        "[Events]\n"
+        "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n"
+    )
+
+    def srt_time_to_seconds(t):
+        h, m, rest = t.strip().split(":")
+        s, ms = rest.split(",")
+        return int(h) * 3600 + int(m) * 60 + int(s) + int(ms) / 1000
+
+    def build_word_groups(words):
+        groups = []
+        i = 0
+        while i < len(words):
+            group = [words[i]]
+            char_count = len(words[i])
+            i += 1
+            while i < len(words) and len(group) < MAX_WORDS:
+                next_len = len(words[i])
+                if len(group) >= MIN_WORDS and char_count + 1 + next_len > MAX_CHARS:
+                    break
+                group.append(words[i])
+                char_count += 1 + next_len
+                i += 1
+            groups.append(group)
+        return groups
 
     blocks = srt_content.strip().split("\n\n")
-    upcased = []
+    dialogue_lines = []
     for block in blocks:
-        lines = block.split("\n")
+        lines = block.strip().split("\n")
         if len(lines) < 3:
-            upcased.append(block)
             continue
-        upcased.append("\n".join(lines[:2] + [l.upper() for l in lines[2:]]))
-    uppercase_srt = "\n\n".join(upcased)
+        timing = lines[1]
+        text = " ".join(lines[2:])
+        try:
+            start_str, end_str = timing.split(" --> ")
+            seg_start = srt_time_to_seconds(start_str)
+            seg_end = srt_time_to_seconds(end_str)
+        except Exception:
+            continue
+        seg_duration = max(seg_end - seg_start, 0.1)
+        words = text.split()
+        if not words:
+            continue
+        groups = build_word_groups(words)
+        time_per_group = seg_duration / len(groups)
+        for i, group in enumerate(groups):
+            group_start = seg_start + i * time_per_group
+            group_end = seg_start + (i + 1) * time_per_group
+            group_text = " ".join(group).upper()
+            dialogue_lines.append(
+                f"Dialogue: 0,{seconds_to_ass_time(group_start)},{seconds_to_ass_time(group_end)},"
+                f"Default,,0,0,0,,{group_text}"
+            )
 
-    with tempfile.NamedTemporaryFile(suffix=".srt", delete=False, mode="w", encoding="utf-8") as tmp_srt:
-        tmp_srt.write(uppercase_srt)
-        tmp_srt_path = tmp_srt.name
+    return ass_header + "\n".join(dialogue_lines)
+
+
+def burn_subtitles(video_path, subtitle_path, output_path):
+    """Burn subtitles (ASS or SRT) into the video using FFmpeg."""
+    tmp_ass_path = None
+
+    if subtitle_path.lower().endswith(".ass"):
+        abs_sub = os.path.abspath(subtitle_path).replace("\\", "/").replace(":", "\\:").replace(" ", "\\ ")
+        vf = f"ass='{abs_sub}'"
+    else:
+        # SRT fallback: convert to karaoke-matching ASS so font/size/style are identical
+        with open(subtitle_path, "r", encoding="utf-8") as f:
+            srt_content = f.read()
+        ass_content = srt_to_karaoke_style_ass(srt_content)
+        with tempfile.NamedTemporaryFile(suffix=".ass", delete=False, mode="w", encoding="utf-8") as tmp_ass:
+            tmp_ass.write(ass_content)
+            tmp_ass_path = tmp_ass.name
+        abs_sub = os.path.abspath(tmp_ass_path).replace("\\", "/").replace(":", "\\:").replace(" ", "\\ ")
+        vf = f"ass='{abs_sub}'"
 
     try:
-        abs_srt = os.path.abspath(tmp_srt_path).replace("\\", "/").replace(":", "\\:").replace(" ", "\\ ")
         cmd = [
             "ffmpeg", "-y",
             "-i", video_path,
-            "-vf", f"subtitles='{abs_srt}':force_style='FontName=Arial,FontSize=16,Bold=1,PrimaryColour=&HFFFFFF&,OutlineColour=&H000000&,Outline=1,Shadow=2,Alignment=2,MarginV=40'",
+            "-vf", vf,
             "-c:a", "copy",
             output_path
         ]
@@ -234,8 +330,174 @@ def burn_subtitles(video_path, srt_path, output_path):
             return False
         return True
     finally:
-        if os.path.exists(tmp_srt_path):
-            os.remove(tmp_srt_path)
+        if tmp_ass_path and os.path.exists(tmp_ass_path):
+            os.remove(tmp_ass_path)
+
+
+def seconds_to_ass_time(seconds):
+    """Convert float seconds to ASS time format H:MM:SS.cc"""
+    h = int(seconds // 3600)
+    m = int((seconds % 3600) // 60)
+    s = int(seconds % 60)
+    cs = int((seconds % 1) * 100)
+    return f"{h}:{m:02d}:{s:02d}.{cs:02d}"
+
+
+def generate_karaoke_ass(input_path, output_ass_path, output_srt_path=None, target_language=None):
+    """
+    Generate a karaoke-style ASS subtitle file using Whisper word-level timestamps.
+    Shows 3 words at a time; each word turns yellow as it is spoken, rest stays white.
+    Returns False for translated languages (pt-BR, es, fr, de) — caller should fall back to generate_subtitles.
+    """
+    TRANSLATION_LANGS = {
+        "pt-BR", "pt", "es", "fr", "de", "it", "nl", "ru", "pl", "tr",
+        "zh", "ja", "ko", "id", "sv", "da", "no", "fi", "uk", "ar", "hi",
+    }
+    if target_language in TRANSLATION_LANGS:
+        return False
+
+    try:
+        import openai
+
+        api_key = os.environ.get("OPENAI_API_KEY")
+        if not api_key:
+            print("SubtitleError: OPENAI_API_KEY is not set", flush=True)
+            return False
+
+        client = openai.OpenAI(api_key=api_key)
+
+        with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp_audio:
+            audio_path = tmp_audio.name
+
+        extract_cmd = [
+            "ffmpeg", "-y", "-i", input_path,
+            "-vn", "-ar", "16000", "-ac", "1", "-b:a", "32k",
+            audio_path
+        ]
+        extract_result = subprocess.run(extract_cmd, capture_output=True, text=True)
+        if extract_result.returncode != 0:
+            print(f"SubtitleError: Audio extraction failed: {extract_result.stderr}", flush=True)
+            return False
+
+        print("SubtitleProgress: 30%", flush=True)
+
+        with open(audio_path, "rb") as audio_file:
+            if target_language == "en":
+                response = client.audio.translations.create(
+                    model="whisper-1",
+                    file=audio_file,
+                    response_format="verbose_json",
+                    timestamp_granularities=["word"],
+                )
+            else:
+                response = client.audio.transcriptions.create(
+                    model="whisper-1",
+                    file=audio_file,
+                    response_format="verbose_json",
+                    timestamp_granularities=["word"],
+                )
+
+        detected_language = getattr(response, "language", "unknown")
+        raw_words = getattr(response, "words", [])
+        if not raw_words:
+            print("SubtitleError: No word timestamps returned by Whisper", flush=True)
+            return False
+
+        words = [{"word": w.word.strip(), "start": w.start, "end": w.end} for w in raw_words if w.word.strip()]
+
+        print(f"DetectedLanguage: {detected_language}", flush=True)
+        print("SubtitleProgress: 60%", flush=True)
+
+        ass_header = (
+            "[Script Info]\n"
+            "ScriptType: v4.00+\n"
+            "WrapStyle: 0\n"
+            "ScaledBorderAndShadow: yes\n"
+            "\n"
+            "[V4+ Styles]\n"
+            "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour,"
+            " Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow,"
+            " Alignment, MarginL, MarginR, MarginV, Encoding\n"
+            "Style: Default,Arial,13,&H0000FFFF,&H00FFFFFF,&H00000000,&H80000000,"
+            "1,0,0,0,100,100,0,0,1,1,2,2,10,10,40,1\n"
+            "\n"
+            "[Events]\n"
+            "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n"
+        )
+
+        # Group words dynamically: fill up to MAX_CHARS characters per group (3–5 words)
+        MAX_CHARS = 18
+        MIN_WORDS = 3
+        MAX_WORDS = 5
+
+        def build_groups(words):
+            groups = []
+            i = 0
+            while i < len(words):
+                group = [words[i]]
+                char_count = len(words[i]["word"])
+                i += 1
+                while i < len(words) and len(group) < MAX_WORDS:
+                    next_len = len(words[i]["word"])
+                    if len(group) >= MIN_WORDS and char_count + 1 + next_len > MAX_CHARS:
+                        break
+                    group.append(words[i])
+                    char_count += 1 + next_len
+                    i += 1
+                groups.append(group)
+            return groups
+
+        groups = build_groups(words)
+        dialogue_lines = []
+        srt_blocks = []
+
+        def fmt_srt_time(s):
+            h = int(s // 3600)
+            m = int((s % 3600) // 60)
+            sec = int(s % 60)
+            ms = int((s % 1) * 1000)
+            return f"{h:02d}:{m:02d}:{sec:02d},{ms:03d}"
+
+        for idx, group in enumerate(groups):
+            event_start = group[0]["start"]
+            event_end = group[-1]["end"]
+
+            parts = []
+            for j, w in enumerate(group):
+                if j < len(group) - 1:
+                    k_cs = max(1, int((group[j + 1]["start"] - w["start"]) * 100))
+                else:
+                    k_cs = max(1, int((w["end"] - w["start"]) * 100))
+                parts.append(f"{{\\k{k_cs}}}{w['word'].upper()}")
+
+            text = " ".join(parts)
+            dialogue_lines.append(
+                f"Dialogue: 0,{seconds_to_ass_time(event_start)},{seconds_to_ass_time(event_end)},Default,,0,0,0,,{text}"
+            )
+
+            if output_srt_path:
+                words_text = " ".join(w["word"] for w in group)
+                srt_blocks.append(
+                    f"{idx + 1}\n{fmt_srt_time(event_start)} --> {fmt_srt_time(event_end)}\n{words_text}"
+                )
+
+        with open(output_ass_path, "w", encoding="utf-8") as f:
+            f.write(ass_header)
+            f.write("\n".join(dialogue_lines))
+
+        if output_srt_path and srt_blocks:
+            with open(output_srt_path, "w", encoding="utf-8") as f:
+                f.write("\n\n".join(srt_blocks))
+
+        print("SubtitleProgress: 100%", flush=True)
+        return True
+
+    except Exception as e:
+        print(f"SubtitleError: {e}", flush=True)
+        return False
+    finally:
+        if "audio_path" in locals() and os.path.exists(audio_path):
+            os.remove(audio_path)
 
 
 def process_video(input_path, output_path, aspect_ratio=(9, 16), progress_callback=None):
@@ -446,19 +708,35 @@ if __name__ == "__main__":
 
         if success and args.subtitles and args.subtitle_output:
             srt_path = args.subtitle_output
-            subtitle_ok = generate_subtitles(args.input, srt_path, target_language=args.subtitle_lang)
 
-            if subtitle_ok and args.subtitle_mode == "burn":
-                # Burn subtitles into the processed output
+            if args.subtitle_mode == "burn":
+                # Try karaoke ASS (word-level highlight); falls back for translated languages
+                ass_path = srt_path.replace(".srt", ".ass")
+                karaoke_ok = generate_karaoke_ass(
+                    args.input, ass_path,
+                    output_srt_path=srt_path,
+                    target_language=args.subtitle_lang,
+                )
+                if karaoke_ok:
+                    burn_path = ass_path
+                else:
+                    # Fallback: plain SRT burn (translated languages)
+                    subtitle_ok = generate_subtitles(args.input, srt_path, target_language=args.subtitle_lang)
+                    if not subtitle_ok:
+                        sys.exit(1)
+                    burn_path = srt_path
+
                 with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as tmp:
                     burned_output = tmp.name
-                burned_ok = burn_subtitles(args.output, srt_path, burned_output)
+                burned_ok = burn_subtitles(args.output, burn_path, burned_output)
                 if burned_ok:
                     os.replace(burned_output, args.output)
                 else:
                     if os.path.exists(burned_output):
                         os.remove(burned_output)
                     sys.exit(1)
+            else:
+                generate_subtitles(args.input, srt_path, target_language=args.subtitle_lang)
     else:
         target_ratio = AVAILABLE_RATIOS.get(SELECTED_RATIO, (9, 16))
         ratio_suffix = SELECTED_RATIO.replace(":", "_")
