@@ -2,6 +2,7 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -51,6 +52,169 @@ def format_time(seconds):
     mins = int(seconds // 60)
     secs = int(seconds % 60)
     return f"{mins}m {secs}s"
+
+
+def wrap_srt_lines(srt_content, max_chars=42):
+    """Split long subtitle lines at word boundaries while preserving SRT timing."""
+    blocks = srt_content.strip().split("\n\n")
+    result = []
+    for block in blocks:
+        lines = block.split("\n")
+        if len(lines) < 3:
+            result.append(block)
+            continue
+        # lines[0] = index, lines[1] = timing, lines[2:] = text
+        index_line = lines[0]
+        timing_line = lines[1]
+        text_lines = lines[2:]
+        text = " ".join(text_lines)
+        # Split at word boundaries
+        wrapped = []
+        while len(text) > max_chars:
+            split_at = text.rfind(" ", 0, max_chars)
+            if split_at == -1:
+                split_at = max_chars
+            wrapped.append(text[:split_at].strip())
+            text = text[split_at:].strip()
+        if text:
+            wrapped.append(text)
+        result.append("\n".join([index_line, timing_line] + wrapped))
+    return "\n\n".join(result)
+
+
+def generate_subtitles(input_path, output_srt_path, target_language=None):
+    """
+    Transcribe audio using OpenAI Whisper API and optionally translate.
+    target_language: None = keep source language, "en" = translate to English,
+                     "pt-BR" or "es" = transcribe then GPT-translate.
+    """
+    try:
+        import openai
+
+        api_key = os.environ.get("OPENAI_API_KEY")
+        if not api_key:
+            print("SubtitleError: OPENAI_API_KEY is not set", flush=True)
+            return False
+
+        client = openai.OpenAI(api_key=api_key)
+
+        # Extract audio to a temp file (WAV, max 25MB for Whisper)
+        with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp_audio:
+            audio_path = tmp_audio.name
+
+        extract_cmd = [
+            "ffmpeg", "-y", "-i", input_path,
+            "-vn", "-ar", "16000", "-ac", "1", "-b:a", "32k",
+            audio_path
+        ]
+        extract_result = subprocess.run(extract_cmd, capture_output=True, text=True)
+        if extract_result.returncode != 0:
+            print(f"SubtitleError: Audio extraction failed: {extract_result.stderr}", flush=True)
+            return False
+
+        print("SubtitleProgress: 30%", flush=True)
+
+        srt_content = None
+        detected_language = "unknown"
+
+        with open(audio_path, "rb") as audio_file:
+            # Translate directly to English using Whisper's built-in translate task
+            if target_language == "en":
+                response = client.audio.translations.create(
+                    model="whisper-1",
+                    file=audio_file,
+                    response_format="verbose_json",
+                )
+                detected_language = getattr(response, "language", "unknown")
+                # Re-request as SRT
+                audio_file.seek(0)
+                srt_response = client.audio.translations.create(
+                    model="whisper-1",
+                    file=audio_file,
+                    response_format="srt",
+                )
+                srt_content = str(srt_response)
+            else:
+                # Transcribe in source language
+                response = client.audio.transcriptions.create(
+                    model="whisper-1",
+                    file=audio_file,
+                    response_format="verbose_json",
+                )
+                detected_language = getattr(response, "language", "unknown")
+                audio_file.seek(0)
+                srt_response = client.audio.transcriptions.create(
+                    model="whisper-1",
+                    file=audio_file,
+                    response_format="srt",
+                )
+                srt_content = str(srt_response)
+
+        print(f"DetectedLanguage: {detected_language}", flush=True)
+        print("SubtitleProgress: 60%", flush=True)
+
+        # If target is PT-BR or ES (non-English target), translate the SRT via GPT
+        if target_language and target_language not in (None, "en", detected_language):
+            lang_names = {
+                "pt-BR": "Brazilian Portuguese",
+                "es": "Spanish",
+                "fr": "French",
+                "de": "German",
+            }
+            lang_name = lang_names.get(target_language, target_language)
+            gpt_response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            f"You are a professional subtitle translator. "
+                            f"Translate the following SRT file content to {lang_name}. "
+                            f"Preserve all SRT index numbers and timing lines exactly as-is. "
+                            f"Only translate the text lines. Return only valid SRT format, no other text."
+                        ),
+                    },
+                    {"role": "user", "content": srt_content},
+                ],
+                temperature=0.1,
+            )
+            srt_content = gpt_response.choices[0].message.content
+
+        print("SubtitleProgress: 80%", flush=True)
+
+        # Post-process: wrap long lines for vertical video
+        srt_content = wrap_srt_lines(srt_content, max_chars=42)
+
+        with open(output_srt_path, "w", encoding="utf-8") as f:
+            f.write(srt_content)
+
+        print("SubtitleProgress: 100%", flush=True)
+        return True
+
+    except Exception as e:
+        print(f"SubtitleError: {e}", flush=True)
+        return False
+    finally:
+        if "audio_path" in locals() and os.path.exists(audio_path):
+            os.remove(audio_path)
+
+
+def burn_subtitles(video_path, srt_path, output_path):
+    """Burn SRT subtitles into the video using FFmpeg."""
+    # Use absolute paths and escape for FFmpeg subtitle filter
+    abs_srt = os.path.abspath(srt_path).replace("\\", "/").replace(":", "\\:")
+    cmd = [
+        "ffmpeg", "-y",
+        "-i", video_path,
+        "-vf", f"subtitles='{abs_srt}':force_style='FontName=Arial,FontSize=18,PrimaryColour=&HFFFFFF&,OutlineColour=&H000000&,Outline=2,Alignment=2'",
+        "-c:a", "copy",
+        output_path
+    ]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        print(f"SubtitleError: FFmpeg burn-in failed: {result.stderr}", flush=True)
+        return False
+    return True
 
 
 def process_video(input_path, output_path, aspect_ratio=(9, 16), progress_callback=None):
@@ -249,11 +413,29 @@ if __name__ == "__main__":
     parser.add_argument("--input", help="Path to input video")
     parser.add_argument("--output", help="Path to output video")
     parser.add_argument("--ratio", default="4:5", help="Aspect ratio (e.g., 9:16, 1:1, 4:5)")
+    parser.add_argument("--subtitles", action="store_true", help="Generate subtitles")
+    parser.add_argument("--subtitle-lang", default=None, help="Target subtitle language (e.g. en, pt-BR, es)")
+    parser.add_argument("--subtitle-mode", default="burn", help="Subtitle output mode: burn, srt, or vtt")
+    parser.add_argument("--subtitle-output", default=None, help="Path to save the .srt/.vtt file")
     args = parser.parse_args()
 
     if args.input and args.output:
         target_ratio = AVAILABLE_RATIOS.get(args.ratio, (4, 5))
-        process_video(args.input, args.output, aspect_ratio=target_ratio)
+        success = process_video(args.input, args.output, aspect_ratio=target_ratio)
+
+        if success and args.subtitles and args.subtitle_output:
+            srt_path = args.subtitle_output
+            subtitle_ok = generate_subtitles(args.input, srt_path, target_language=args.subtitle_lang)
+
+            if subtitle_ok and args.subtitle_mode == "burn":
+                # Burn subtitles into the processed output
+                with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as tmp:
+                    burned_output = tmp.name
+                burned_ok = burn_subtitles(args.output, srt_path, burned_output)
+                if burned_ok:
+                    os.replace(burned_output, args.output)
+                elif os.path.exists(burned_output):
+                    os.remove(burned_output)
     else:
         target_ratio = AVAILABLE_RATIOS.get(SELECTED_RATIO, (9, 16))
         ratio_suffix = SELECTED_RATIO.replace(":", "_")

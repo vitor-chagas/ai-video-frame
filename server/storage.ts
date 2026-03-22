@@ -15,6 +15,7 @@ export interface IStorage {
   getVideosByUser(userId: string): Promise<Video[]>;
   createVideo(video: InsertVideo): Promise<Video>;
   updateVideoStatus(id: string, status: string, processedPath?: string): Promise<Video | undefined>;
+  updateVideoSubtitles(id: string, detectedLanguage: string, subtitlePath: string): Promise<Video | undefined>;
   getAllProcessingVideos(): Promise<Video[]>;
   deleteVideo(id: string): Promise<void>;
   deleteAllUserVideos(userId: string): Promise<void>;
@@ -48,6 +49,11 @@ export class DatabaseStorage implements IStorage {
     return video;
   }
 
+  async updateVideoSubtitles(id: string, detectedLanguage: string, subtitlePath: string): Promise<Video | undefined> {
+    const [video] = await db.update(videos).set({ detectedLanguage, subtitlePath }).where(eq(videos.id, id)).returning();
+    return video;
+  }
+
   async getAllProcessingVideos(): Promise<Video[]> {
     return await db.select().from(videos).where(eq(videos.status, "processing"));
   }
@@ -77,11 +83,16 @@ export class DatabaseStorage implements IStorage {
           );
         }
         if (video.processedPath && fs.existsSync(video.processedPath)) {
-          await unlinkAsync(video.processedPath).catch((err: any) => 
+          await unlinkAsync(video.processedPath).catch((err: any) =>
             console.error(`Failed to delete file ${video.processedPath}:`, err)
           );
         }
-        
+        if (video.subtitlePath && fs.existsSync(video.subtitlePath)) {
+          await unlinkAsync(video.subtitlePath).catch((err: any) =>
+            console.error(`Failed to delete file ${video.subtitlePath}:`, err)
+          );
+        }
+
         await this.deleteVideo(video.id);
       }
     }

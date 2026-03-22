@@ -1,4 +1,4 @@
-import { pgTable, text, varchar, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, timestamp, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { sql } from "drizzle-orm";
@@ -16,6 +16,11 @@ export const videos = pgTable("videos", {
   status: text("status").notNull().default("uploaded"),
   fileSize: integer("file_size").notNull(),
   duration: integer("duration"),
+  subtitlesEnabled: boolean("subtitles_enabled").default(false).notNull(),
+  subtitleLanguage: text("subtitle_language"),
+  subtitleMode: text("subtitle_mode"),
+  subtitlePath: text("subtitle_path"),
+  detectedLanguage: text("detected_language"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

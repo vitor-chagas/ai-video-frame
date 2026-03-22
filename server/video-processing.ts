@@ -60,18 +60,22 @@ export async function getVideoDuration(filePath: string): Promise<number | null>
   }
 }
 
-export function calculateRequiredCredits(durationInSeconds: number | null): number {
-  if (durationInSeconds === null) return 1;
-  if (durationInSeconds <= 300) return 1;
+export function calculateRequiredCredits(durationInSeconds: number | null, withSubtitles: boolean = false): number {
+  if (durationInSeconds === null) return withSubtitles ? 2 : 1;
+  if (durationInSeconds <= 300) return withSubtitles ? 2 : 1;
   const additionalSeconds = durationInSeconds - 300;
-  return 1 + Math.ceil(additionalSeconds / 60);
+  const base = 1 + Math.ceil(additionalSeconds / 60);
+  return withSubtitles ? base + 1 : base;
 }
 
-export async function deleteVideoFiles(video: { originalPath?: string | null; processedPath?: string | null }) {
+export async function deleteVideoFiles(video: { originalPath?: string | null; processedPath?: string | null; subtitlePath?: string | null }) {
   if (video.originalPath && fs.existsSync(video.originalPath)) {
     await unlinkAsync(video.originalPath).catch(() => {});
   }
   if (video.processedPath && fs.existsSync(video.processedPath)) {
     await unlinkAsync(video.processedPath).catch(() => {});
+  }
+  if (video.subtitlePath && fs.existsSync(video.subtitlePath)) {
+    await unlinkAsync(video.subtitlePath).catch(() => {});
   }
 }

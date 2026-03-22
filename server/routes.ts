@@ -325,7 +325,11 @@ export async function registerRoutes(
       const video = await storage.getVideo(videoId);
       if (!video || video.userId !== userId) return res.status(404).json({ message: "Video not found" });
 
-      const requiredCredits = calculateRequiredCredits(video.duration);
+      const subtitles = req.body.subtitles === true || req.body.subtitles === "true";
+      const subtitleLanguage: string | null = req.body.subtitleLanguage || null;
+      const subtitleMode: string = ["burn", "srt", "vtt"].includes(req.body.subtitleMode) ? req.body.subtitleMode : "burn";
+
+      const requiredCredits = calculateRequiredCredits(video.duration, subtitles);
       const user = await authStorage.getUser(userId);
       if (!user || (user.credits || 0) < requiredCredits) {
         return res.status(402).json({ message: `Insufficient credits. This video requires ${requiredCredits} credits.`, requiredCredits });
@@ -345,23 +349,52 @@ export async function registerRoutes(
       const outputFilename = `auto_${video.aspectRatio.replace(":", "_")}_${video.id}${ext}`;
       const outputPath = path.join("uploads/output", outputFilename);
 
-      const pythonProcess = spawn("python3", [
+      const pythonArgs = [
         "python_scripts/auto_frame.py",
         "--input", video.originalPath,
         "--output", outputPath,
         "--ratio", video.aspectRatio,
-      ]);
+      ];
 
+      let srtPath: string | null = null;
+      if (subtitles) {
+        srtPath = outputPath.replace(/\.[^.]+$/, ".srt");
+        pythonArgs.push("--subtitles");
+        if (subtitleLanguage) pythonArgs.push("--subtitle-lang", subtitleLanguage);
+        pythonArgs.push("--subtitle-mode", subtitleMode);
+        pythonArgs.push("--subtitle-output", srtPath);
+      }
+
+      const pythonProcess = spawn("python3", pythonArgs);
+
+      let stdoutBuffer = "";
       pythonProcess.stdout.on("data", (data) => {
         const output = data.toString();
-        const match = output.match(/Progress:\s*([\d.]+)%/);
-        if (match) videoProgress.set(video.id, parseFloat(match[1]));
+        stdoutBuffer += output;
+
+        const frameMatch = output.match(/Progress:\s*([\d.]+)%/);
+        if (frameMatch) {
+          const pct = parseFloat(frameMatch[1]);
+          videoProgress.set(video.id, subtitles ? pct * 0.8 : pct);
+        }
+
+        const subMatch = output.match(/SubtitleProgress:\s*([\d.]+)%/);
+        if (subMatch) {
+          const subPct = parseFloat(subMatch[1]);
+          videoProgress.set(video.id, 80 + subPct * 0.2);
+        }
       });
 
       pythonProcess.on("close", async (code) => {
         videoProgress.delete(video.id);
         if (code === 0) {
           await storage.updateVideoStatus(video.id, "completed", outputPath);
+          // Parse detected language and persist subtitle path if subtitles were generated
+          if (subtitles && srtPath) {
+            const langMatch = stdoutBuffer.match(/DetectedLanguage:\s*(\S+)/);
+            const detectedLang = langMatch ? langMatch[1] : "unknown";
+            await storage.updateVideoSubtitles(video.id, detectedLang, srtPath);
+          }
         } else {
           await storage.updateVideoStatus(video.id, "failed");
         }
@@ -443,6 +476,36 @@ export async function registerRoutes(
         "Content-Length": stat.size,
         "Content-Disposition": `attachment; filename="${downloadName}"`,
         "Cache-Control": "no-cache"
+      });
+      fs.createReadStream(absolutePath).pipe(res);
+    } catch (error: any) {
+      if (!res.headersSent) res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/videos/:id/subtitles", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const vid = req.params.id as string;
+      const userId = getUserId(req)!;
+      const video = await storage.getVideo(vid);
+      if (!video || video.userId !== userId) return res.status(404).json({ message: "Video not found" });
+      if (!video.subtitlePath || !video.subtitleMode || video.subtitleMode === "burn") {
+        return res.status(400).json({ message: "No subtitle file available for this video" });
+      }
+      const absolutePath = path.resolve(video.subtitlePath);
+      const uploadsDir = path.resolve("./uploads");
+      if (!absolutePath.startsWith(uploadsDir + path.sep) && absolutePath !== uploadsDir) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      if (!fs.existsSync(absolutePath)) return res.status(404).json({ message: "Subtitle file not found" });
+      const isVtt = video.subtitleMode === "vtt";
+      const safeName = video.originalFilename.replace(/[^a-zA-Z0-9._-]/g, "_").substring(0, 100);
+      const ext = isVtt ? ".vtt" : ".srt";
+      const downloadName = `aivideoframe_${safeName}${ext}`;
+      res.writeHead(200, {
+        "Content-Type": isVtt ? "text/vtt" : "text/srt",
+        "Content-Disposition": `attachment; filename="${downloadName}"`,
+        "Cache-Control": "no-cache",
       });
       fs.createReadStream(absolutePath).pipe(res);
     } catch (error: any) {

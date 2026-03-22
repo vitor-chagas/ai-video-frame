@@ -110,6 +110,7 @@
       "title": "Seu vídeo está pronto!",
       "subtitle": "Enquadrado automaticamente para {{ratio}} com rastreamento AI.",
       "download": "Baixar Vídeo",
+      "downloadSubtitles": "Baixar Legendas ({{ext}})",
       "processAnother": "Processar Outro"
     },
     "failed": {
@@ -155,6 +156,19 @@
       "buyCredits_other": "Comprar {{count}} Créditos",
       "viewPlans": "Ver Planos de Assinatura",
       "securedByStripe": "Pagamentos protegidos pelo Stripe"
+    },
+    "subtitles": {
+      "toggle": "Adicionar Legendas",
+      "creditNote": "+1 crédito",
+      "languageLabel": "Idioma das Legendas",
+      "languageOriginal": "Idioma original (detecção automática)",
+      "languageEnglish": "Inglês",
+      "languagePtBr": "Português (Brasil)",
+      "languageSpanish": "Espanhol",
+      "modeLabel": "Formato de Saída",
+      "mode_burn": "Incorporado no vídeo (recomendado)",
+      "mode_srt": "Baixar arquivo SRT",
+      "mode_vtt": "Baixar arquivo VTT"
     },
     "toasts": {
       "videoReady": "Vídeo pronto!",

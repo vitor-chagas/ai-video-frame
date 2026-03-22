@@ -110,6 +110,7 @@
       "title": "Your video is ready!",
       "subtitle": "Auto-framed to {{ratio}} with AI subject tracking.",
       "download": "Download Video",
+      "downloadSubtitles": "Download Subtitles ({{ext}})",
       "processAnother": "Process Another"
     },
     "failed": {
@@ -155,6 +156,19 @@
       "buyCredits_other": "Buy {{count}} Credits",
       "viewPlans": "View Subscription Plans",
       "securedByStripe": "Payments secured by Stripe"
+    },
+    "subtitles": {
+      "toggle": "Add Subtitles",
+      "creditNote": "+1 credit",
+      "languageLabel": "Subtitle Language",
+      "languageOriginal": "Original language (auto-detect)",
+      "languageEnglish": "English",
+      "languagePtBr": "Portuguese (Brazil)",
+      "languageSpanish": "Spanish",
+      "modeLabel": "Output Format",
+      "mode_burn": "Burned into video (recommended)",
+      "mode_srt": "Download SRT file",
+      "mode_vtt": "Download VTT file"
     },
     "toasts": {
       "videoReady": "Video ready!",

@@ -11,6 +11,7 @@ import {
   getVideoDuration,
   videoProgress,
   deleteVideoFiles,
+  calculateRequiredCredits,
   ALLOWED_RATIOS,
 } from "../../video-processing";
 
@@ -95,9 +96,23 @@ router.post("/:id/process", async (req, res) => {
       return res.status(400).json({ error: "Video has already been processed" });
     }
 
+    const subtitles = req.body.subtitles === true || req.body.subtitles === "true";
+    const subtitleLanguage: string | null = req.body.subtitleLanguage || null;
+    const subtitleMode: string = ["burn", "srt", "vtt"].includes(req.body.subtitleMode) ? req.body.subtitleMode : "burn";
+
+    // RapidAPI: each credit = 1 unit deducted; subtitles cost +1 credit
+    // For simplicity, decrement once for the video and once more for subtitles if enabled
     const updatedUser = await authStorage.decrementCreditsIfAvailable(userId);
     if (!updatedUser) {
       return res.status(402).json({ error: "Insufficient credits. Please upgrade your plan on RapidAPI." });
+    }
+    if (subtitles) {
+      const userAfterFirst = await authStorage.decrementCreditsIfAvailable(userId);
+      if (!userAfterFirst) {
+        // Refund the first credit and reject
+        await authStorage.updateUserCredits(userId, 1);
+        return res.status(402).json({ error: "Insufficient credits for subtitles. You need 1 extra credit." });
+      }
     }
 
     await storage.updateVideoStatus(video.id, "processing");
@@ -106,22 +121,49 @@ router.post("/:id/process", async (req, res) => {
     const outputFilename = `auto_${video.aspectRatio.replace(":", "_")}_${video.id}${ext}`;
     const outputPath = path.join("uploads/output", outputFilename);
 
-    const pythonProcess = spawn("python3", [
+    const pythonArgs = [
       "python_scripts/auto_frame.py",
       "--input", video.originalPath,
       "--output", outputPath,
       "--ratio", video.aspectRatio,
-    ]);
+    ];
 
+    let srtPath: string | null = null;
+    if (subtitles) {
+      srtPath = outputPath.replace(/\.[^.]+$/, ".srt");
+      pythonArgs.push("--subtitles");
+      if (subtitleLanguage) pythonArgs.push("--subtitle-lang", subtitleLanguage);
+      pythonArgs.push("--subtitle-mode", subtitleMode);
+      pythonArgs.push("--subtitle-output", srtPath);
+    }
+
+    const pythonProcess = spawn("python3", pythonArgs);
+
+    let stdoutBuffer = "";
     pythonProcess.stdout.on("data", (data) => {
-      const match = data.toString().match(/Progress:\s*([\d.]+)%/);
-      if (match) videoProgress.set(video.id, parseFloat(match[1]));
+      const output = data.toString();
+      stdoutBuffer += output;
+      const frameMatch = output.match(/Progress:\s*([\d.]+)%/);
+      if (frameMatch) {
+        const pct = parseFloat(frameMatch[1]);
+        videoProgress.set(video.id, subtitles ? pct * 0.8 : pct);
+      }
+      const subMatch = output.match(/SubtitleProgress:\s*([\d.]+)%/);
+      if (subMatch) {
+        const subPct = parseFloat(subMatch[1]);
+        videoProgress.set(video.id, 80 + subPct * 0.2);
+      }
     });
 
     pythonProcess.on("close", async (code) => {
       videoProgress.delete(video.id);
       if (code === 0) {
         await storage.updateVideoStatus(video.id, "completed", outputPath);
+        if (subtitles && srtPath) {
+          const langMatch = stdoutBuffer.match(/DetectedLanguage:\s*(\S+)/);
+          const detectedLang = langMatch ? langMatch[1] : "unknown";
+          await storage.updateVideoSubtitles(video.id, detectedLang, srtPath);
+        }
       } else {
         await storage.updateVideoStatus(video.id, "failed");
       }

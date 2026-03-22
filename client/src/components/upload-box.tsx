@@ -1,7 +1,7 @@
 import { useCallback, useState, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import posthog from "posthog-js";
-import { Upload, FileVideo, X, Check, Lock, Loader2, Download, Coins, Settings } from "lucide-react";
+import { Upload, FileVideo, X, Check, Lock, Loader2, Download, Coins, Settings, Captions } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -14,6 +14,14 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { uploadVideo, apiRequest } from "@/lib/api";
@@ -37,6 +45,11 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
   const [processingStatus, setProcessingStatus] = useState<string | null>(null);
   const [processingProgress, setProcessingProgress] = useState(0);
 
+  const [subtitlesEnabled, setSubtitlesEnabled] = useState(false);
+  const [subtitleLanguage, setSubtitleLanguage] = useState<string>("original");
+  const [subtitleMode, setSubtitleMode] = useState<"burn" | "srt" | "vtt">("burn");
+  const [completedSubtitleMode, setCompletedSubtitleMode] = useState<string | null>(null);
+
   const { toast } = useToast();
   const { user, isAuthenticated, isLoading } = useAuth();
   const { t } = useTranslation();
@@ -51,6 +64,10 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
     setIsValidating(false);
     setIsUploading(false);
     setShowPayment(false);
+    setSubtitlesEnabled(false);
+    setSubtitleLanguage("original");
+    setSubtitleMode("burn");
+    setCompletedSubtitleMode(null);
 
     try {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
@@ -75,6 +92,9 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
           clearInterval(poll);
           setProcessingProgress(100);
           setProcessingStatus("completed");
+          if (video.subtitleMode && video.subtitleMode !== "burn") {
+            setCompletedSubtitleMode(video.subtitleMode);
+          }
           posthog.capture("video_processing_completed");
           toast({
             title: t("uploadBox.toasts.videoReady"),
@@ -223,15 +243,15 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
     maxSize: 2 * 1024 * 1024 * 1024,
   });
 
-  const calculateRequiredCredits = (durationInSeconds: number | null | undefined): number => {
-    if (!durationInSeconds) return 1;
-    if (durationInSeconds <= 300) return 1;
+  const calculateRequiredCredits = (durationInSeconds: number | null | undefined, withSubtitles: boolean = false): number => {
+    if (!durationInSeconds) return withSubtitles ? 2 : 1;
+    if (durationInSeconds <= 300) return withSubtitles ? 2 : 1;
     const additionalSeconds = durationInSeconds - 300;
-    const additionalCredits = Math.ceil(additionalSeconds / 60);
-    return 1 + additionalCredits;
+    const base = 1 + Math.ceil(additionalSeconds / 60);
+    return withSubtitles ? base + 1 : base;
   };
 
-  const requiredCredits = calculateRequiredCredits(file?.duration);
+  const requiredCredits = calculateRequiredCredits(file?.duration, subtitlesEnabled);
   const missingCredits = Math.max(0, requiredCredits - (user?.credits ?? 0));
 
   useEffect(() => {
@@ -293,6 +313,11 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
       setProcessingStatus("Starting video processing...");
       await apiRequest(`/api/videos/${videoId}/process`, {
         method: "POST",
+        body: JSON.stringify({
+          subtitles: subtitlesEnabled,
+          subtitleLanguage: subtitleLanguage === "original" ? null : subtitleLanguage,
+          subtitleMode,
+        }),
       });
 
       // Update user credits in UI
@@ -331,6 +356,11 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
     // Use direct window location for download to handle large files better than fetch/blob
     // The server already sets the correct Content-Disposition header
     window.location.href = `/api/videos/${videoId}/download`;
+  };
+
+  const handleSubtitleDownload = () => {
+    if (!videoId) return;
+    window.location.href = `/api/videos/${videoId}/subtitles`;
   };
 
   const [isPortalLoading, setIsPortalLoading] = useState(false);
@@ -487,7 +517,7 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                   </p>
                 )}
               </div>
-              <div className="flex gap-4">
+              <div className="flex flex-wrap gap-3 justify-center">
                 <Button
                   size="lg"
                   onClick={handleDownload}
@@ -497,6 +527,18 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                   <Download className="mr-2 h-5 w-5" />
                   {t("uploadBox.completed.download")}
                 </Button>
+                {completedSubtitleMode && (
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    onClick={handleSubtitleDownload}
+                    className="rounded-full px-8 h-14 text-lg"
+                    data-testid="button-download-subtitles"
+                  >
+                    <Captions className="mr-2 h-5 w-5" />
+                    {t("uploadBox.completed.downloadSubtitles", { ext: completedSubtitleMode.toUpperCase() })}
+                  </Button>
+                )}
                 <Button
                   size="lg"
                   variant="outline"
@@ -687,6 +729,67 @@ export function UploadBox({ stripeVideoId }: { stripeVideoId?: string | null }) 
                       </div>
                     ))}
                   </RadioGroup>
+                </div>
+
+                {/* Subtitle Options */}
+                <div className="space-y-4 pt-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Captions className="h-4 w-4 text-[hsl(24,10%,10%)]" />
+                      <Label className="text-base font-serif font-bold cursor-pointer" htmlFor="subtitles-toggle">
+                        {t("uploadBox.subtitles.toggle")}
+                      </Label>
+                      <span className="text-xs text-muted-foreground bg-[hsl(38,20%,95%)] px-2 py-0.5 rounded-full font-medium">
+                        {t("uploadBox.subtitles.creditNote")}
+                      </span>
+                    </div>
+                    <Switch
+                      id="subtitles-toggle"
+                      checked={subtitlesEnabled}
+                      onCheckedChange={setSubtitlesEnabled}
+                    />
+                  </div>
+
+                  {subtitlesEnabled && (
+                    <div className="space-y-4 pl-6 animate-in fade-in slide-in-from-top-2 duration-200">
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-[hsl(24,10%,30%)]">
+                          {t("uploadBox.subtitles.languageLabel")}
+                        </Label>
+                        <Select value={subtitleLanguage} onValueChange={setSubtitleLanguage}>
+                          <SelectTrigger className="rounded-xl border-[hsl(38,10%,85%)]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="original">{t("uploadBox.subtitles.languageOriginal")}</SelectItem>
+                            <SelectItem value="en">{t("uploadBox.subtitles.languageEnglish")}</SelectItem>
+                            <SelectItem value="pt-BR">{t("uploadBox.subtitles.languagePtBr")}</SelectItem>
+                            <SelectItem value="es">{t("uploadBox.subtitles.languageSpanish")}</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-[hsl(24,10%,30%)]">
+                          {t("uploadBox.subtitles.modeLabel")}
+                        </Label>
+                        <RadioGroup
+                          value={subtitleMode}
+                          onValueChange={(v) => setSubtitleMode(v as "burn" | "srt" | "vtt")}
+                          className="space-y-1"
+                        >
+                          {(["burn", "srt", "vtt"] as const).map((mode) => (
+                            <div key={mode} className="flex items-center gap-2">
+                              <RadioGroupItem value={mode} id={`subtitle-mode-${mode}`} />
+                              <Label htmlFor={`subtitle-mode-${mode}`} className="text-sm cursor-pointer font-normal">
+                                {t(`uploadBox.subtitles.mode_${mode}`)}
+                              </Label>
+                            </div>
+                          ))}
+                        </RadioGroup>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="pt-6 border-t border-[hsl(38,10%,90%)] flex justify-end gap-3">
