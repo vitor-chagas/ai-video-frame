@@ -19,7 +19,7 @@ export const users = pgTable("users", {
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
-  credits: integer("credits").notNull().default(1),
+  credits: integer("credits").notNull().default(2),
   stripeCustomerId: varchar("stripe_customer_id"),
   stripeSubscriptionId: varchar("stripe_subscription_id"),
   rapidApiUserId: varchar("rapid_api_user_id").unique(),
