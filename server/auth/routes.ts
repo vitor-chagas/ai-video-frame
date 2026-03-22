@@ -73,7 +73,7 @@ export function registerAuthRoutes(app: Express): void {
         ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
         : `${protocol}://${host}`;
 
-      const magicLink = `${baseUrl}/api/auth/verify?token=${token}`;
+      const magicLink = `${baseUrl}/auth/verify?token=${token}`;
 
       const { data, error } = await resend.emails.send({
         from: "AI Video Frame <contact@aivideoframe.com>",
@@ -168,32 +168,29 @@ export function registerAuthRoutes(app: Express): void {
     });
   });
 
-  // Verify magic link
-  app.get("/api/auth/verify", async (req, res, next) => {
-    const { token: providedToken } = req.query;
+  // Verify magic link — POST so email pre-fetchers (which only do GET) can't consume the token
+  app.post("/api/auth/verify", async (req, res, next) => {
+    const { token: providedToken } = req.body;
     if (!providedToken || typeof providedToken !== "string") {
-      return res.status(400).send("Invalid or missing token");
+      return res.status(400).json({ message: "Invalid or missing token" });
     }
 
     try {
       const verificationToken = await authStorage.getVerificationToken(providedToken);
-      
+
       if (!verificationToken) {
-        return res.status(400).send("Invalid or expired token");
+        return res.status(400).json({ message: "Invalid or expired token" });
       }
 
       // Timing-safe comparison
       const providedBuffer = Buffer.from(providedToken);
       const storedBuffer = Buffer.from(verificationToken.token);
-      
+
       if (providedBuffer.length !== storedBuffer.length || !timingSafeEqual(providedBuffer, storedBuffer)) {
-        return res.status(400).send("Invalid or expired token");
+        return res.status(400).json({ message: "Invalid or expired token" });
       }
 
-      // Skip deletion locally to handle browser background pre-fetch requests
-      if (process.env.NODE_ENV === "production") {
-        await authStorage.deleteVerificationToken(providedToken);
-      }
+      await authStorage.deleteVerificationToken(providedToken);
 
       // Find or create user
       let user = await authStorage.getUserByEmail(verificationToken.identifier);
@@ -212,11 +209,11 @@ export function registerAuthRoutes(app: Express): void {
           return next(err);
         }
         log(`User ${user!.id} logged in via magic link`, "Auth");
-        res.redirect("/");
+        res.json({ success: true });
       });
     } catch (error) {
       console.error("[Auth] Verification error:", error);
-      res.status(500).send("An error occurred during verification");
+      res.status(500).json({ message: "An error occurred during verification" });
     }
   });
 }
