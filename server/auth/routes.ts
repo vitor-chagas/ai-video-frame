@@ -68,11 +68,12 @@ export function registerAuthRoutes(app: Express): void {
 
       const protocol = req.secure ? "https" : "http";
       const host = req.get("host");
-      const magicLink = `${protocol}://${host}/api/auth/verify?token=${token}`;
 
-      const baseUrl = process.env.RAILWAY_PUBLIC_DOMAIN 
-        ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` 
+      const baseUrl = process.env.RAILWAY_PUBLIC_DOMAIN
+        ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
         : `${protocol}://${host}`;
+
+      const magicLink = `${baseUrl}/api/auth/verify?token=${token}`;
 
       const { data, error } = await resend.emails.send({
         from: "AI Video Frame <contact@aivideoframe.com>",
