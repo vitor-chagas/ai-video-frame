@@ -179,6 +179,7 @@
     "sendMagicLink": "Sihirli Bağlantı Gönder",
     "checkInbox": "Gelen kutunuzu kontrol edin!",
     "magicLinkSentDesc": "{{email}} adresine bir giriş bağlantısı gönderdik.",
+    "spamFolderHint": "Bulamadınız mı? Spam klasörünüzü kontrol edin.",
     "tryAnotherEmail": "Başka e-posta dene",
     "toasts": {
       "magicLinkSent": "Sihirli bağlantı gönderildi",

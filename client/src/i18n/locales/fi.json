@@ -179,6 +179,7 @@
     "sendMagicLink": "Lähetä taikakinkki",
     "checkInbox": "Tarkista postilaatikkosi!",
     "magicLinkSentDesc": "Lähetimme kirjautumislinkin osoitteeseen {{email}}.",
+    "spamFolderHint": "Etkö löydä sitä? Tarkista roskapostilaatikko.",
     "tryAnotherEmail": "Kokeile toista sähköpostia",
     "toasts": {
       "magicLinkSent": "Taikakinkki lähetetty",

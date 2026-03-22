@@ -179,6 +179,7 @@
     "sendMagicLink": "Send magisk lenke",
     "checkInbox": "Sjekk innboksen din!",
     "magicLinkSentDesc": "Vi har sendt en innloggingslenke til {{email}}.",
+    "spamFolderHint": "Finner du den ikke? Sjekk spam-mappen din.",
     "tryAnotherEmail": "Prøv en annen e-post",
     "toasts": {
       "magicLinkSent": "Magisk lenke sendt",

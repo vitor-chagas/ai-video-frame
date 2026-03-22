@@ -179,6 +179,7 @@
     "sendMagicLink": "マジックリンクを送信",
     "checkInbox": "受信トレイを確認してください！",
     "magicLinkSentDesc": "{{email}}にログインリンクを送信しました。",
+    "spamFolderHint": "見つかりませんか？スパムフォルダを確認してください。",
     "tryAnotherEmail": "別のメールを試す",
     "toasts": {
       "magicLinkSent": "マジックリンクを送信しました",

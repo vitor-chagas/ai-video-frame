@@ -179,6 +179,7 @@
     "sendMagicLink": "Skicka magisk länk",
     "checkInbox": "Kolla din inkorg!",
     "magicLinkSentDesc": "Vi har skickat en inloggningslänk till {{email}}.",
+    "spamFolderHint": "Hittar du det inte? Kolla din skräppostmapp.",
     "tryAnotherEmail": "Prova en annan e-post",
     "toasts": {
       "magicLinkSent": "Magisk länk skickad",

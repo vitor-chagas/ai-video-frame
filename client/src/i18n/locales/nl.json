@@ -179,6 +179,7 @@
     "sendMagicLink": "Magic Link versturen",
     "checkInbox": "Controleer uw inbox!",
     "magicLinkSentDesc": "We hebben een inloglink naar {{email}} gestuurd.",
+    "spamFolderHint": "Niet gevonden? Controleer uw spammap.",
     "tryAnotherEmail": "Ander e-mailadres proberen",
     "toasts": {
       "magicLinkSent": "Magic link verzonden",
