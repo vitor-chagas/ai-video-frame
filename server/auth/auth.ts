@@ -8,6 +8,7 @@ import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { authStorage } from "./storage";
 import { log } from "../utils/logger";
+import { config as appConfig } from "../config";
 
 const OIDC_CACHE_MAX_AGE = 60 * 60 * 1000; // 1 hour
 const OIDC_SCOPE = "openid email profile";
@@ -15,9 +16,9 @@ const OIDC_SCOPE = "openid email profile";
 const getOidcConfig = memoize(
   async () => {
     return await client.discovery(
-      new URL(process.env.AUTH_ISSUER_URL!),
-      process.env.AUTH_CLIENT_ID!,
-      process.env.AUTH_CLIENT_SECRET
+      new URL(appConfig.AUTH_ISSUER_URL),
+      appConfig.AUTH_CLIENT_ID,
+      appConfig.AUTH_CLIENT_SECRET
     );
   },
   { maxAge: OIDC_CACHE_MAX_AGE }
@@ -27,7 +28,7 @@ export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
   const pgStore = connectPg(session);
   const sessionStore = new pgStore({
-    conString: process.env.DATABASE_URL,
+    conString: appConfig.DATABASE_URL,
     // Disable automatic table creation in production as it fails due to missing SQL files in the bundle.
     // The table has already been created manually.
     createTableIfMissing: false, 
@@ -35,7 +36,7 @@ export function getSession() {
     tableName: "sessions",
   });
   return session({
-    secret: process.env.SESSION_SECRET!,
+    secret: appConfig.SESSION_SECRET,
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
@@ -44,7 +45,7 @@ export function getSession() {
       httpOnly: true,
       // Use secure cookies in production. Express will check the 'trust proxy' setting
       // to determine if the connection is secure.
-      secure: process.env.NODE_ENV === "production",
+      secure: appConfig.NODE_ENV === "production",
       maxAge: sessionTtl,
       sameSite: "lax",
     },
@@ -131,11 +132,11 @@ export async function setupAuth(app: Express) {
   // Initialize strategy once and persist it.
   // Re-creating it inside routes causes OIDC state verification to fail.
   // We prioritize AUTH_CALLBACK_URL from environment variables.
-  let callbackURL = process.env.AUTH_CALLBACK_URL;
+  let callbackURL = appConfig.AUTH_CALLBACK_URL;
 
   if (!callbackURL) {
-    const port = process.env.PORT || "5001";
-    if (process.env.NODE_ENV === "production") {
+    const port = String(appConfig.PORT);
+    if (appConfig.NODE_ENV === "production") {
       // RAILWAY_PUBLIC_DOMAIN is a good fallback for Railway if explicit AUTH_CALLBACK_URL is missing
       const domain = process.env.RAILWAY_PUBLIC_DOMAIN || process.env.APP_URL;
       if (domain) {
@@ -203,8 +204,8 @@ export async function setupAuth(app: Express) {
       // Google doesn't always support end_session_endpoint via OIDC discovery
       if ((config as any).end_session_endpoint) {
         const endSessionUrl = client.buildEndSessionUrl(config, {
-          client_id: process.env.AUTH_CLIENT_ID!,
-          post_logout_redirect_uri: process.env.AUTH_LOGOUT_REDIRECT_URL || `${req.protocol}://${req.get("host")}`,
+          client_id: appConfig.AUTH_CLIENT_ID,
+          post_logout_redirect_uri: appConfig.AUTH_LOGOUT_REDIRECT_URL || `${req.protocol}://${req.get("host")}`,
         });
         return res.redirect(endSessionUrl.href);
       }

@@ -27,7 +27,7 @@ export const videos = pgTable("videos", {
 export const payments = pgTable("payments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").references(() => users.id).notNull(),
-  videoId: varchar("video_id").references(() => videos.id).notNull(),
+  videoId: varchar("video_id").references(() => videos.id, { onDelete: "cascade" }).notNull(),
   stripeSessionId: text("stripe_session_id"),
   amount: integer("amount").notNull().default(500),
   status: text("status").notNull().default("pending"),

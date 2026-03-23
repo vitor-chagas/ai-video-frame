@@ -6,8 +6,9 @@ import { log } from "../utils/logger";
 import { Resend } from "resend";
 import jwt from "jsonwebtoken";
 import { randomBytes, timingSafeEqual } from "crypto";
+import { config } from "../config";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(config.RESEND_API_KEY);
 
 import { rateLimit } from "express-rate-limit";
 import disposableDomains from "disposable-email-domains";
