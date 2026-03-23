@@ -164,13 +164,15 @@ export async function setupAuth(app: Express) {
   passport.use("oidc", strategy);
 
   app.get("/api/login", (req, res, next) => {
-    // Explicitly save the session before redirecting to Google so the PKCE
-    // code_verifier is persisted in PostgreSQL before the callback arrives.
-    const originalRedirect = res.redirect.bind(res);
-    (res as any).redirect = (url: string) => {
+    // Passport's Strategy.prototype.redirect calls res.end() directly (not
+    // res.redirect()), so we intercept res.end() to ensure the PKCE
+    // code_verifier is flushed to PostgreSQL before the browser is sent to Google.
+    const end = res.end.bind(res);
+    (res.end as any) = (...args: any[]) => {
+      res.end = end as any; // Restore before calling to prevent recursion
       req.session.save((saveErr) => {
         if (saveErr) console.error("[Auth] Session save error before redirect:", saveErr);
-        originalRedirect(url);
+        end(...args);
       });
     };
     passport.authenticate("oidc", {
