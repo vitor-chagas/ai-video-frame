@@ -164,6 +164,15 @@ export async function setupAuth(app: Express) {
   passport.use("oidc", strategy);
 
   app.get("/api/login", (req, res, next) => {
+    // Explicitly save the session before redirecting to Google so the PKCE
+    // code_verifier is persisted in PostgreSQL before the callback arrives.
+    const originalRedirect = res.redirect.bind(res);
+    (res as any).redirect = (url: string) => {
+      req.session.save((saveErr) => {
+        if (saveErr) console.error("[Auth] Session save error before redirect:", saveErr);
+        originalRedirect(url);
+      });
+    };
     passport.authenticate("oidc", {
       prompt: "select_account",
       scope: OIDC_SCOPE.split(" "),
@@ -172,15 +181,17 @@ export async function setupAuth(app: Express) {
 
   app.get("/api/callback", (req, res, next) => {
     log(`Callback triggered. Query: ${JSON.stringify(req.query)}`, "Auth");
-    
+
     passport.authenticate("oidc", (err: any, user: any, info: any) => {
       if (err) {
-        console.error("[Auth] Passport authenticate error:", err);
-        // If it's a state mismatch or similar, logging the session state might help
-        console.error("[Auth] Session during error:", JSON.stringify({
+        console.error("[Auth] Passport authenticate error:", err.message);
+        console.error("[Auth] Error cause:", err.cause);
+        console.error("[Auth] Error code:", err.code || err.error);
+        console.error("[Auth] Error body:", JSON.stringify(err.body || err.response?.body));
+        console.error("[Auth] Session state:", JSON.stringify({
           id: req.sessionID,
-          hasSession: !!req.session,
-          passport: (req.session as any)?.passport
+          hasPassport: !!(req.session as any)?.passport,
+          hasOidcState: !!(req.session as any)?.oidc || !!(req.session as any)?.["openid-client"],
         }));
         return next(err);
       }
