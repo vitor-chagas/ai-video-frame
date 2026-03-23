@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import { authStorage } from "../auth/storage";
 import type { User } from "@shared/models/auth";
+import { config } from "../config";
 
 export interface RapidApiRequest extends Request {
   rapidApiUser: User;
@@ -8,7 +9,7 @@ export interface RapidApiRequest extends Request {
 
 export async function rapidApiAuth(req: Request, res: Response, next: NextFunction) {
   const proxySecret = req.headers["x-rapidapi-proxy-secret"];
-  if (!process.env.RAPIDAPI_PROXY_SECRET || proxySecret !== process.env.RAPIDAPI_PROXY_SECRET) {
+  if (!config.RAPIDAPI_PROXY_SECRET || proxySecret !== config.RAPIDAPI_PROXY_SECRET) {
     return res.status(403).json({ error: "Forbidden" });
   }
 

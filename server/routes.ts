@@ -1,4 +1,5 @@
 import type { Express, Request, Response } from "express";
+import { config } from "./config";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { authStorage } from "./auth/storage";
@@ -48,7 +49,7 @@ const CLEANUP_THRESHOLD_MS = 60 * 60 * 1000; // 60 minutes
 
 async function getStripe() {
   const Stripe = (await import("stripe")).default;
-  return new Stripe(process.env.STRIPE_SECRET_KEY!);
+  return new Stripe(config.STRIPE_SECRET_KEY);
 }
 
 export async function cleanupUserFiles(userId: string) {
@@ -254,21 +255,21 @@ export async function registerRoutes(
       if (plan === "single") {
         credits = quantity || 1;
         stripeQuantity = credits;
-        priceId = process.env.STRIPE_PRICE_SINGLE!;
+        priceId = config.STRIPE_PRICE_SINGLE;
         mode = "payment";
       } else if (plan === "monthly") {
         credits = 12;
-        priceId = process.env.STRIPE_PRICE_MONTHLY!;
+        priceId = config.STRIPE_PRICE_MONTHLY;
         mode = "subscription";
       } else if (plan === "yearly") {
         credits = 144;
-        priceId = process.env.STRIPE_PRICE_YEARLY!;
+        priceId = config.STRIPE_PRICE_YEARLY;
         mode = "subscription";
       } else {
         return res.status(400).json({ message: "Invalid plan" });
       }
 
-      if (!process.env.STRIPE_SECRET_KEY) {
+      if (!config.STRIPE_SECRET_KEY) {
         await authStorage.updateUserCredits(userId, credits);
         return res.json({ simulated: true, status: "completed" });
       }
@@ -296,7 +297,7 @@ export async function registerRoutes(
       const { sessionId } = req.body;
       if (!sessionId) return res.status(400).json({ message: "sessionId is required" });
       const userId = getUserId(req)!;
-      if (!process.env.STRIPE_SECRET_KEY) return res.json({ status: "completed", credits: 0 });
+      if (!config.STRIPE_SECRET_KEY) return res.json({ status: "completed", credits: 0 });
 
       const stripe = await getStripe();
       const stripeSession = await stripe.checkout.sessions.retrieve(sessionId);
@@ -412,7 +413,7 @@ export async function registerRoutes(
 
   app.post("/api/webhooks/stripe", async (req: Request, res: Response) => {
     const sig = req.headers["stripe-signature"];
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    const webhookSecret = config.STRIPE_WEBHOOK_SECRET;
     if (!webhookSecret || !sig) return res.status(400).send("Webhook Error: Missing secret or signature");
     let event;
     try {
@@ -441,7 +442,7 @@ export async function registerRoutes(
       const userId = getUserId(req)!;
       const user = await authStorage.getUser(userId);
       if (!user || !user.stripeCustomerId) return res.status(400).json({ message: "No active subscription or customer found" });
-      if (!process.env.STRIPE_SECRET_KEY) return res.status(400).json({ message: "Stripe is not configured" });
+      if (!config.STRIPE_SECRET_KEY) return res.status(400).json({ message: "Stripe is not configured" });
       const stripe = await getStripe();
       const session = await stripe.billingPortal.sessions.create({
         customer: user.stripeCustomerId,
