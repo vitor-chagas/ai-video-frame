@@ -20,7 +20,7 @@ export const config = {
   AUTH_CLIENT_SECRET:       p("DEV_AUTH_CLIENT_SECRET",        "PROD_AUTH_CLIENT_SECRET")!,
   AUTH_CALLBACK_URL:        p("DEV_AUTH_CALLBACK_URL",         "PROD_AUTH_CALLBACK_URL"),
   AUTH_LOGOUT_REDIRECT_URL: p("DEV_AUTH_LOGOUT_REDIRECT_URL",  "PROD_AUTH_LOGOUT_REDIRECT_URL"),
-  PORT:                     Number(p("DEV_PORT", "PROD_PORT")) || 5002,
+  PORT:                     Number(p("DEV_PORT", "PROD_PORT")) || Number(process.env.PORT) || 5002,
   RESEND_API_KEY:           process.env.RESEND_API_KEY!,
   RAPIDAPI_PROXY_SECRET:    process.env.RAPIDAPI_PROXY_SECRET!,
   OPENAI_API_KEY:           process.env.OPENAI_API_KEY!,
