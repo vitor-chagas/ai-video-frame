@@ -4,9 +4,11 @@ import { createServer, type Server } from "http";
 
 // Set required env vars before any module imports
 process.env.AUTH_ISSUER_URL = "https://accounts.google.com";
-process.env.AUTH_CLIENT_ID = "test-client-id";
-process.env.AUTH_CLIENT_SECRET = "test-client-secret";
-process.env.SESSION_SECRET = "test-session-secret";
+process.env.DEV_AUTH_CLIENT_ID = "test-client-id";
+process.env.DEV_AUTH_CLIENT_SECRET = "test-client-secret";
+process.env.DEV_SESSION_SECRET = "test-session-secret";
+process.env.DEV_DATABASE_URL = "postgresql://test";
+process.env.RESEND_API_KEY = "test-resend-key";
 
 // Mock openid-client BEFORE any server module imports to prevent OIDC discovery network call
 vi.mock("openid-client", async () => {
