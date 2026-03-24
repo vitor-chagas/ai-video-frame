@@ -2,11 +2,13 @@
 # RapidAPI E2E test script for AI Video Frame
 # Usage: bash tests/test_rapidapi.sh
 # Requires: curl, jq
+# Requires env vars: RAPIDAPI_PROXY_SECRET
+# Optional env vars: RAPIDAPI_BASE_URL (defaults to https://aivideoframe.com)
 
 set -euo pipefail
 
-BASE_URL="https://aivideoframe.com"
-SECRET="6f45c9c0-1bf8-11f1-a1a6-51064d510f07"
+BASE_URL="${RAPIDAPI_BASE_URL:-https://aivideoframe.com}"
+SECRET="${RAPIDAPI_PROXY_SECRET:?RAPIDAPI_PROXY_SECRET is not set}"
 # Unique user per run to avoid credit state bleed across runs
 TEST_USER="test-script-$(date +%s)"
 CREDIT_USER="credit-test-$(date +%s)"
@@ -63,7 +65,7 @@ echo "Base URL : $BASE_URL"
 echo "Test user: $TEST_USER"
 echo ""
 
-# ── Test 1: Missing auth headers → 401 ──────────────────────────────────────
+# ── Test 1: Missing auth headers → 403 ──────────────────────────────────────
 
 STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE_URL/api/v1/videos/upload" \
   -F "video=@$TEST_VIDEO;type=video/mp4" -F "aspectRatio=9:16")
@@ -161,7 +163,6 @@ DEL_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE \
 
 if [[ "$DEL_STATUS" == "200" ]]; then
   pass "6. Delete returned 200"
-  # Remove from cleanup list since already deleted
   VIDEO_IDS_TO_CLEANUP=("${VIDEO_IDS_TO_CLEANUP[@]/$VIDEO_ID}")
 else
   fail "6. Delete — expected 200, got $DEL_STATUS"
@@ -227,7 +228,6 @@ UPGRADE_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
   -H "X-RapidAPI-Subscription: PRO")
 
 if [[ "$UPGRADE_STATUS" == "200" || "$UPGRADE_STATUS" == "404" ]]; then
-  # 200 = found + credits reset; 404 = video not found but auth passed (credits reset)
   pass "8. Plan upgrade to PRO accepted (credits reset)"
 else
   fail "8. Plan upgrade — expected 200/404 after plan change, got $UPGRADE_STATUS"

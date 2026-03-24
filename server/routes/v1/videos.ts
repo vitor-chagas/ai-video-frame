@@ -86,9 +86,10 @@ router.post("/:id/process", async (req, res) => {
       return res.status(400).json({ error: "Video has already been processed" });
     }
 
-    const subtitles = req.body.subtitles === true || req.body.subtitles === "true";
-    const subtitleLanguage: string | null = req.body.subtitleLanguage || null;
-    const subtitleMode: string = ["burn", "srt", "vtt"].includes(req.body.subtitleMode) ? req.body.subtitleMode : "burn";
+    const body = req.body ?? {};
+    const subtitles = body.subtitles === true || body.subtitles === "true";
+    const subtitleLanguage: string | null = body.subtitleLanguage || null;
+    const subtitleMode: string = ["burn", "srt", "vtt"].includes(body.subtitleMode) ? body.subtitleMode : "burn";
 
     // RapidAPI: each credit = 1 unit deducted; subtitles cost +1 credit
     // For simplicity, decrement once for the video and once more for subtitles if enabled
