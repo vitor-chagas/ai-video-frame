@@ -74,6 +74,17 @@ export default function Home() {
       window.history.replaceState({}, "", "/");
       toast({ title: t("home.toasts.paymentCancelled"), description: t("home.toasts.paymentCancelledDesc") });
     }
+
+    const loginError = params.get("login_error");
+    const loginErrorDesc = params.get("login_error_desc");
+    if (loginError) {
+      window.history.replaceState({}, "", "/");
+      toast({
+        title: "Login failed",
+        description: `${loginError}: ${loginErrorDesc}`,
+        variant: "destructive",
+      });
+    }
   }, []);
 
   const handleBuyCredits = async (plan: string) => {

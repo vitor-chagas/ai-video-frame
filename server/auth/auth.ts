@@ -188,14 +188,11 @@ export async function setupAuth(app: Express) {
       if (err) {
         console.error("[Auth] Passport authenticate error:", err.message);
         console.error("[Auth] Error cause:", err.cause);
-        console.error("[Auth] Error code:", err.code || err.error);
-        console.error("[Auth] Error body:", JSON.stringify(err.body || err.response?.body));
-        console.error("[Auth] Session state:", JSON.stringify({
-          id: req.sessionID,
-          hasPassport: !!(req.session as any)?.passport,
-          hasOidcState: !!(req.session as any)?.oidc || !!(req.session as any)?.["openid-client"],
-        }));
-        return next(err);
+        const errorCode = (err.cause as any)?.error || err.code || "auth_error";
+        const errorDesc = (err.cause as any)?.error_description || err.message;
+        return res.redirect(
+          `/?login_error=${encodeURIComponent(errorCode)}&login_error_desc=${encodeURIComponent(errorDesc)}`
+        );
       }
       if (!user) {
         console.error("[Auth] No user found in callback. Info:", JSON.stringify(info));
