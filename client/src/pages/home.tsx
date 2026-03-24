@@ -265,7 +265,7 @@ export default function Home() {
             </div>
             <div className="flex flex-col sm:flex-row items-center gap-3">
               <a
-                href="https://rapidapi.com/vitorvieirachagas/api/ai-video-frame/"
+                href="https://rapidapi.com/vitorvieirachagas/api/ai-video-frame-api/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-[hsl(24,10%,10%)] text-white font-medium hover:bg-[hsl(24,10%,20%)] transition-all transform hover:scale-[1.02] active:scale-[0.98]"

@@ -4,7 +4,7 @@ The AI Video Frame API automatically crops and reframes your videos into differe
 
 **Host & Subscription:**
 This API is hosted and managed via RapidAPI. You can subscribe, get your API keys, and test the endpoints directly on our RapidAPI Hub page:
-[AI Video Frame on RapidAPI](https://rapidapi.com/vitorvieirachagas/api/ai-video-frame/)
+[AI Video Frame on RapidAPI](https://rapidapi.com/vitorvieirachagas/api/ai-video-frame-api/)
 
 **Interactive Swagger UI:**
 If you prefer the classic Swagger interface, you can also view our interactive documentation here:
