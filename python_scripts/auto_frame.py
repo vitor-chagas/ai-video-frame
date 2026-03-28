@@ -1,8 +1,7 @@
 import cv2
+import math
 import mediapipe as mp
-import numpy as np
 import os
-import re
 import subprocess
 import sys
 import tempfile
@@ -10,9 +9,16 @@ import time
 
 # --- CONFIGURATION ---
 SELECTED_RATIO = "4:5" # Available Ratios: "9:16", "1:1", "4:5", "16:9", "2:3"
-SMOOTHING_FACTOR = 0.1
-DETECT_EVERY_FPS_DIVISOR = 6
+SMOOTHING_MIN = 0.10        # Smooth tracking when subject is centered
+SMOOTHING_MAX = 0.30        # Responsive tracking when subject drifts to edge
+DEAD_ZONE_FRACTION = 0.05   # Ignore movements smaller than 5% of crop size
+MAX_SPEED_FRACTION = 0.02   # Max crop movement per frame = 2% of target dimension
+OUTLIER_THRESHOLD = 0.30    # Ignore detection jumps > 30% of frame width
+DETECT_EVERY_FPS_DIVISOR = 15
 PROGRESS_REPORT_INTERVAL = 30
+VERTICAL_BIAS_PORTRAIT = 0.12   # Shift crop down 12% for portrait (face in upper third)
+VERTICAL_BIAS_LANDSCAPE = 0.05  # Slight shift for landscape/square
+LANDMARK_VISIBILITY_THRESHOLD = 0.5  # Min visibility to include a landmark
 
 AVAILABLE_RATIOS = {
     "9:16": (9, 16),
@@ -23,30 +29,37 @@ AVAILABLE_RATIOS = {
 }
 # ---------------------
 
-# Initialize MediaPipe Pose with robust error checking
-# Note: MediaPipe 0.10.x on Python 3.14 might have structure changes
-try:
-    # Try legacy solutions API
-    if hasattr(mp, 'solutions') and hasattr(mp.solutions, 'pose'):
-        mp_pose = mp.solutions.pose
-        pose = mp_pose.Pose(
-            static_image_mode=False,
-            model_complexity=0,
-            enable_segmentation=False,
-            min_detection_confidence=0.5
-        )
-    else:
-        # Try Tasks API (newer)
-        from mediapipe.tasks import python
-        from mediapipe.tasks.python import vision
+# MediaPipe Tasks API (0.10.20+) — models are loaded per-video in process_video()
+from mediapipe.tasks.python import vision
+from mediapipe.tasks.python import BaseOptions
 
-        # We'll initialize this lazily inside process_video if needed, 
-        # or use a simplified detection if pose is not available.
-        print("MediaPipe solutions.pose not found, will attempt to use Tasks API or fallback.")
-        pose = None 
-except Exception as e:
-    print(f"MediaPipe Initialization Warning: {e}")
-    pose = None
+USE_POSE_FALLBACK = True  # Set False for face-only tracking (faster)
+MODELS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models")
+FACE_MODEL_PATH = os.path.join(MODELS_DIR, "blaze_face_short_range.tflite")
+POSE_MODEL_PATH = os.path.join(MODELS_DIR, "pose_landmarker_lite.task")
+
+def get_largest_face_tasks(face_result, frame_width, frame_height):
+    """Return (center_x, center_y, area) of the largest detected face, or None."""
+    if not face_result or not face_result.detections:
+        return None
+
+    largest = None
+    largest_area = 0
+
+    for detection in face_result.detections:
+        bbox = detection.bounding_box
+        area = bbox.width * bbox.height
+        if area > largest_area:
+            largest_area = area
+            largest = bbox
+
+    if largest is None:
+        return None
+
+    cx = largest.origin_x + largest.width / 2
+    cy = largest.origin_y + largest.height / 2
+
+    return (cx, cy, largest_area)
 
 def format_time(seconds):
     mins = int(seconds // 60)
@@ -555,43 +568,158 @@ def process_video(input_path, output_path, aspect_ratio=(9, 16), progress_callba
         return False
 
     current_center_x = width / 2
-    smoothing_factor = SMOOTHING_FACTOR
+    current_center_y = height / 2
+    first_detection_done = False  # Snap to subject on first detection (no smoothing)
     detect_every = max(1, int(fps / DETECT_EVERY_FPS_DIVISOR))
+
+    # Determine vertical bias based on aspect ratio
+    is_portrait = ratio_h > ratio_w
+    vertical_bias = VERTICAL_BIAS_PORTRAIT if is_portrait else VERTICAL_BIAS_LANDSCAPE
+
+    # Landmark indices for body estimation (Tasks API)
+    TRACKING_LANDMARKS = [0, 11, 12, 23, 24, 25, 26, 27, 28]  # nose, shoulders, hips, knees, ankles
+
+    # Initialize MediaPipe Tasks detectors (VIDEO mode for frame-by-frame)
+    face_det = None
+    pose_det = None
+    try:
+        face_options = vision.FaceDetectorOptions(
+            base_options=BaseOptions(model_asset_path=FACE_MODEL_PATH),
+            running_mode=vision.RunningMode.VIDEO,
+            min_detection_confidence=0.3
+        )
+        face_det = vision.FaceDetector.create_from_options(face_options)
+        print("Face detector initialized (Tasks API)")
+    except Exception as e:
+        print(f"Face detector init failed: {e}")
+
+    if USE_POSE_FALLBACK:
+        try:
+            pose_options = vision.PoseLandmarkerOptions(
+                base_options=BaseOptions(model_asset_path=POSE_MODEL_PATH),
+                running_mode=vision.RunningMode.VIDEO,
+                min_pose_detection_confidence=0.4,
+                min_tracking_confidence=0.4
+            )
+            pose_det = vision.PoseLandmarker.create_from_options(pose_options)
+            print("Pose landmarker initialized (Tasks API)")
+        except Exception as e:
+            print(f"Pose landmarker init failed: {e}")
 
     print(f"Processing: {input_path}")
     print(f"Original: {width}x{height} | Target: {target_width}x{target_height}")
     print(f"Pose detection every {detect_every} frames (fps={fps:.1f})")
 
     frame_count = 0
+    # Interpolation state: previous and current detection targets
+    prev_target_x = width / 2
+    prev_target_y = height / 2
     last_target_x = width / 2
+    last_target_y = height / 2
+    last_detect_frame = 0
+
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
             break
 
         if frame_count % detect_every == 0:
-            target_x = width / 2
-            
-            if pose is not None:
-                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                results = pose.process(frame_rgb)
+            raw_target_x = width / 2
+            raw_target_y = height / 2
+            detected = False
 
-                if results.pose_landmarks:
-                    landmarks = results.pose_landmarks.landmark
-                    nose = landmarks[0]
-                    l_shoulder = landmarks[11]
-                    r_shoulder = landmarks[12]
-                    person_x = (nose.x + l_shoulder.x + r_shoulder.x) / 3 * width
-                    target_x = person_x
-            else:
-                # Fallback to center if pose detection is unavailable
-                target_x = width / 2
-                
-            last_target_x = target_x
+            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame_rgb)
+            timestamp_ms = int(frame_count * 1000 / fps)
+
+            # PRIMARY: Face detection — picks the largest face (closest to camera)
+            if face_det is not None:
+                face_result = face_det.detect_for_video(mp_image, timestamp_ms)
+                face_info = get_largest_face_tasks(face_result, width, height)
+
+                if face_info is not None:
+                    face_cx, face_cy, _ = face_info
+                    raw_target_x = face_cx
+                    raw_target_y = face_cy + target_height * vertical_bias
+                    detected = True
+
+            # FALLBACK: Pose detection — when face not visible (turned away, looking down)
+            if not detected and USE_POSE_FALLBACK and pose_det is not None:
+                pose_result = pose_det.detect_for_video(mp_image, timestamp_ms)
+
+                if pose_result.pose_landmarks and len(pose_result.pose_landmarks) > 0:
+                    landmarks = pose_result.pose_landmarks[0]
+
+                    visible_xs = []
+                    visible_ys = []
+                    for idx in TRACKING_LANDMARKS:
+                        if idx < len(landmarks):
+                            lm = landmarks[idx]
+                            if lm.visibility > LANDMARK_VISIBILITY_THRESHOLD:
+                                visible_xs.append(lm.x * width)
+                                visible_ys.append(lm.y * height)
+
+                    if visible_xs:
+                        raw_target_x = (min(visible_xs) + max(visible_xs)) / 2
+                        nose = landmarks[0]
+                        if nose.visibility > LANDMARK_VISIBILITY_THRESHOLD:
+                            face_y = nose.y * height
+                            raw_target_y = face_y + target_height * vertical_bias
+                        else:
+                            body_center_y = (min(visible_ys) + max(visible_ys)) / 2
+                            raw_target_y = body_center_y + target_height * (vertical_bias * 0.5)
+
+            # Outlier rejection: ignore wild jumps (likely detected a different person)
+            jump_x = abs(raw_target_x - last_target_x)
+            if first_detection_done and jump_x > width * OUTLIER_THRESHOLD:
+                raw_target_x = last_target_x
+                raw_target_y = last_target_y
+
+            # Update interpolation state
+            prev_target_x = last_target_x
+            prev_target_y = last_target_y
+            last_target_x = raw_target_x
+            last_target_y = raw_target_y
+            last_detect_frame = frame_count
+            target_x = raw_target_x
+            target_y = raw_target_y
         else:
-            target_x = last_target_x
+            # Linear interpolation between previous and current detection
+            frames_since = frame_count - last_detect_frame
+            t = min(frames_since / detect_every, 1.0)
+            target_x = prev_target_x + (last_target_x - prev_target_x) * t
+            target_y = prev_target_y + (last_target_y - prev_target_y) * t
 
-        current_center_x = (smoothing_factor * target_x) + ((1 - smoothing_factor) * current_center_x)
+        # Snap directly to subject on first detection (no smoothing delay)
+        if not first_detection_done and (target_x != width / 2 or target_y != height / 2):
+            current_center_x = target_x
+            current_center_y = target_y
+            first_detection_done = True
+            print(f"First detection: snapped crop center to ({target_x:.0f}, {target_y:.0f})", flush=True)
+        else:
+            # Dead zone: ignore tiny movements to reduce jitter
+            dx = target_x - current_center_x
+            dy = target_y - current_center_y
+            if abs(dx) < target_width * DEAD_ZONE_FRACTION and abs(dy) < target_height * DEAD_ZONE_FRACTION:
+                target_x = current_center_x
+                target_y = current_center_y
+
+            # Adaptive smoothing: faster when subject is far from center
+            distance = math.sqrt(dx * dx + dy * dy)
+            max_distance = math.sqrt((target_width / 2) ** 2 + (target_height / 2) ** 2)
+            normalized_distance = min(distance / max_distance, 1.0) if max_distance > 0 else 0
+            smoothing = SMOOTHING_MIN + (SMOOTHING_MAX - SMOOTHING_MIN) * normalized_distance
+
+            new_center_x = (smoothing * target_x) + ((1 - smoothing) * current_center_x)
+            new_center_y = (smoothing * target_y) + ((1 - smoothing) * current_center_y)
+
+            # Velocity clamp: limit max movement per frame to prevent shaking
+            max_speed_x = target_width * MAX_SPEED_FRACTION
+            max_speed_y = target_height * MAX_SPEED_FRACTION
+            move_x = max(-max_speed_x, min(max_speed_x, new_center_x - current_center_x))
+            move_y = max(-max_speed_y, min(max_speed_y, new_center_y - current_center_y))
+            current_center_x += move_x
+            current_center_y += move_y
 
         # Calculate crop boundaries (Horizontal)
         left = int(current_center_x - target_width / 2)
@@ -605,9 +733,17 @@ def process_video(input_path, output_path, aspect_ratio=(9, 16), progress_callba
             right = width
             left = width - target_width
 
-        # Calculate crop boundaries (Vertical - centering on frame)
-        top = int((height - target_height) / 2)
+        # Calculate crop boundaries (Vertical - tracking subject)
+        top = int(current_center_y - target_height / 2)
         bottom = top + target_height
+
+        # Keep within video bounds (Vertical)
+        if top < 0:
+            top = 0
+            bottom = target_height
+        elif bottom > height:
+            bottom = height
+            top = height - target_height
 
         # Crop and write
         cropped_frame = frame[top:bottom, left:right]
@@ -622,7 +758,11 @@ def process_video(input_path, output_path, aspect_ratio=(9, 16), progress_callba
 
     cap.release()
     out.release()
-    
+    if face_det is not None:
+        face_det.close()
+    if pose_det is not None:
+        pose_det.close()
+
     # Verify the temporary file was actually created and has content
     if not os.path.exists(temp_output) or os.path.getsize(temp_output) == 0:
         print(f"Error: Processed temporary file {temp_output} is empty or was not created.")

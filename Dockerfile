@@ -46,7 +46,7 @@ RUN mkdir -p uploads/input uploads/output && \
 
 # Set environment variables
 ENV NODE_ENV=production
-ENV PORT=5000
+ENV PORT=5002
 
 # Run as non-root user
 USER appuser
