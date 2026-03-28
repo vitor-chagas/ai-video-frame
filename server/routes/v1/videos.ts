@@ -147,6 +147,13 @@ router.post("/:id/process", async (req, res) => {
       }
     });
 
+    let stderrBuffer = "";
+    pythonProcess.stderr.on("data", (data) => {
+      const output = data.toString();
+      stderrBuffer += output;
+      console.error("[Python stderr]", output);
+    });
+
     pythonProcess.on("close", async (code) => {
       videoProgress.delete(video.id);
       if (code === 0) {
@@ -157,6 +164,9 @@ router.post("/:id/process", async (req, res) => {
           await storage.updateVideoSubtitles(video.id, detectedLang, srtPath);
         }
       } else {
+        console.error(`[videos] Processing failed for ${video.id} with exit code ${code}`);
+        if (stderrBuffer) console.error("[videos] stderr:", stderrBuffer);
+        if (stdoutBuffer) console.error("[videos] stdout:", stdoutBuffer);
         await storage.updateVideoStatus(video.id, "failed");
       }
       // Clean up temp files left by Python script

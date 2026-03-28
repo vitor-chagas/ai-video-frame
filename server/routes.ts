@@ -386,6 +386,13 @@ export async function registerRoutes(
         }
       });
 
+      let stderrBuffer = "";
+      pythonProcess.stderr.on("data", (data) => {
+        const output = data.toString();
+        stderrBuffer += output;
+        console.error("[Python stderr]", output);
+      });
+
       pythonProcess.on("close", async (code) => {
         videoProgress.delete(video.id);
         if (code === 0) {
@@ -397,6 +404,9 @@ export async function registerRoutes(
             await storage.updateVideoSubtitles(video.id, detectedLang, srtPath);
           }
         } else {
+          console.error(`[videos] Processing failed for ${video.id} with exit code ${code}`);
+          if (stderrBuffer) console.error("[videos] stderr:", stderrBuffer);
+          if (stdoutBuffer) console.error("[videos] stdout:", stdoutBuffer);
           await storage.updateVideoStatus(video.id, "failed");
         }
         const tempFiles = fs.readdirSync(".").filter(f => f.startsWith("temp_no_audio_") && f.endsWith(".mp4"));
