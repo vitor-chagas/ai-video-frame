@@ -64,7 +64,8 @@ router.post("/upload", upload.single("video"), async (req, res) => {
     });
   } catch (err: any) {
     console.error("[videos] upload error:", err);
-    return res.status(500).json({ error: "Internal server error" });
+    const error = err.message?.includes("1080p") ? err.message : "Internal server error";
+    return res.status(400).json({ error });
   }
 });
 

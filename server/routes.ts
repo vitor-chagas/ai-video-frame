@@ -153,7 +153,8 @@ export async function registerRoutes(
 
       return res.json(video);
     } catch (error: any) {
-      return res.status(500).json({ message: "Internal server error" });
+      const message = error.message?.includes("1080p") ? error.message : "Internal server error";
+      return res.status(400).json({ message });
     }
   });
 
