@@ -29,6 +29,58 @@ export const upload = multer({
   },
 });
 
+export async function getVideoResolution(filePath: string): Promise<{ width: number; height: number } | null> {
+  try {
+    const { stdout } = await execFileAsync("ffprobe", [
+      "-v", "quiet",
+      "-select_streams", "v:0",
+      "-show_entries", "stream=width,height",
+      "-of", "csv=p=0",
+      filePath,
+    ]);
+    const [w, h] = stdout.trim().split(",").map(Number);
+    if (isNaN(w) || isNaN(h)) return null;
+    return { width: w, height: h };
+  } catch (error) {
+    console.error("Error getting video resolution:", error);
+    return null;
+  }
+}
+
+const MAX_WIDTH = 1920;
+const MAX_HEIGHT = 1080;
+
+export async function downscaleIfNeeded(filePath: string): Promise<void> {
+  const resolution = await getVideoResolution(filePath);
+  if (!resolution) return;
+
+  if (resolution.width <= MAX_WIDTH && resolution.height <= MAX_HEIGHT) return;
+
+  log(`Downscaling ${filePath} from ${resolution.width}x${resolution.height} to max ${MAX_WIDTH}x${MAX_HEIGHT}`, "FFmpeg");
+
+  const tmpOutput = filePath + ".downscaled.mp4";
+  try {
+    await execFileAsync("ffmpeg", [
+      "-i", filePath,
+      "-vf", `scale='min(${MAX_WIDTH},iw)':'min(${MAX_HEIGHT},ih)':force_original_aspect_ratio=decrease`,
+      "-c:v", "libx264", "-preset", "fast", "-crf", "18",
+      "-c:a", "copy",
+      "-y", tmpOutput,
+    ], { maxBuffer: 50 * 1024 * 1024, timeout: 5 * 60 * 1000 });
+
+    await unlinkAsync(filePath);
+    await promisify(fs.rename)(tmpOutput, filePath);
+    log(`Downscaled ${filePath} successfully`, "FFmpeg");
+  } catch (error) {
+    // Clean up temp file if it exists
+    if (fs.existsSync(tmpOutput)) {
+      await unlinkAsync(tmpOutput).catch(() => {});
+    }
+    console.error("Error downscaling video:", error);
+    throw new Error("Video resolution exceeds 1080p and automatic downscaling failed. Please upload a video with a maximum resolution of 1080p.");
+  }
+}
+
 export async function getVideoDuration(filePath: string): Promise<number | null> {
   try {
     const { stdout } = await execFileAsync("ffprobe", [
